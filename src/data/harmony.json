@@ -1,0 +1,10878 @@
+{
+ "source": "A. T. Robertson, A Harmony of the Gospels for Students of the Life of Christ (1922), based on the Broadus harmony; Project Gutenberg #36264 (public domain).",
+ "parts": [
+  {
+   "id": "p1",
+   "roman": "I",
+   "sourceTitle": "THE SOURCES OF THE GOSPELS",
+   "sections": [
+    "s1"
+   ]
+  },
+  {
+   "id": "p2",
+   "roman": "II",
+   "sourceTitle": "THE PRE-EXISTENT STATE OF CHRIST AND HIS INCARNATION",
+   "sections": [
+    "s2"
+   ]
+  },
+  {
+   "id": "p3",
+   "roman": "III",
+   "sourceTitle": "THE TWO GENEALOGIES IN MATTHEW AND LUKE",
+   "sections": [
+    "s3"
+   ]
+  },
+  {
+   "id": "p4",
+   "roman": "IV",
+   "sourceTitle": "THE BIRTH AND CHILDHOOD OF THE BAPTIST AND OF JESUS",
+   "sections": [
+    "s4",
+    "s5",
+    "s6",
+    "s7",
+    "s8",
+    "s9",
+    "s10",
+    "s11",
+    "s12",
+    "s13",
+    "s14",
+    "s15",
+    "s16",
+    "s17",
+    "s18",
+    "s19"
+   ]
+  },
+  {
+   "id": "p5",
+   "roman": "V",
+   "sourceTitle": "THE BEGINNING OF THE BAPTIST'S MINISTRY",
+   "sections": [
+    "s20",
+    "s21",
+    "s22",
+    "s23"
+   ]
+  },
+  {
+   "id": "p6",
+   "roman": "VI",
+   "sourceTitle": "THE BEGINNING OF CHRIST'S PUBLIC MINISTRY",
+   "sections": [
+    "s24",
+    "s25",
+    "s26",
+    "s27",
+    "s28",
+    "s29",
+    "s30",
+    "s31",
+    "s32",
+    "s33",
+    "s34",
+    "s35",
+    "s36"
+   ]
+  },
+  {
+   "id": "p7",
+   "roman": "VII",
+   "sourceTitle": "THE GREAT GALILEAN MINISTRY",
+   "sections": [
+    "s37",
+    "s38",
+    "s39",
+    "s40",
+    "s41",
+    "s42",
+    "s43",
+    "s44",
+    "s45",
+    "s46",
+    "s47",
+    "s48",
+    "s49",
+    "s50",
+    "s51",
+    "s52",
+    "s53",
+    "s54",
+    "s55",
+    "s56",
+    "s57",
+    "s58",
+    "s59",
+    "s60",
+    "s61",
+    "s62",
+    "s63",
+    "s64",
+    "s65",
+    "s66",
+    "s67",
+    "s68",
+    "s69",
+    "s70",
+    "s71"
+   ]
+  },
+  {
+   "id": "p8",
+   "roman": "VIII",
+   "sourceTitle": "THE SPECIAL TRAINING OF THE TWELVE IN DISTRICTS AROUND GALILEE",
+   "sections": [
+    "s72",
+    "s73",
+    "s74",
+    "s75",
+    "s76",
+    "s77",
+    "s78",
+    "s79",
+    "s80",
+    "s81",
+    "s82",
+    "s83",
+    "s84",
+    "s85",
+    "s86",
+    "s87",
+    "s88",
+    "s89",
+    "s90",
+    "s91",
+    "s92",
+    "s93",
+    "s94",
+    "s95"
+   ]
+  },
+  {
+   "id": "p9",
+   "roman": "IX",
+   "sourceTitle": "THE LATER JUDEAN MINISTRY",
+   "sections": [
+    "s96",
+    "s97",
+    "s98",
+    "s99",
+    "s100",
+    "s101",
+    "s102",
+    "s103",
+    "s104",
+    "s105",
+    "s106",
+    "s107",
+    "s108",
+    "s109",
+    "s110",
+    "s111"
+   ]
+  },
+  {
+   "id": "p10",
+   "roman": "X",
+   "sourceTitle": "THE LATER PEREAN MINISTRY",
+   "sections": [
+    "s112",
+    "s113",
+    "s114",
+    "s115",
+    "s116",
+    "s117",
+    "s118",
+    "s119",
+    "s120",
+    "s121",
+    "s122",
+    "s123",
+    "s124",
+    "s125",
+    "s126",
+    "s127"
+   ]
+  },
+  {
+   "id": "p11",
+   "roman": "XI",
+   "sourceTitle": "THE LAST PUBLIC MINISTRY IN JERUSALEM",
+   "sections": [
+    "s128a",
+    "s128b",
+    "s129",
+    "s130",
+    "s131",
+    "s132",
+    "s133",
+    "s134",
+    "s135",
+    "s136",
+    "s137",
+    "s138"
+   ]
+  },
+  {
+   "id": "p12",
+   "roman": "XII",
+   "sourceTitle": "IN THE SHADOW WITH JESUS",
+   "sections": [
+    "s139",
+    "s140",
+    "s141",
+    "s142",
+    "s143",
+    "s144",
+    "s145",
+    "s146",
+    "s147",
+    "s148",
+    "s149",
+    "s150",
+    "s151",
+    "s152"
+   ]
+  },
+  {
+   "id": "p13",
+   "roman": "XIII",
+   "sourceTitle": "THE ARREST, TRIAL, CRUCIFIXION, AND BURIAL OF JESUS",
+   "sections": [
+    "s153",
+    "s154",
+    "s155",
+    "s156",
+    "s157",
+    "s158",
+    "s159",
+    "s160",
+    "s161",
+    "s162",
+    "s163",
+    "s164",
+    "s165",
+    "s166",
+    "s167",
+    "s168"
+   ]
+  },
+  {
+   "id": "p14",
+   "roman": "XIV",
+   "sourceTitle": "THE RESURRECTION, APPEARANCES, AND ASCENSION OF CHRIST",
+   "sections": [
+    "s169",
+    "s170",
+    "s171",
+    "s172",
+    "s173",
+    "s174",
+    "s175",
+    "s176",
+    "s177",
+    "s178",
+    "s179",
+    "s180",
+    "s181",
+    "s182",
+    "s183",
+    "s184"
+   ]
+  }
+ ],
+ "sections": [
+  {
+   "id": "s1",
+   "n": "1",
+   "part": "p1",
+   "sourceTitle": "IN THE DEDICATION LUKE EXPLAINS HIS METHOD OF RESEARCH",
+   "refs": {
+    "LUK": [
+     [
+      1,
+      1,
+      1,
+      4
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s1",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        1,
+        1,
+        1,
+        4
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s2",
+   "n": "2",
+   "part": "p2",
+   "sourceTitle": "IN HIS INTRODUCTION JOHN PICTURES CHRIST AS THE WORD (LOGOS)",
+   "refs": {
+    "JHN": [
+     [
+      1,
+      1,
+      1,
+      18
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s2",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        1,
+        1,
+        1,
+        18
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "s3",
+   "n": "3",
+   "part": "p3",
+   "sourceTitle": "APPARENTLY JOSEPH'S GENEALOGY IN MATTHEW AND MARY'S IN LUKE",
+   "refs": {
+    "MAT": [
+     [
+      1,
+      1,
+      1,
+      17
+     ]
+    ],
+    "LUK": [
+     [
+      3,
+      23,
+      3,
+      38
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s3",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        1,
+        1,
+        1,
+        17
+       ]
+      ],
+      "LUK": [
+       [
+        3,
+        23,
+        3,
+        38
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 17,
+      "LUK": 16
+     }
+    }
+   ]
+  },
+  {
+   "id": "s4",
+   "n": "4",
+   "part": "p4",
+   "sourceTitle": "THE ANNUNCIATION OF THE BIRTH OF THE BAPTIST TO ZACHARIAS",
+   "refs": {
+    "LUK": [
+     [
+      1,
+      5,
+      1,
+      25
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s4",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        1,
+        5,
+        1,
+        25
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 21
+     }
+    }
+   ]
+  },
+  {
+   "id": "s5",
+   "n": "5",
+   "part": "p4",
+   "sourceTitle": "THE ANNUNCIATION TO THE VIRGIN MARY OF THE BIRTH OF JESUS",
+   "refs": {
+    "LUK": [
+     [
+      1,
+      26,
+      1,
+      38
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s5",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        1,
+        26,
+        1,
+        38
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 13
+     }
+    }
+   ]
+  },
+  {
+   "id": "s6",
+   "n": "6",
+   "part": "p4",
+   "sourceTitle": "THE SONG OF ELIZABETH TO MARY UPON HER VISIT",
+   "refs": {
+    "LUK": [
+     [
+      1,
+      39,
+      1,
+      45
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s6",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        1,
+        39,
+        1,
+        45
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s7",
+   "n": "7",
+   "part": "p4",
+   "sourceTitle": "THE MAGNIFICAT OF MARY",
+   "refs": {
+    "LUK": [
+     [
+      1,
+      46,
+      1,
+      56
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s7",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        1,
+        46,
+        1,
+        56
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 11
+     }
+    }
+   ]
+  },
+  {
+   "id": "s8",
+   "n": "8",
+   "part": "p4",
+   "sourceTitle": "THE BIRTH AND CHILDHOOD OF THE BAPTIST AND HIS DESERT LIFE",
+   "refs": {
+    "LUK": [
+     [
+      1,
+      57,
+      1,
+      80
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s8",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        1,
+        57,
+        1,
+        80
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 24
+     }
+    }
+   ]
+  },
+  {
+   "id": "s9",
+   "n": "9",
+   "part": "p4",
+   "sourceTitle": "THE ANNUNCIATION TO JOSEPH OF THE BIRTH OF JESUS",
+   "refs": {
+    "MAT": [
+     [
+      1,
+      18,
+      1,
+      25
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s9",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        1,
+        18,
+        1,
+        25
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s10",
+   "n": "10",
+   "part": "p4",
+   "sourceTitle": "THE BIRTH OF JESUS",
+   "refs": {
+    "LUK": [
+     [
+      2,
+      1,
+      2,
+      7
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s10",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        2,
+        1,
+        2,
+        7
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s11",
+   "n": "11",
+   "part": "p4",
+   "sourceTitle": "THE PRAISE OF THE ANGELS AND THE HOMAGE OF THE SHEPHERDS",
+   "refs": {
+    "LUK": [
+     [
+      2,
+      8,
+      2,
+      20
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s11",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        2,
+        8,
+        2,
+        20
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 13
+     }
+    }
+   ]
+  },
+  {
+   "id": "s12",
+   "n": "12",
+   "part": "p4",
+   "sourceTitle": "THE CIRCUMCISION OF JESUS",
+   "refs": {
+    "LUK": [
+     [
+      2,
+      21,
+      2,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s12",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        2,
+        21,
+        2,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s13",
+   "n": "13",
+   "part": "p4",
+   "sourceTitle": "THE PRESENTATION IN THE TEMPLE WITH THE HOMAGE OF SIMEON AND ANNA",
+   "refs": {
+    "LUK": [
+     [
+      2,
+      22,
+      2,
+      38
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s13",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        2,
+        22,
+        2,
+        38
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 17
+     }
+    }
+   ]
+  },
+  {
+   "id": "s14",
+   "n": "14",
+   "part": "p4",
+   "sourceTitle": "MAGI VISIT THE NEW-BORN KING OF THE JEWS",
+   "refs": {
+    "MAT": [
+     [
+      2,
+      1,
+      2,
+      12
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s14",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        2,
+        1,
+        2,
+        12
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 12
+     }
+    }
+   ]
+  },
+  {
+   "id": "s15",
+   "n": "15",
+   "part": "p4",
+   "sourceTitle": "THE CHILD JESUS CARRIED TO EGYPT, AND THE CHILDREN AT BETHLEHEM SLAIN",
+   "refs": {
+    "MAT": [
+     [
+      2,
+      13,
+      2,
+      18
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s15",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        2,
+        13,
+        2,
+        18
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s16",
+   "n": "16",
+   "part": "p4",
+   "sourceTitle": "THE CHILD BROUGHT FROM EGYPT TO NAZARETH",
+   "refs": {
+    "MAT": [
+     [
+      2,
+      19,
+      2,
+      23
+     ]
+    ],
+    "LUK": [
+     [
+      2,
+      39,
+      2,
+      39
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s16",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        2,
+        19,
+        2,
+        23
+       ]
+      ],
+      "LUK": [
+       [
+        2,
+        39,
+        2,
+        39
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 5,
+      "LUK": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s17",
+   "n": "17",
+   "part": "p4",
+   "sourceTitle": "THE CHILDHOOD OF JESUS AT NAZARETH",
+   "refs": {
+    "LUK": [
+     [
+      2,
+      40,
+      2,
+      40
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s17",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        2,
+        40,
+        2,
+        40
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s18",
+   "n": "18",
+   "part": "p4",
+   "sourceTitle": "THE VISIT OF THE BOY JESUS TO JERUSALEM WHEN TWELVE YEARS OLD",
+   "refs": {
+    "LUK": [
+     [
+      2,
+      41,
+      2,
+      50
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s18",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        2,
+        41,
+        2,
+        50
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s19",
+   "n": "19",
+   "part": "p4",
+   "sourceTitle": "THE EIGHTEEN YEARS AT NAZARETH",
+   "refs": {
+    "LUK": [
+     [
+      2,
+      51,
+      2,
+      52
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s19",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        2,
+        51,
+        2,
+        52
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s20",
+   "n": "20",
+   "part": "p5",
+   "sourceTitle": "THE TIME OF THE BEGINNING",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      1,
+      1,
+      1
+     ]
+    ],
+    "LUK": [
+     [
+      3,
+      1,
+      3,
+      2
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s20",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        1,
+        1,
+        1
+       ]
+      ],
+      "LUK": [
+       [
+        3,
+        1,
+        3,
+        2
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 1,
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s21",
+   "n": "21",
+   "part": "p5",
+   "sourceTitle": "THE MESSAGE AND THE MESSENGER",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      2,
+      1,
+      6
+     ]
+    ],
+    "MAT": [
+     [
+      3,
+      1,
+      3,
+      6
+     ]
+    ],
+    "LUK": [
+     [
+      3,
+      3,
+      3,
+      6
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s21",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        2,
+        1,
+        6
+       ]
+      ],
+      "MAT": [
+       [
+        3,
+        1,
+        3,
+        6
+       ]
+      ],
+      "LUK": [
+       [
+        3,
+        3,
+        3,
+        6
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 6,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s22",
+   "n": "22",
+   "part": "p5",
+   "sourceTitle": "A SPECIMEN OF JOHN'S PREACHING",
+   "refs": {
+    "MAT": [
+     [
+      3,
+      7,
+      3,
+      10
+     ]
+    ],
+    "LUK": [
+     [
+      3,
+      7,
+      3,
+      14
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s22",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        3,
+        7,
+        3,
+        10
+       ]
+      ],
+      "LUK": [
+       [
+        3,
+        7,
+        3,
+        14
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 4,
+      "LUK": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s23",
+   "n": "23",
+   "part": "p5",
+   "sourceTitle": "THE FORERUNNER'S PICTURE OF THE MESSIAH BEFORE SEEING HIM",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      7,
+      1,
+      8
+     ]
+    ],
+    "MAT": [
+     [
+      3,
+      11,
+      3,
+      12
+     ]
+    ],
+    "LUK": [
+     [
+      3,
+      15,
+      3,
+      18
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s23",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        7,
+        1,
+        8
+       ]
+      ],
+      "MAT": [
+       [
+        3,
+        11,
+        3,
+        12
+       ]
+      ],
+      "LUK": [
+       [
+        3,
+        15,
+        3,
+        18
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 2,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s24",
+   "n": "24",
+   "part": "p6",
+   "sourceTitle": "JESUS BAPTIZED BY JOHN IN THE JORDAN",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      9,
+      1,
+      11
+     ]
+    ],
+    "MAT": [
+     [
+      3,
+      13,
+      3,
+      17
+     ]
+    ],
+    "LUK": [
+     [
+      3,
+      21,
+      3,
+      23
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s24",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        9,
+        1,
+        11
+       ]
+      ],
+      "MAT": [
+       [
+        3,
+        13,
+        3,
+        17
+       ]
+      ],
+      "LUK": [
+       [
+        3,
+        21,
+        3,
+        23
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 3,
+      "MAT": 5,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s25",
+   "n": "25",
+   "part": "p6",
+   "sourceTitle": "THE THREE TEMPTATIONS OF JESUS",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      12,
+      1,
+      13
+     ]
+    ],
+    "MAT": [
+     [
+      4,
+      1,
+      4,
+      11
+     ]
+    ],
+    "LUK": [
+     [
+      4,
+      1,
+      4,
+      13
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s25",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        12,
+        1,
+        13
+       ]
+      ],
+      "MAT": [
+       [
+        4,
+        1,
+        4,
+        11
+       ]
+      ],
+      "LUK": [
+       [
+        4,
+        1,
+        4,
+        13
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 11,
+      "LUK": 13
+     }
+    }
+   ]
+  },
+  {
+   "id": "s26",
+   "n": "26",
+   "part": "p6",
+   "sourceTitle": "THE TESTIMONY OF THE BAPTIST TO THE COMMITTEE OF THE SANHEDRIN",
+   "refs": {
+    "JHN": [
+     [
+      1,
+      19,
+      1,
+      28
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s26",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        1,
+        19,
+        1,
+        28
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s27",
+   "n": "27",
+   "part": "p6",
+   "sourceTitle": "JOHN'S IDENTIFICATION OF JESUS AS THE MESSIAH",
+   "refs": {
+    "JHN": [
+     [
+      1,
+      29,
+      1,
+      34
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s27",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        1,
+        29,
+        1,
+        34
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s28",
+   "n": "28",
+   "part": "p6",
+   "sourceTitle": "JESUS MAKES HIS FIRST DISCIPLES",
+   "refs": {
+    "JHN": [
+     [
+      1,
+      35,
+      1,
+      51
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s28",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        1,
+        35,
+        1,
+        51
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 17
+     }
+    }
+   ]
+  },
+  {
+   "id": "s29",
+   "n": "29",
+   "part": "p6",
+   "sourceTitle": "JESUS WORKS HIS FIRST MIRACLE",
+   "refs": {
+    "JHN": [
+     [
+      2,
+      1,
+      2,
+      11
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s29",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        2,
+        1,
+        2,
+        11
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 11
+     }
+    }
+   ]
+  },
+  {
+   "id": "s30",
+   "n": "30",
+   "part": "p6",
+   "sourceTitle": "JESUS MAKES A FIRST SOJOURN AT CAPERNAUM, ACCOMPANIED BY HIS KINDRED AND HIS EARLY DISCIPLES",
+   "refs": {
+    "JHN": [
+     [
+      2,
+      12,
+      2,
+      12
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s30",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        2,
+        12,
+        2,
+        12
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s31",
+   "n": "31",
+   "part": "p6",
+   "sourceTitle": "THE FIRST CLEANSING OF THE TEMPLE AT THE PASSOVER",
+   "refs": {
+    "JHN": [
+     [
+      2,
+      13,
+      2,
+      22
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s31",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        2,
+        13,
+        2,
+        22
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s32",
+   "n": "32",
+   "part": "p6",
+   "sourceTitle": "THE INTERVIEW OF NICODEMUS WITH JESUS",
+   "refs": {
+    "JHN": [
+     [
+      2,
+      23,
+      3,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s32",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        2,
+        23,
+        3,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 24
+     }
+    }
+   ]
+  },
+  {
+   "id": "s33",
+   "n": "33",
+   "part": "p6",
+   "sourceTitle": "THE PARALLEL MINISTRY OF JESUS AND JOHN WITH JOHN'S LOYALTY TO JESUS",
+   "refs": {
+    "JHN": [
+     [
+      3,
+      22,
+      3,
+      36
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s33",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        3,
+        22,
+        3,
+        36
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "s34",
+   "n": "34",
+   "part": "p6",
+   "sourceTitle": "CHRIST'S REASONS FOR LEAVING JUDEA",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      14,
+      1,
+      14
+     ]
+    ],
+    "MAT": [
+     [
+      4,
+      12,
+      4,
+      12
+     ]
+    ],
+    "LUK": [
+     [
+      3,
+      19,
+      3,
+      20
+     ],
+     [
+      4,
+      14,
+      4,
+      14
+     ]
+    ],
+    "JHN": [
+     [
+      4,
+      1,
+      4,
+      4
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s34",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        14,
+        1,
+        14
+       ]
+      ],
+      "MAT": [
+       [
+        4,
+        12,
+        4,
+        12
+       ]
+      ],
+      "LUK": [
+       [
+        3,
+        19,
+        3,
+        20
+       ],
+       [
+        4,
+        14,
+        4,
+        14
+       ]
+      ],
+      "JHN": [
+       [
+        4,
+        1,
+        4,
+        4
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 1,
+      "MAT": 1,
+      "LUK": 3,
+      "JHN": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s35",
+   "n": "35",
+   "part": "p6",
+   "sourceTitle": "JESUS IN SAMARIA AT JACOB'S WELL AND IN SYCHAR",
+   "refs": {
+    "JHN": [
+     [
+      4,
+      5,
+      4,
+      42
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s35",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        4,
+        5,
+        4,
+        42
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 38
+     }
+    }
+   ]
+  },
+  {
+   "id": "s36",
+   "n": "36",
+   "part": "p6",
+   "sourceTitle": "THE ARRIVAL OF JESUS IN GALILEE",
+   "refs": {
+    "JHN": [
+     [
+      4,
+      43,
+      4,
+      45
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s36",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        4,
+        43,
+        4,
+        45
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s37",
+   "n": "37",
+   "part": "p7",
+   "sourceTitle": "GENERAL ACCOUNT OF HIS TEACHING IN GALILEE",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      14,
+      1,
+      15
+     ]
+    ],
+    "MAT": [
+     [
+      4,
+      17,
+      4,
+      17
+     ]
+    ],
+    "LUK": [
+     [
+      4,
+      14,
+      4,
+      15
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s37",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        14,
+        1,
+        15
+       ]
+      ],
+      "MAT": [
+       [
+        4,
+        17,
+        4,
+        17
+       ]
+      ],
+      "LUK": [
+       [
+        4,
+        14,
+        4,
+        15
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 1,
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s38",
+   "n": "38",
+   "part": "p7",
+   "sourceTitle": "THE HEALING AT CANA OF THE SON OF A COURTIER OF CAPERNAUM",
+   "refs": {
+    "JHN": [
+     [
+      4,
+      46,
+      4,
+      54
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s38",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        4,
+        46,
+        4,
+        54
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "s39",
+   "n": "39",
+   "part": "p7",
+   "sourceTitle": "THE FIRST REJECTION AT NAZARETH",
+   "refs": {
+    "LUK": [
+     [
+      4,
+      16,
+      4,
+      31
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s39",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        4,
+        16,
+        4,
+        31
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 16
+     }
+    }
+   ]
+  },
+  {
+   "id": "s40",
+   "n": "40",
+   "part": "p7",
+   "sourceTitle": "THE NEW HOME IN CAPERNAUM",
+   "refs": {
+    "MAT": [
+     [
+      4,
+      13,
+      4,
+      16
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s40",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        4,
+        13,
+        4,
+        16
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s41",
+   "n": "41",
+   "part": "p7",
+   "sourceTitle": "JESUS FINDS FOUR FISHERS OF MEN IN FOUR FISHERMEN",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      16,
+      1,
+      20
+     ]
+    ],
+    "MAT": [
+     [
+      4,
+      18,
+      4,
+      22
+     ]
+    ],
+    "LUK": [
+     [
+      5,
+      1,
+      5,
+      11
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s41",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        16,
+        1,
+        20
+       ]
+      ],
+      "MAT": [
+       [
+        4,
+        18,
+        4,
+        22
+       ]
+      ],
+      "LUK": [
+       [
+        5,
+        1,
+        5,
+        11
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 5,
+      "LUK": 11
+     }
+    }
+   ]
+  },
+  {
+   "id": "s42",
+   "n": "42",
+   "part": "p7",
+   "sourceTitle": "THE EXCITEMENT IN THE SYNAGOGUE BECAUSE OF THE TEACHING OF JESUS AND THE HEALING OF A DEMONIAC ON THE SABBATH",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      21,
+      1,
+      28
+     ]
+    ],
+    "LUK": [
+     [
+      4,
+      31,
+      4,
+      37
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s42",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        21,
+        1,
+        28
+       ]
+      ],
+      "LUK": [
+       [
+        4,
+        31,
+        4,
+        37
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 8,
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s43",
+   "n": "43",
+   "part": "p7",
+   "sourceTitle": "HE HEALS PETER'S MOTHER-IN-LAW AND MANY OTHERS",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      29,
+      1,
+      34
+     ]
+    ],
+    "MAT": [
+     [
+      8,
+      14,
+      8,
+      17
+     ]
+    ],
+    "LUK": [
+     [
+      4,
+      38,
+      4,
+      41
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s43",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        29,
+        1,
+        34
+       ]
+      ],
+      "MAT": [
+       [
+        8,
+        14,
+        8,
+        17
+       ]
+      ],
+      "LUK": [
+       [
+        4,
+        38,
+        4,
+        41
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 6,
+      "MAT": 4,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s44",
+   "n": "44",
+   "part": "p7",
+   "sourceTitle": "THE FIRST TOUR OF GALILEE WITH THE FOUR FISHERMEN",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      35,
+      1,
+      39
+     ]
+    ],
+    "MAT": [
+     [
+      4,
+      23,
+      4,
+      25
+     ]
+    ],
+    "LUK": [
+     [
+      4,
+      42,
+      4,
+      44
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s44",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        35,
+        1,
+        39
+       ]
+      ],
+      "MAT": [
+       [
+        4,
+        23,
+        4,
+        25
+       ]
+      ],
+      "LUK": [
+       [
+        4,
+        42,
+        4,
+        44
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 3,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s45",
+   "n": "45",
+   "part": "p7",
+   "sourceTitle": "A LEPER HEALED AND MUCH POPULAR EXCITEMENT",
+   "refs": {
+    "MRK": [
+     [
+      1,
+      40,
+      1,
+      45
+     ]
+    ],
+    "MAT": [
+     [
+      8,
+      2,
+      8,
+      4
+     ]
+    ],
+    "LUK": [
+     [
+      5,
+      12,
+      5,
+      16
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s45",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        1,
+        40,
+        1,
+        45
+       ]
+      ],
+      "MAT": [
+       [
+        8,
+        2,
+        8,
+        4
+       ]
+      ],
+      "LUK": [
+       [
+        5,
+        12,
+        5,
+        16
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 6,
+      "MAT": 3,
+      "LUK": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s46",
+   "n": "46",
+   "part": "p7",
+   "sourceTitle": "THRONGED IN CAPERNAUM, HE HEALS A PARALYTIC LOWERED THROUGH THE ROOF OF PETER'S HOUSE",
+   "refs": {
+    "MRK": [
+     [
+      2,
+      1,
+      2,
+      12
+     ]
+    ],
+    "MAT": [
+     [
+      9,
+      1,
+      9,
+      8
+     ]
+    ],
+    "LUK": [
+     [
+      5,
+      17,
+      5,
+      26
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s46",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        2,
+        1,
+        2,
+        12
+       ]
+      ],
+      "MAT": [
+       [
+        9,
+        1,
+        9,
+        8
+       ]
+      ],
+      "LUK": [
+       [
+        5,
+        17,
+        5,
+        26
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 12,
+      "MAT": 8,
+      "LUK": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s47",
+   "n": "47",
+   "part": "p7",
+   "sourceTitle": "THE CALL OF MATTHEW (LEVI) AND HIS RECEPTION IN HONOR OF JESUS",
+   "refs": {
+    "MRK": [
+     [
+      2,
+      13,
+      2,
+      17
+     ]
+    ],
+    "MAT": [
+     [
+      9,
+      9,
+      9,
+      13
+     ]
+    ],
+    "LUK": [
+     [
+      5,
+      27,
+      5,
+      32
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s47",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        2,
+        13,
+        2,
+        17
+       ]
+      ],
+      "MAT": [
+       [
+        9,
+        9,
+        9,
+        13
+       ]
+      ],
+      "LUK": [
+       [
+        5,
+        27,
+        5,
+        32
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 5,
+      "LUK": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s48",
+   "n": "48",
+   "part": "p7",
+   "sourceTitle": "JESUS IN THREE PARABLES DEFENDS HIS DISCIPLES FOR FEASTING INSTEAD OF FASTING",
+   "refs": {
+    "MRK": [
+     [
+      2,
+      18,
+      2,
+      22
+     ]
+    ],
+    "MAT": [
+     [
+      9,
+      14,
+      9,
+      17
+     ]
+    ],
+    "LUK": [
+     [
+      5,
+      33,
+      5,
+      39
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s48",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        2,
+        18,
+        2,
+        22
+       ]
+      ],
+      "MAT": [
+       [
+        9,
+        14,
+        9,
+        17
+       ]
+      ],
+      "LUK": [
+       [
+        5,
+        33,
+        5,
+        39
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 4,
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s49",
+   "n": "49",
+   "part": "p7",
+   "sourceTitle": "AT A FEAST IN JERUSALEM (POSSIBLY THE PASSOVER) JESUS HEALS A LAME MAN ON THE SABBATH AND DEFENDS THIS ACTION TO THE PHARISEES IN A GREAT DISCOURSE",
+   "refs": {
+    "JHN": [
+     [
+      5,
+      1,
+      5,
+      47
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s49",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        5,
+        1,
+        5,
+        47
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 47
+     }
+    }
+   ]
+  },
+  {
+   "id": "s50",
+   "n": "50",
+   "part": "p7",
+   "sourceTitle": "ANOTHER SABBATH CONTROVERSY WITH THE PHARISEES WHEN THE DISCIPLES PLUCK EARS OF GRAIN IN THE FIELDS",
+   "refs": {
+    "MRK": [
+     [
+      2,
+      23,
+      2,
+      28
+     ]
+    ],
+    "MAT": [
+     [
+      12,
+      1,
+      12,
+      8
+     ]
+    ],
+    "LUK": [
+     [
+      6,
+      1,
+      6,
+      5
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s50",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        2,
+        23,
+        2,
+        28
+       ]
+      ],
+      "MAT": [
+       [
+        12,
+        1,
+        12,
+        8
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        1,
+        6,
+        5
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 6,
+      "MAT": 8,
+      "LUK": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s51",
+   "n": "51",
+   "part": "p7",
+   "sourceTitle": "A THIRD SABBATH CONTROVERSY WITH THE PHARISEES OVER THE HEALING OF A MAN WITH A WITHERED HAND IN A SYNAGOGUE",
+   "refs": {
+    "MRK": [
+     [
+      3,
+      1,
+      3,
+      6
+     ]
+    ],
+    "MAT": [
+     [
+      12,
+      9,
+      12,
+      14
+     ]
+    ],
+    "LUK": [
+     [
+      6,
+      6,
+      6,
+      11
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s51",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        3,
+        1,
+        3,
+        6
+       ]
+      ],
+      "MAT": [
+       [
+        12,
+        9,
+        12,
+        14
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        6,
+        6,
+        11
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 6,
+      "MAT": 6,
+      "LUK": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s52",
+   "n": "52",
+   "part": "p7",
+   "sourceTitle": "JESUS TEACHES AND HEALS GREAT MULTITUDES BY THE SEA OF GALILEE",
+   "refs": {
+    "MRK": [
+     [
+      3,
+      7,
+      3,
+      12
+     ]
+    ],
+    "MAT": [
+     [
+      12,
+      15,
+      12,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s52",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        3,
+        7,
+        3,
+        12
+       ]
+      ],
+      "MAT": [
+       [
+        12,
+        15,
+        12,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 6,
+      "MAT": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s53",
+   "n": "53",
+   "part": "p7",
+   "sourceTitle": "AFTER A NIGHT OF PRAYER JESUS SELECTS TWELVE APOSTLES",
+   "refs": {
+    "MRK": [
+     [
+      3,
+      13,
+      3,
+      19
+     ]
+    ],
+    "LUK": [
+     [
+      6,
+      12,
+      6,
+      16
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s53",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        3,
+        13,
+        3,
+        19
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        12,
+        6,
+        16
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "LUK": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s54",
+   "n": "54",
+   "part": "p7",
+   "sourceTitle": "THE SERMON ON THE MOUNT. PRIVILEGES AND REQUIREMENTS OF THE MESSIANIC REIGN, CHRIST'S STANDARD OF RIGHTEOUSNESS",
+   "refs": {
+    "MAT": [
+     [
+      5,
+      1,
+      7,
+      29
+     ]
+    ],
+    "LUK": [
+     [
+      6,
+      17,
+      6,
+      49
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s54-1",
+     "sourceTitle": "The Place and the Audience",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        5,
+        1,
+        5,
+        2
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        17,
+        6,
+        19
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 2,
+      "LUK": 3
+     }
+    },
+    {
+     "id": "s54-2",
+     "sourceTitle": "(1) The Introduction: The Beatitudes and the Woes. Privileges of the Messiah's Subjects",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        5,
+        3,
+        5,
+        12
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        20,
+        6,
+        26
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 10,
+      "LUK": 7
+     }
+    },
+    {
+     "id": "s54-3",
+     "sourceTitle": "(2) The Theme of the Sermon: Christ's Standard of Righteousness in Contrast with that of the Scribes and Pharisees",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        5,
+        13,
+        5,
+        20
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 8
+     }
+    },
+    {
+     "id": "s54-4",
+     "sourceTitle": "(3) Christ's Ethical Teaching Superior to that of the Scribes (both the Old Testament and the Oral Law) in Six Items or Illustrations (Murder, Adultery, Divorce, Oaths, Retaliations, Love of Enemies)",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        5,
+        21,
+        5,
+        48
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        27,
+        6,
+        30
+       ],
+       [
+        6,
+        32,
+        6,
+        36
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 28,
+      "LUK": 9
+     }
+    },
+    {
+     "id": "s54-5",
+     "sourceTitle": "(4) The Practice of Real Righteousness unlike the Ostentatious Hypocrisy of the Pharisees as in Almsgiving, Prayer, Fasting",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        6,
+        1,
+        6,
+        18
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 18
+     }
+    },
+    {
+     "id": "s54-6",
+     "sourceTitle": "(5) Single-hearted Devotion to God as Opposed to Worldly Aims and Anxieties",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        6,
+        19,
+        6,
+        34
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 16
+     }
+    },
+    {
+     "id": "s54-7",
+     "sourceTitle": "(6) Captious Criticism, or Judging Others",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        7,
+        1,
+        7,
+        6
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        37,
+        6,
+        42
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 6,
+      "LUK": 6
+     }
+    },
+    {
+     "id": "s54-8",
+     "sourceTitle": "(7) Prayer and the Golden Rule",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        7,
+        7,
+        7,
+        12
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        31,
+        6,
+        31
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 6,
+      "LUK": 1
+     }
+    },
+    {
+     "id": "s54-9",
+     "sourceTitle": "(8) The Conclusion of the Sermon. The Lesson of Personal Righteousness Driven Home by Powerful Parables",
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        7,
+        13,
+        8,
+        1
+       ]
+      ],
+      "LUK": [
+       [
+        6,
+        43,
+        6,
+        49
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 18,
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s55",
+   "n": "55",
+   "part": "p7",
+   "sourceTitle": "JESUS HEALS A CENTURION'S SERVANT AT CAPERNAUM",
+   "refs": {
+    "MAT": [
+     [
+      8,
+      5,
+      8,
+      13
+     ]
+    ],
+    "LUK": [
+     [
+      7,
+      1,
+      7,
+      10
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s55",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        8,
+        5,
+        8,
+        13
+       ]
+      ],
+      "LUK": [
+       [
+        7,
+        1,
+        7,
+        10
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 9,
+      "LUK": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s56",
+   "n": "56",
+   "part": "p7",
+   "sourceTitle": "HE RAISES A WIDOW'S SON AT NAIN",
+   "refs": {
+    "LUK": [
+     [
+      7,
+      11,
+      7,
+      17
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s56",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        7,
+        11,
+        7,
+        17
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s57",
+   "n": "57",
+   "part": "p7",
+   "sourceTitle": "THE MESSAGE FROM THE BAPTIST AND THE EULOGY OF JESUS",
+   "refs": {
+    "MAT": [
+     [
+      11,
+      2,
+      11,
+      19
+     ]
+    ],
+    "LUK": [
+     [
+      7,
+      18,
+      7,
+      35
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s57",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        11,
+        2,
+        11,
+        19
+       ]
+      ],
+      "LUK": [
+       [
+        7,
+        18,
+        7,
+        35
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 18,
+      "LUK": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "s58",
+   "n": "58",
+   "part": "p7",
+   "sourceTitle": "WOES UPON THE CITIES OF OPPORTUNITY. THE CLAIMS OF CHRIST AS THE TEACHER ABOUT THE FATHER",
+   "refs": {
+    "MAT": [
+     [
+      11,
+      20,
+      11,
+      30
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s58",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        11,
+        20,
+        11,
+        30
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 11
+     }
+    }
+   ]
+  },
+  {
+   "id": "s59",
+   "n": "59",
+   "part": "p7",
+   "sourceTitle": "THE ANOINTING OF CHRIST'S FEET BY A SINFUL WOMAN IN THE HOUSE OF SIMON A PHARISEE. THE PARABLE OF THE TWO DEBTORS",
+   "refs": {
+    "LUK": [
+     [
+      7,
+      36,
+      7,
+      50
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s59",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        7,
+        36,
+        7,
+        50
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "s60",
+   "n": "60",
+   "part": "p7",
+   "sourceTitle": "THE SECOND TOUR OF GALILEE",
+   "refs": {
+    "LUK": [
+     [
+      8,
+      1,
+      8,
+      3
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s60",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        8,
+        1,
+        8,
+        3
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s61",
+   "n": "61",
+   "part": "p7",
+   "sourceTitle": "BLASPHEMOUS ACCUSATION OF LEAGUE WITH BEELZEBUB",
+   "refs": {
+    "MRK": [
+     [
+      3,
+      19,
+      3,
+      30
+     ]
+    ],
+    "MAT": [
+     [
+      12,
+      22,
+      12,
+      37
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s61",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        3,
+        19,
+        3,
+        30
+       ]
+      ],
+      "MAT": [
+       [
+        12,
+        22,
+        12,
+        37
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 12,
+      "MAT": 16
+     }
+    }
+   ]
+  },
+  {
+   "id": "s62",
+   "n": "62",
+   "part": "p7",
+   "sourceTitle": "SCRIBES AND PHARISEES DEMAND A SIGN",
+   "refs": {
+    "MAT": [
+     [
+      12,
+      38,
+      12,
+      45
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s62",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        12,
+        38,
+        12,
+        45
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s63",
+   "n": "63",
+   "part": "p7",
+   "sourceTitle": "CHRIST'S MOTHER AND BRETHREN SEEK TO TAKE HIM HOME",
+   "refs": {
+    "MRK": [
+     [
+      3,
+      31,
+      3,
+      35
+     ]
+    ],
+    "MAT": [
+     [
+      12,
+      46,
+      12,
+      50
+     ]
+    ],
+    "LUK": [
+     [
+      8,
+      19,
+      8,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s63",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        3,
+        31,
+        3,
+        35
+       ]
+      ],
+      "MAT": [
+       [
+        12,
+        46,
+        12,
+        50
+       ]
+      ],
+      "LUK": [
+       [
+        8,
+        19,
+        8,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 5,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s64",
+   "n": "64",
+   "part": "p7",
+   "sourceTitle": "THE FIRST GREAT GROUP OF PARABLES",
+   "refs": {
+    "MRK": [
+     [
+      4,
+      1,
+      4,
+      34
+     ]
+    ],
+    "MAT": [
+     [
+      13,
+      1,
+      13,
+      53
+     ]
+    ],
+    "LUK": [
+     [
+      8,
+      4,
+      8,
+      18
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s64-1",
+     "sourceTitle": "Introduction to the Group",
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        4,
+        1,
+        4,
+        2
+       ]
+      ],
+      "MAT": [
+       [
+        13,
+        1,
+        13,
+        3
+       ]
+      ],
+      "LUK": [
+       [
+        8,
+        4,
+        8,
+        4
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 3,
+      "LUK": 1
+     }
+    },
+    {
+     "id": "s64-2",
+     "sourceTitle": "(a) Parable of the Sower",
+     "group": "1: To the Crowds by the Sea",
+     "refs": {
+      "MRK": [
+       [
+        4,
+        3,
+        4,
+        25
+       ]
+      ],
+      "MAT": [
+       [
+        13,
+        3,
+        13,
+        23
+       ]
+      ],
+      "LUK": [
+       [
+        8,
+        5,
+        8,
+        18
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 23,
+      "MAT": 21,
+      "LUK": 14
+     }
+    },
+    {
+     "id": "s64-3",
+     "sourceTitle": "(b) Parable of the Seed Growing of Itself",
+     "group": "1: To the Crowds by the Sea",
+     "refs": {
+      "MRK": [
+       [
+        4,
+        26,
+        4,
+        29
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4
+     }
+    },
+    {
+     "id": "s64-4",
+     "sourceTitle": "(c) Parable of the Tares",
+     "group": "1: To the Crowds by the Sea",
+     "refs": {
+      "MAT": [
+       [
+        13,
+        24,
+        13,
+        30
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 7
+     }
+    },
+    {
+     "id": "s64-5",
+     "sourceTitle": "(d) Parable of the Mustard Seed",
+     "group": "1: To the Crowds by the Sea",
+     "refs": {
+      "MRK": [
+       [
+        4,
+        30,
+        4,
+        32
+       ]
+      ],
+      "MAT": [
+       [
+        13,
+        31,
+        13,
+        32
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 3,
+      "MAT": 2
+     }
+    },
+    {
+     "id": "s64-6",
+     "sourceTitle": "(e) Parable of the Leaven and Many Such Parables",
+     "group": "1: To the Crowds by the Sea",
+     "refs": {
+      "MRK": [
+       [
+        4,
+        33,
+        4,
+        34
+       ]
+      ],
+      "MAT": [
+       [
+        13,
+        33,
+        13,
+        35
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 3
+     }
+    },
+    {
+     "id": "s64-7",
+     "sourceTitle": "(a) Explanation of the Parable of the Tares",
+     "group": "2. To the Disciples in the House",
+     "refs": {
+      "MAT": [
+       [
+        13,
+        36,
+        13,
+        43
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 8
+     }
+    },
+    {
+     "id": "s64-8",
+     "sourceTitle": "(b) The Parable of the Hid Treasure",
+     "group": "2. To the Disciples in the House",
+     "refs": {
+      "MAT": [
+       [
+        13,
+        44,
+        13,
+        44
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 1
+     }
+    },
+    {
+     "id": "s64-9",
+     "sourceTitle": "(c) The Parable of the Pearl of Great Price",
+     "group": "2. To the Disciples in the House",
+     "refs": {
+      "MAT": [
+       [
+        13,
+        45,
+        13,
+        46
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 2
+     }
+    },
+    {
+     "id": "s64-10",
+     "sourceTitle": "(d) The Parable of the Net",
+     "group": "2. To the Disciples in the House",
+     "refs": {
+      "MAT": [
+       [
+        13,
+        47,
+        13,
+        50
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 4
+     }
+    },
+    {
+     "id": "s64-11",
+     "sourceTitle": "(e) The Parable of the Householder",
+     "group": "2. To the Disciples in the House",
+     "refs": {
+      "MAT": [
+       [
+        13,
+        51,
+        13,
+        53
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s65",
+   "n": "65",
+   "part": "p7",
+   "sourceTitle": "IN CROSSING THE LAKE, JESUS STILLS THE TEMPEST",
+   "refs": {
+    "MRK": [
+     [
+      4,
+      35,
+      4,
+      41
+     ]
+    ],
+    "MAT": [
+     [
+      8,
+      18,
+      8,
+      18
+     ],
+     [
+      8,
+      23,
+      8,
+      27
+     ]
+    ],
+    "LUK": [
+     [
+      8,
+      22,
+      8,
+      25
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s65",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        4,
+        35,
+        4,
+        41
+       ]
+      ],
+      "MAT": [
+       [
+        8,
+        18,
+        8,
+        18
+       ],
+       [
+        8,
+        23,
+        8,
+        27
+       ]
+      ],
+      "LUK": [
+       [
+        8,
+        22,
+        8,
+        25
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 6,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s66",
+   "n": "66",
+   "part": "p7",
+   "sourceTitle": "BEYOND THE LAKE JESUS HEALS THE GERASENE DEMONIAC",
+   "refs": {
+    "MRK": [
+     [
+      5,
+      1,
+      5,
+      20
+     ]
+    ],
+    "MAT": [
+     [
+      8,
+      28,
+      8,
+      34
+     ]
+    ],
+    "LUK": [
+     [
+      8,
+      26,
+      8,
+      39
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s66",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        5,
+        1,
+        5,
+        20
+       ]
+      ],
+      "MAT": [
+       [
+        8,
+        28,
+        8,
+        34
+       ]
+      ],
+      "LUK": [
+       [
+        8,
+        26,
+        8,
+        39
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 20,
+      "MAT": 7,
+      "LUK": 14
+     }
+    }
+   ]
+  },
+  {
+   "id": "s67",
+   "n": "67",
+   "part": "p7",
+   "sourceTitle": "THE RETURN AND THE HEALING OF JAIRUS' DAUGHTER AND OF THE WOMAN WHO ONLY TOUCHED CHRIST'S GARMENT",
+   "refs": {
+    "MRK": [
+     [
+      5,
+      21,
+      5,
+      43
+     ]
+    ],
+    "MAT": [
+     [
+      9,
+      18,
+      9,
+      26
+     ]
+    ],
+    "LUK": [
+     [
+      8,
+      40,
+      8,
+      56
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s67",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        5,
+        21,
+        5,
+        43
+       ]
+      ],
+      "MAT": [
+       [
+        9,
+        18,
+        9,
+        26
+       ]
+      ],
+      "LUK": [
+       [
+        8,
+        40,
+        8,
+        56
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 23,
+      "MAT": 9,
+      "LUK": 17
+     }
+    }
+   ]
+  },
+  {
+   "id": "s68",
+   "n": "68",
+   "part": "p7",
+   "sourceTitle": "HE HEALS TWO BLIND MEN AND A DUMB DEMONIAC, A BLASPHEMOUS ACCUSATION",
+   "refs": {
+    "MAT": [
+     [
+      9,
+      27,
+      9,
+      34
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s68",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        9,
+        27,
+        9,
+        34
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s69",
+   "n": "69",
+   "part": "p7",
+   "sourceTitle": "THE LAST VISIT TO NAZARETH",
+   "refs": {
+    "MRK": [
+     [
+      6,
+      1,
+      6,
+      6
+     ]
+    ],
+    "MAT": [
+     [
+      13,
+      54,
+      13,
+      58
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s69",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        6,
+        1,
+        6,
+        6
+       ]
+      ],
+      "MAT": [
+       [
+        13,
+        54,
+        13,
+        58
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 6,
+      "MAT": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s70",
+   "n": "70",
+   "part": "p7",
+   "sourceTitle": "THE THIRD TOUR OF GALILEE AFTER INSTRUCTING THE TWELVE AND SENDING THEM FORTH BY TWOS",
+   "refs": {
+    "MRK": [
+     [
+      6,
+      6,
+      6,
+      13
+     ]
+    ],
+    "MAT": [
+     [
+      9,
+      35,
+      11,
+      1
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      1,
+      9,
+      6
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s70",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        6,
+        6,
+        6,
+        13
+       ]
+      ],
+      "MAT": [
+       [
+        9,
+        35,
+        11,
+        1
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        1,
+        9,
+        6
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 8,
+      "MAT": 47,
+      "LUK": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s71",
+   "n": "71",
+   "part": "p7",
+   "sourceTitle": "THE GUILTY FEARS OF HEROD ANTIPAS IN TIBERIAS ABOUT JESUS BECAUSE HE HAD BEHEADED THE BAPTIST IN MACHAERUS",
+   "refs": {
+    "MRK": [
+     [
+      6,
+      14,
+      6,
+      29
+     ]
+    ],
+    "MAT": [
+     [
+      14,
+      1,
+      14,
+      12
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      7,
+      9,
+      9
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s71",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        6,
+        14,
+        6,
+        29
+       ]
+      ],
+      "MAT": [
+       [
+        14,
+        1,
+        14,
+        12
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        7,
+        9,
+        9
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 16,
+      "MAT": 12,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s72",
+   "n": "72",
+   "part": "p8",
+   "sourceTitle": "THE FIRST RETIREMENT. THE TWELVE RETURN, AND JESUS RETIRES WITH THEM BEYOND THE LAKE TO REST. FEEDING OF THE FIVE THOUSAND",
+   "refs": {
+    "MRK": [
+     [
+      6,
+      30,
+      6,
+      44
+     ]
+    ],
+    "MAT": [
+     [
+      14,
+      13,
+      14,
+      21
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      10,
+      9,
+      17
+     ]
+    ],
+    "JHN": [
+     [
+      6,
+      1,
+      6,
+      13
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s72",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        6,
+        30,
+        6,
+        44
+       ]
+      ],
+      "MAT": [
+       [
+        14,
+        13,
+        14,
+        21
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        10,
+        9,
+        17
+       ]
+      ],
+      "JHN": [
+       [
+        6,
+        1,
+        6,
+        13
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 15,
+      "MAT": 9,
+      "LUK": 8,
+      "JHN": 13
+     }
+    }
+   ]
+  },
+  {
+   "id": "s73",
+   "n": "73",
+   "part": "p8",
+   "sourceTitle": "THE PREVENTION OF THE REVOLUTIONARY PURPOSE TO PROCLAIM JESUS KING (A POLITICAL MESSIAH)",
+   "refs": {
+    "MRK": [
+     [
+      6,
+      45,
+      6,
+      46
+     ]
+    ],
+    "MAT": [
+     [
+      14,
+      22,
+      14,
+      23
+     ]
+    ],
+    "JHN": [
+     [
+      6,
+      14,
+      6,
+      15
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s73",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        6,
+        45,
+        6,
+        46
+       ]
+      ],
+      "MAT": [
+       [
+        14,
+        22,
+        14,
+        23
+       ]
+      ],
+      "JHN": [
+       [
+        6,
+        14,
+        6,
+        15
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 2,
+      "JHN": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s74",
+   "n": "74",
+   "part": "p8",
+   "sourceTitle": "THE PERIL TO THE TWELVE IN THE STORM AT SEA AND CHRIST'S COMING TO THEM ON THE WATER IN THE DARKNESS",
+   "refs": {
+    "MRK": [
+     [
+      6,
+      47,
+      6,
+      52
+     ]
+    ],
+    "MAT": [
+     [
+      14,
+      24,
+      14,
+      33
+     ]
+    ],
+    "JHN": [
+     [
+      6,
+      16,
+      6,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s74",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        6,
+        47,
+        6,
+        52
+       ]
+      ],
+      "MAT": [
+       [
+        14,
+        24,
+        14,
+        33
+       ]
+      ],
+      "JHN": [
+       [
+        6,
+        16,
+        6,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 6,
+      "MAT": 10,
+      "JHN": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s75",
+   "n": "75",
+   "part": "p8",
+   "sourceTitle": "THE RECEPTION AT GENNESARET",
+   "refs": {
+    "MRK": [
+     [
+      6,
+      53,
+      6,
+      56
+     ]
+    ],
+    "MAT": [
+     [
+      14,
+      34,
+      14,
+      36
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s75",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        6,
+        53,
+        6,
+        56
+       ]
+      ],
+      "MAT": [
+       [
+        14,
+        34,
+        14,
+        36
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s76",
+   "n": "76",
+   "part": "p8",
+   "sourceTitle": "THE COLLAPSE OF THE GALILEAN CAMPAIGN BECAUSE JESUS WILL NOT CONFORM TO POPULAR MESSIANIC EXPECTATIONS",
+   "refs": {
+    "JHN": [
+     [
+      6,
+      22,
+      6,
+      71
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s76",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        6,
+        22,
+        6,
+        71
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 50
+     }
+    }
+   ]
+  },
+  {
+   "id": "s77",
+   "n": "77",
+   "part": "p8",
+   "sourceTitle": "PHARISEES FROM JERUSALEM REPROACH JESUS FOR ALLOWING HIS DISCIPLES TO DISREGARD THEIR TRADITIONS ABOUT CEREMONIAL DEFILEMENT OF THE HANDS. A PUZZLING PARABLE IN REPLY",
+   "refs": {
+    "MRK": [
+     [
+      7,
+      1,
+      7,
+      23
+     ]
+    ],
+    "MAT": [
+     [
+      15,
+      1,
+      15,
+      20
+     ]
+    ],
+    "JHN": [
+     [
+      7,
+      1,
+      7,
+      1
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s77",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        7,
+        1,
+        7,
+        23
+       ]
+      ],
+      "MAT": [
+       [
+        15,
+        1,
+        15,
+        20
+       ]
+      ],
+      "JHN": [
+       [
+        7,
+        1,
+        7,
+        1
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 23,
+      "MAT": 20,
+      "JHN": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s78",
+   "n": "78",
+   "part": "p8",
+   "sourceTitle": "THE SECOND WITHDRAWAL TO THE REGION OF TYRE AND SIDON AND THE HEALING OF THE DAUGHTER OF A SYRO-PHOENICIAN WOMAN",
+   "refs": {
+    "MRK": [
+     [
+      7,
+      24,
+      7,
+      30
+     ]
+    ],
+    "MAT": [
+     [
+      15,
+      21,
+      15,
+      28
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s78",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        7,
+        24,
+        7,
+        30
+       ]
+      ],
+      "MAT": [
+       [
+        15,
+        21,
+        15,
+        28
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s79",
+   "n": "79",
+   "part": "p8",
+   "sourceTitle": "THE THIRD WITHDRAWAL NORTH THROUGH PHOENICIA AND EAST TOWARDS HERMON AND SOUTH INTO DECAPOLIS (KEEPING OUT OF THE TERRITORY OF HEROD ANTIPAS) WITH THE HEALING OF THE DEAF AND DUMB MAN AND THE FEEDING OF THE FOUR THOUSAND",
+   "refs": {
+    "MRK": [
+     [
+      7,
+      31,
+      8,
+      9
+     ]
+    ],
+    "MAT": [
+     [
+      15,
+      29,
+      15,
+      38
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s79",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        7,
+        31,
+        8,
+        9
+       ]
+      ],
+      "MAT": [
+       [
+        15,
+        29,
+        15,
+        38
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 16,
+      "MAT": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s80",
+   "n": "80",
+   "part": "p8",
+   "sourceTitle": "THE BRIEF VISIT TO MAGADAN (DALMANUTHA) IN GALILEE AND THE SHARP ATTACK BY THE PHARISEES AND SADDUCEES. (NOTE THEIR APPEARANCE NOW AGAINST JESUS)",
+   "refs": {
+    "MRK": [
+     [
+      8,
+      10,
+      8,
+      12
+     ]
+    ],
+    "MAT": [
+     [
+      15,
+      39,
+      16,
+      4
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s80",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        8,
+        10,
+        8,
+        12
+       ]
+      ],
+      "MAT": [
+       [
+        15,
+        39,
+        16,
+        4
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 3,
+      "MAT": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s81",
+   "n": "81",
+   "part": "p8",
+   "sourceTitle": "THE FOURTH RETIREMENT TO BETHSAIDA JULIAS IN THE TETRARCHY OF HEROD PHILIP WITH SHARP REBUKE OF THE DULNESS OF THE DISCIPLES ON THE WAY ACROSS AND THE HEALING OF A BLIND MAN IN BETHSAIDA",
+   "refs": {
+    "MRK": [
+     [
+      8,
+      13,
+      8,
+      26
+     ]
+    ],
+    "MAT": [
+     [
+      16,
+      5,
+      16,
+      12
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s81",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        8,
+        13,
+        8,
+        26
+       ]
+      ],
+      "MAT": [
+       [
+        16,
+        5,
+        16,
+        12
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 14,
+      "MAT": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s82",
+   "n": "82",
+   "part": "p8",
+   "sourceTitle": "NEAR CAESAREA PHILIPPI JESUS TESTS THE FAITH OF THE TWELVE IN HIS MESSIAHSHIP",
+   "refs": {
+    "MRK": [
+     [
+      8,
+      27,
+      8,
+      30
+     ]
+    ],
+    "MAT": [
+     [
+      16,
+      13,
+      16,
+      20
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      18,
+      9,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s82",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        8,
+        27,
+        8,
+        30
+       ]
+      ],
+      "MAT": [
+       [
+        16,
+        13,
+        16,
+        20
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        18,
+        9,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 8,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s83",
+   "n": "83",
+   "part": "p8",
+   "sourceTitle": "JESUS DISTINCTLY FORETELLS THAT HE, THE MESSIAH, WILL BE REJECTED AND KILLED AND WILL RISE THE THIRD DAY",
+   "refs": {
+    "MRK": [
+     [
+      8,
+      31,
+      8,
+      37
+     ]
+    ],
+    "MAT": [
+     [
+      16,
+      21,
+      16,
+      26
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      22,
+      9,
+      25
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s83",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        8,
+        31,
+        8,
+        37
+       ]
+      ],
+      "MAT": [
+       [
+        16,
+        21,
+        16,
+        26
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        22,
+        9,
+        25
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 6,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s84",
+   "n": "84",
+   "part": "p8",
+   "sourceTitle": "THE COMING OF THE SON OF MAN IN THAT GENERATION",
+   "refs": {
+    "MRK": [
+     [
+      8,
+      38,
+      9,
+      1
+     ]
+    ],
+    "MAT": [
+     [
+      16,
+      27,
+      16,
+      28
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      26,
+      9,
+      27
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s84",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        8,
+        38,
+        9,
+        1
+       ]
+      ],
+      "MAT": [
+       [
+        16,
+        27,
+        16,
+        28
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        26,
+        9,
+        27
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 2,
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s85",
+   "n": "85",
+   "part": "p8",
+   "sourceTitle": "THE TRANSFIGURATION OF JESUS ON A MOUNTAIN (PROBABLY HERMON) NEAR CAESAREA PHILIPPI",
+   "refs": {
+    "MRK": [
+     [
+      9,
+      2,
+      9,
+      8
+     ]
+    ],
+    "MAT": [
+     [
+      17,
+      1,
+      17,
+      8
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      28,
+      9,
+      36
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s85",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        9,
+        2,
+        9,
+        8
+       ]
+      ],
+      "MAT": [
+       [
+        17,
+        1,
+        17,
+        8
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        28,
+        9,
+        36
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 8,
+      "LUK": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "s86",
+   "n": "86",
+   "part": "p8",
+   "sourceTitle": "THE PUZZLE OF THE THREE DISCIPLES ABOUT THE RESURRECTION AND ABOUT ELIJAH ON THEIR WAY DOWN THE MOUNTAIN",
+   "refs": {
+    "MRK": [
+     [
+      9,
+      9,
+      9,
+      13
+     ]
+    ],
+    "MAT": [
+     [
+      17,
+      9,
+      17,
+      13
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      36,
+      9,
+      36
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s86",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        9,
+        9,
+        9,
+        13
+       ]
+      ],
+      "MAT": [
+       [
+        17,
+        9,
+        17,
+        13
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        36,
+        9,
+        36
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 5,
+      "LUK": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s87",
+   "n": "87",
+   "part": "p8",
+   "sourceTitle": "THE DEMONIAC BOY, WHOM THE DISCIPLES COULD NOT HEAL",
+   "refs": {
+    "MRK": [
+     [
+      9,
+      14,
+      9,
+      29
+     ]
+    ],
+    "MAT": [
+     [
+      17,
+      14,
+      17,
+      21
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      37,
+      9,
+      43
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s87",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        9,
+        14,
+        9,
+        29
+       ]
+      ],
+      "MAT": [
+       [
+        17,
+        14,
+        17,
+        21
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        37,
+        9,
+        43
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 16,
+      "MAT": 8,
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s88",
+   "n": "88",
+   "part": "p8",
+   "sourceTitle": "RETURNING PRIVATELY THROUGH GALILEE, HE AGAIN FORETELLS HIS DEATH AND RESURRECTION",
+   "refs": {
+    "MRK": [
+     [
+      9,
+      30,
+      9,
+      32
+     ]
+    ],
+    "MAT": [
+     [
+      17,
+      22,
+      17,
+      23
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      43,
+      9,
+      45
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s88",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        9,
+        30,
+        9,
+        32
+       ]
+      ],
+      "MAT": [
+       [
+        17,
+        22,
+        17,
+        23
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        43,
+        9,
+        45
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 3,
+      "MAT": 2,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s89",
+   "n": "89",
+   "part": "p8",
+   "sourceTitle": "JESUS, THE MESSIAH, PAYS THE HALF-SHEKEL FOR THE TEMPLE",
+   "refs": {
+    "MAT": [
+     [
+      17,
+      24,
+      17,
+      27
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s89",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        17,
+        24,
+        17,
+        27
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s90",
+   "n": "90",
+   "part": "p8",
+   "sourceTitle": "THE TWELVE CONTEND AS TO WHO SHALL BE THE GREATEST UNDER THE MESSIAH'S REIGN. HIS SUBJECTS MUST BE CHILDLIKE",
+   "refs": {
+    "MRK": [
+     [
+      9,
+      33,
+      9,
+      37
+     ]
+    ],
+    "MAT": [
+     [
+      18,
+      1,
+      18,
+      5
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      46,
+      9,
+      48
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s90",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        9,
+        33,
+        9,
+        37
+       ]
+      ],
+      "MAT": [
+       [
+        18,
+        1,
+        18,
+        5
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        46,
+        9,
+        48
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 5,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s91",
+   "n": "91",
+   "part": "p8",
+   "sourceTitle": "THE MISTAKEN ZEAL OF THE APOSTLE JOHN REBUKED BY JESUS IN PERTINENT PARABLES",
+   "refs": {
+    "MRK": [
+     [
+      9,
+      38,
+      9,
+      50
+     ]
+    ],
+    "MAT": [
+     [
+      18,
+      6,
+      18,
+      14
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      49,
+      9,
+      50
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s91",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        9,
+        38,
+        9,
+        50
+       ]
+      ],
+      "MAT": [
+       [
+        18,
+        6,
+        18,
+        14
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        49,
+        9,
+        50
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 13,
+      "MAT": 9,
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s92",
+   "n": "92",
+   "part": "p8",
+   "sourceTitle": "RIGHT TREATMENT OF A BROTHER WHO HAS SINNED AGAINST ONE, AND DUTY OF PATIENTLY FORGIVING A BROTHER (PARABLE OF THE UNMERCIFUL SERVANT)",
+   "refs": {
+    "MAT": [
+     [
+      18,
+      15,
+      18,
+      35
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s92",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        18,
+        15,
+        18,
+        35
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 21
+     }
+    }
+   ]
+  },
+  {
+   "id": "s93",
+   "n": "93",
+   "part": "p8",
+   "sourceTitle": "THE MESSIAH'S FOLLOWERS MUST GIVE UP EVERYTHING FOR HIS SERVICE",
+   "refs": {
+    "MAT": [
+     [
+      8,
+      19,
+      8,
+      22
+     ]
+    ],
+    "LUK": [
+     [
+      9,
+      57,
+      9,
+      62
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s93",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        8,
+        19,
+        8,
+        22
+       ]
+      ],
+      "LUK": [
+       [
+        9,
+        57,
+        9,
+        62
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 4,
+      "LUK": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s94",
+   "n": "94",
+   "part": "p8",
+   "sourceTitle": "THE UNBELIEVING BROTHERS OF JESUS COUNSEL HIM TO EXHIBIT HIMSELF IN JUDEA, AND HE REJECTS THE ADVICE",
+   "refs": {
+    "JHN": [
+     [
+      7,
+      2,
+      7,
+      9
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s94",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        7,
+        2,
+        7,
+        9
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s95",
+   "n": "95",
+   "part": "p8",
+   "sourceTitle": "HE GOES PRIVATELY TO JERUSALEM THROUGH SAMARIA",
+   "refs": {
+    "LUK": [
+     [
+      9,
+      51,
+      9,
+      56
+     ]
+    ],
+    "JHN": [
+     [
+      7,
+      10,
+      7,
+      10
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s95",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        9,
+        51,
+        9,
+        56
+       ]
+      ],
+      "JHN": [
+       [
+        7,
+        10,
+        7,
+        10
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 6,
+      "JHN": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s96",
+   "n": "96",
+   "part": "p9",
+   "sourceTitle": "THE COMING OF JESUS TO THE FEAST OF TABERNACLES CREATES INTENSE EXCITEMENT CONCERNING THE MESSIAHSHIP",
+   "refs": {
+    "JHN": [
+     [
+      7,
+      11,
+      7,
+      52
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s96",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        7,
+        11,
+        7,
+        52
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 42
+     }
+    }
+   ]
+  },
+  {
+   "id": "s97",
+   "n": "97",
+   "part": "p9",
+   "sourceTitle": "STORY OF AN ADULTEROUS WOMAN BROUGHT TO JESUS FOR JUDGMENT",
+   "refs": {
+    "JHN": [
+     [
+      7,
+      53,
+      8,
+      11
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s97",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        7,
+        53,
+        8,
+        11
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 12
+     }
+    }
+   ]
+  },
+  {
+   "id": "s98",
+   "n": "98",
+   "part": "p9",
+   "sourceTitle": "AFTER THE FEAST OF TABERNACLES IN THE TEMPLE JESUS ANGERS THE PHARISEES BY CLAIMING TO BE THE LIGHT OF THE WORLD",
+   "refs": {
+    "JHN": [
+     [
+      8,
+      12,
+      8,
+      20
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s98",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        8,
+        12,
+        8,
+        20
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "s99",
+   "n": "99",
+   "part": "p9",
+   "sourceTitle": "THE PHARISEES ATTEMPT TO STONE JESUS WHEN HE EXPOSES THEIR SINFULNESS",
+   "refs": {
+    "JHN": [
+     [
+      8,
+      21,
+      8,
+      59
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s99",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        8,
+        21,
+        8,
+        59
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 39
+     }
+    }
+   ]
+  },
+  {
+   "id": "s100",
+   "n": "100",
+   "part": "p9",
+   "sourceTitle": "JESUS HEALS A MAN BORN BLIND WHO OUTWITS THE PHARISEES. THE RULERS FORBID THE RECOGNITION OF JESUS AS THE MESSIAH. THE CONVERSION OF THE HEALED MAN",
+   "refs": {
+    "JHN": [
+     [
+      9,
+      1,
+      9,
+      41
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s100",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        9,
+        1,
+        9,
+        41
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 41
+     }
+    }
+   ]
+  },
+  {
+   "id": "s101",
+   "n": "101",
+   "part": "p9",
+   "sourceTitle": "IN THE PARABLE (ALLEGORY) OF THE GOOD SHEPHERD JESUS DRAWS THE PICTURE OF THE HOSTILE PHARISEES AND INTIMATES THAT HE IS GOING TO DIE FOR HIS FLOCK AND COME TO LIFE AGAIN",
+   "refs": {
+    "JHN": [
+     [
+      10,
+      1,
+      10,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s101",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        10,
+        1,
+        10,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 21
+     }
+    }
+   ]
+  },
+  {
+   "id": "s102",
+   "n": "102",
+   "part": "p9",
+   "sourceTitle": "THE MISSION OF THE SEVENTY. CHRIST'S JOY IN THEIR WORK ON THEIR RETURN",
+   "refs": {
+    "LUK": [
+     [
+      10,
+      1,
+      10,
+      24
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s102",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        10,
+        1,
+        10,
+        24
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 24
+     }
+    }
+   ]
+  },
+  {
+   "id": "s103",
+   "n": "103",
+   "part": "p9",
+   "sourceTitle": "JESUS ANSWERS A LAWYER'S QUESTION AS TO ETERNAL LIFE, GIVING THE PARABLE OF THE GOOD SAMARITAN",
+   "refs": {
+    "LUK": [
+     [
+      10,
+      25,
+      10,
+      37
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s103",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        10,
+        25,
+        10,
+        37
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 13
+     }
+    }
+   ]
+  },
+  {
+   "id": "s104",
+   "n": "104",
+   "part": "p9",
+   "sourceTitle": "JESUS THE GUEST OF MARTHA AND MARY",
+   "refs": {
+    "LUK": [
+     [
+      10,
+      38,
+      10,
+      42
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s104",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        10,
+        38,
+        10,
+        42
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s105",
+   "n": "105",
+   "part": "p9",
+   "sourceTitle": "JESUS AGAIN GIVES A MODEL OF PRAYER (COMP. SECT. 54) AND ENCOURAGES HIS DISCIPLES TO PRAY. PARABLE OF THE IMPORTUNATE FRIEND",
+   "refs": {
+    "LUK": [
+     [
+      11,
+      1,
+      11,
+      13
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s105",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        11,
+        1,
+        11,
+        13
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 13
+     }
+    }
+   ]
+  },
+  {
+   "id": "s106",
+   "n": "106",
+   "part": "p9",
+   "sourceTitle": "BLASPHEMOUS ACCUSATION OF LEAGUE WITH BEELZEBUB",
+   "refs": {
+    "LUK": [
+     [
+      11,
+      14,
+      11,
+      36
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s106",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        11,
+        14,
+        11,
+        36
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 23
+     }
+    }
+   ]
+  },
+  {
+   "id": "s107",
+   "n": "107",
+   "part": "p9",
+   "sourceTitle": "WHILE BREAKFASTING WITH A PHARISEE, JESUS SEVERELY DENOUNCES THE PHARISEES AND LAWYERS AND EXCITES THEIR ENMITY",
+   "refs": {
+    "LUK": [
+     [
+      11,
+      37,
+      11,
+      54
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s107",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        11,
+        37,
+        11,
+        54
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "s108",
+   "n": "108",
+   "part": "p9",
+   "sourceTitle": "HE SPEAKS TO HIS DISCIPLES AND A VAST THRONG ABOUT HYPOCRISY, COVETOUSNESS (PARABLE OF THE RICH FOOL), WORLDLY ANXIETIES, WATCHFULNESS (PARABLE OF THE WAITING SERVANTS AND OF THE WISE STEWARD), AND HIS OWN APPROACHING PASSION",
+   "refs": {
+    "LUK": [
+     [
+      12,
+      1,
+      12,
+      59
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s108",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        12,
+        1,
+        12,
+        59
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 59
+     }
+    }
+   ]
+  },
+  {
+   "id": "s109",
+   "n": "109",
+   "part": "p9",
+   "sourceTitle": "ALL MUST REPENT OR PERISH. (TWO CURRENT TRAGEDIES); PARABLE OF THE BARREN FIG TREE",
+   "refs": {
+    "LUK": [
+     [
+      13,
+      1,
+      13,
+      9
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s109",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        13,
+        1,
+        13,
+        9
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "s110",
+   "n": "110",
+   "part": "p9",
+   "sourceTitle": "JESUS HEALS A CRIPPLED WOMAN ON THE SABBATH AND DEFENDS HIMSELF AGAINST THE RULER OF THE SYNAGOGUE. (CF. SECTS. 49-51 AND 114.) REPETITION OF THE PARABLES OF THE MUSTARD SEED AND OF THE LEAVEN",
+   "refs": {
+    "LUK": [
+     [
+      13,
+      10,
+      13,
+      21
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s110",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        13,
+        10,
+        13,
+        21
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 12
+     }
+    }
+   ]
+  },
+  {
+   "id": "s111",
+   "n": "111",
+   "part": "p9",
+   "sourceTitle": "AT THE FEAST OF DEDICATION JESUS WILL NOT YET OPENLY SAY THAT HE IS THE MESSIAH. THE JEWS TRY TO STONE HIM",
+   "refs": {
+    "JHN": [
+     [
+      10,
+      22,
+      10,
+      39
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s111",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        10,
+        22,
+        10,
+        39
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "s112",
+   "n": "112",
+   "part": "p10",
+   "sourceTitle": "THE WITHDRAWAL FROM JERUSALEM TO BETHANY BEYOND JORDAN",
+   "refs": {
+    "JHN": [
+     [
+      10,
+      40,
+      10,
+      42
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s112",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        10,
+        40,
+        10,
+        42
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s113",
+   "n": "113",
+   "part": "p10",
+   "sourceTitle": "TEACHING IN PEREA, ON A JOURNEY TOWARD JERUSALEM, WARNED AGAINST HEROD ANTIPAS",
+   "refs": {
+    "LUK": [
+     [
+      13,
+      22,
+      13,
+      35
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s113",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        13,
+        22,
+        13,
+        35
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 14
+     }
+    }
+   ]
+  },
+  {
+   "id": "s114",
+   "n": "114",
+   "part": "p10",
+   "sourceTitle": "WHILE DINING (BREAKFASTING) WITH A CHIEF PHARISEE, HE AGAIN HEALS ON THE SABBATH AND DEFENDS HIMSELF (COMP. SECTS. 49 TO 51 AND 110) THREE PARABLES SUGGESTED BY THE OCCASION",
+   "refs": {
+    "LUK": [
+     [
+      14,
+      1,
+      14,
+      24
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s114",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        14,
+        1,
+        14,
+        24
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 24
+     }
+    }
+   ]
+  },
+  {
+   "id": "s115",
+   "n": "115",
+   "part": "p10",
+   "sourceTitle": "GREAT CROWDS FOLLOW HIM, AND HE WARNS THEM TO COUNT THE COST OF DISCIPLESHIP TO HIM (COMP. SECTS. 70 AND 83)",
+   "refs": {
+    "LUK": [
+     [
+      14,
+      25,
+      14,
+      35
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s115",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        14,
+        25,
+        14,
+        35
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 11
+     }
+    }
+   ]
+  },
+  {
+   "id": "s116",
+   "n": "116",
+   "part": "p10",
+   "sourceTitle": "THE PHARISEES AND THE SCRIBES MURMUR AGAINST JESUS FOR RECEIVING SINNERS. HE DEFENDS HIMSELF BY THREE GREAT PARABLES (THE LOST SHEEP, THE LOST COIN, THE LOST SON)",
+   "refs": {
+    "LUK": [
+     [
+      15,
+      1,
+      15,
+      32
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s116",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        15,
+        1,
+        15,
+        32
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 32
+     }
+    }
+   ]
+  },
+  {
+   "id": "s117",
+   "n": "117",
+   "part": "p10",
+   "sourceTitle": "THREE PARABLES ON STEWARDSHIP (TO THE DISCIPLES, THE PARABLE OF THE UNJUST STEWARD; TO THE PHARISEES, THE PARABLE OF THE RICH MAN AND LAZARUS; TO THE DISCIPLES, THE PARABLE OF THE UNPROFITABLE SERVANTS)",
+   "refs": {
+    "LUK": [
+     [
+      16,
+      1,
+      17,
+      10
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s117",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        16,
+        1,
+        17,
+        10
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 41
+     }
+    }
+   ]
+  },
+  {
+   "id": "s118",
+   "n": "118",
+   "part": "p10",
+   "sourceTitle": "JESUS RAISES LAZARUS FROM THE DEAD",
+   "refs": {
+    "JHN": [
+     [
+      11,
+      1,
+      11,
+      44
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s118",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        11,
+        1,
+        11,
+        44
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 44
+     }
+    }
+   ]
+  },
+  {
+   "id": "s119",
+   "n": "119",
+   "part": "p10",
+   "sourceTitle": "THE EFFECT OF THE RAISING OF LAZARUS (ON THE PEOPLE, ON THE SANHEDRIN, ON THE MOVEMENTS OF JESUS)",
+   "refs": {
+    "JHN": [
+     [
+      11,
+      45,
+      11,
+      54
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s119",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        11,
+        45,
+        11,
+        54
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s120",
+   "n": "120",
+   "part": "p10",
+   "sourceTitle": "JESUS STARTS ON THE LAST JOURNEY TO JERUSALEM BY WAY OF SAMARIA AND GALILEE",
+   "refs": {
+    "LUK": [
+     [
+      17,
+      11,
+      17,
+      37
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s120",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        17,
+        11,
+        17,
+        37
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 27
+     }
+    }
+   ]
+  },
+  {
+   "id": "s121",
+   "n": "121",
+   "part": "p10",
+   "sourceTitle": "TWO PARABLES ON PRAYER (THE IMPORTUNATE WIDOW, THE PHARISEE AND THE PUBLICAN)",
+   "refs": {
+    "LUK": [
+     [
+      18,
+      1,
+      18,
+      14
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s121",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        18,
+        1,
+        18,
+        14
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 14
+     }
+    }
+   ]
+  },
+  {
+   "id": "s122",
+   "n": "122",
+   "part": "p10",
+   "sourceTitle": "GOING FROM GALILEE THROUGH PEREA, HE TEACHES CONCERNING DIVORCE",
+   "refs": {
+    "MRK": [
+     [
+      10,
+      1,
+      10,
+      12
+     ]
+    ],
+    "MAT": [
+     [
+      19,
+      1,
+      19,
+      12
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s122",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        10,
+        1,
+        10,
+        12
+       ]
+      ],
+      "MAT": [
+       [
+        19,
+        1,
+        19,
+        12
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 12,
+      "MAT": 12
+     }
+    }
+   ]
+  },
+  {
+   "id": "s123",
+   "n": "123",
+   "part": "p10",
+   "sourceTitle": "CHRIST AND CHILDREN AND THE FAILURE OF THE DISCIPLES TO UNDERSTAND THE ATTITUDE OF JESUS",
+   "refs": {
+    "MRK": [
+     [
+      10,
+      13,
+      10,
+      16
+     ]
+    ],
+    "MAT": [
+     [
+      19,
+      13,
+      19,
+      15
+     ]
+    ],
+    "LUK": [
+     [
+      18,
+      15,
+      18,
+      17
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s123",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        10,
+        13,
+        10,
+        16
+       ]
+      ],
+      "MAT": [
+       [
+        19,
+        13,
+        19,
+        15
+       ]
+      ],
+      "LUK": [
+       [
+        18,
+        15,
+        18,
+        17
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 3,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s124",
+   "n": "124",
+   "part": "p10",
+   "sourceTitle": "THE RICH YOUNG RULER, THE PERILS OF RICHES, AND AMAZEMENT OF THE DISCIPLES. THE REWARDS OF FORSAKING ALL TO FOLLOW THE MESSIAH WILL BE GREAT, BUT WILL BE SOVEREIGN (PARABLE OF THE LABORERS IN THE VINEYARD)",
+   "refs": {
+    "MRK": [
+     [
+      10,
+      17,
+      10,
+      31
+     ]
+    ],
+    "MAT": [
+     [
+      19,
+      16,
+      20,
+      16
+     ]
+    ],
+    "LUK": [
+     [
+      18,
+      18,
+      18,
+      30
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s124",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        10,
+        17,
+        10,
+        31
+       ]
+      ],
+      "MAT": [
+       [
+        19,
+        16,
+        20,
+        16
+       ]
+      ],
+      "LUK": [
+       [
+        18,
+        18,
+        18,
+        30
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 15,
+      "MAT": 31,
+      "LUK": 13
+     }
+    }
+   ]
+  },
+  {
+   "id": "s125",
+   "n": "125",
+   "part": "p10",
+   "sourceTitle": "JESUS AGAIN FORETELLS TO THE DISCIPLES HIS DEATH AND RESURRECTION (COMP. SECTS. 83, 85, 86, 88), AND REBUKES THE SELFISH AMBITION OF JAMES AND JOHN",
+   "refs": {
+    "MRK": [
+     [
+      10,
+      32,
+      10,
+      45
+     ]
+    ],
+    "MAT": [
+     [
+      20,
+      17,
+      20,
+      28
+     ]
+    ],
+    "LUK": [
+     [
+      18,
+      31,
+      18,
+      34
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s125",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        10,
+        32,
+        10,
+        45
+       ]
+      ],
+      "MAT": [
+       [
+        20,
+        17,
+        20,
+        28
+       ]
+      ],
+      "LUK": [
+       [
+        18,
+        31,
+        18,
+        34
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 14,
+      "MAT": 12,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s126",
+   "n": "126",
+   "part": "p10",
+   "sourceTitle": "BLIND BARTIMAEUS AND HIS COMPANION HEALED",
+   "refs": {
+    "MRK": [
+     [
+      10,
+      46,
+      10,
+      52
+     ]
+    ],
+    "MAT": [
+     [
+      20,
+      29,
+      20,
+      34
+     ]
+    ],
+    "LUK": [
+     [
+      18,
+      35,
+      18,
+      43
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s126",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        10,
+        46,
+        10,
+        52
+       ]
+      ],
+      "MAT": [
+       [
+        20,
+        29,
+        20,
+        34
+       ]
+      ],
+      "LUK": [
+       [
+        18,
+        35,
+        18,
+        43
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 6,
+      "LUK": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "s127",
+   "n": "127",
+   "part": "p10",
+   "sourceTitle": "JESUS VISITS ZACCHAEUS, AND SPEAKS THE PARABLE OF THE POUNDS, AND SETS OUT FOR JERUSALEM",
+   "refs": {
+    "LUK": [
+     [
+      19,
+      1,
+      19,
+      28
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s127",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        19,
+        1,
+        19,
+        28
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 28
+     }
+    }
+   ]
+  },
+  {
+   "id": "s128a",
+   "n": "128a",
+   "part": "p11",
+   "sourceTitle": "JESUS ARRIVES AT BETHANY NEAR JERUSALEM",
+   "refs": {
+    "JHN": [
+     [
+      11,
+      55,
+      12,
+      1
+     ],
+     [
+      12,
+      9,
+      12,
+      11
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s128a",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        11,
+        55,
+        12,
+        1
+       ],
+       [
+        12,
+        9,
+        12,
+        11
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s128b",
+   "n": "128b",
+   "part": "p11",
+   "sourceTitle": "HIS TRIUMPHAL ENTRY INTO JERUSALEM AS THE MESSIAH",
+   "refs": {
+    "MRK": [
+     [
+      11,
+      1,
+      11,
+      11
+     ]
+    ],
+    "MAT": [
+     [
+      21,
+      1,
+      21,
+      11
+     ],
+     [
+      21,
+      14,
+      21,
+      17
+     ]
+    ],
+    "LUK": [
+     [
+      19,
+      29,
+      19,
+      44
+     ]
+    ],
+    "JHN": [
+     [
+      12,
+      12,
+      12,
+      19
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s128b",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        11,
+        1,
+        11,
+        11
+       ]
+      ],
+      "MAT": [
+       [
+        21,
+        1,
+        21,
+        11
+       ],
+       [
+        21,
+        14,
+        21,
+        17
+       ]
+      ],
+      "LUK": [
+       [
+        19,
+        29,
+        19,
+        44
+       ]
+      ],
+      "JHN": [
+       [
+        12,
+        12,
+        12,
+        19
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 11,
+      "MAT": 15,
+      "LUK": 16,
+      "JHN": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s129",
+   "n": "129",
+   "part": "p11",
+   "sourceTitle": "THE BARREN FIG TREE CURSED, AND THE SECOND CLEANSING OF THE TEMPLE (COMP. SECT. 31)",
+   "refs": {
+    "MRK": [
+     [
+      11,
+      12,
+      11,
+      18
+     ]
+    ],
+    "MAT": [
+     [
+      21,
+      18,
+      21,
+      19
+     ],
+     [
+      21,
+      12,
+      21,
+      13
+     ]
+    ],
+    "LUK": [
+     [
+      19,
+      45,
+      19,
+      48
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s129",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        11,
+        12,
+        11,
+        18
+       ]
+      ],
+      "MAT": [
+       [
+        21,
+        18,
+        21,
+        19
+       ],
+       [
+        21,
+        12,
+        21,
+        13
+       ]
+      ],
+      "LUK": [
+       [
+        19,
+        45,
+        19,
+        48
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 4,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s130",
+   "n": "130",
+   "part": "p11",
+   "sourceTitle": "THE DESIRE OF SOME GREEKS TO SEE JESUS PUZZLES THE DISCIPLES AND LEADS JESUS IN AGITATION OF SOUL TO INTERPRET LIFE AND DEATH AS SACRIFICE AND TO SHOW HOW BY BEING \"LIFTED UP\" HE WILL DRAW ALL MEN TO HIM",
+   "refs": {
+    "JHN": [
+     [
+      12,
+      20,
+      12,
+      50
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s130",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        12,
+        20,
+        12,
+        50
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 31
+     }
+    }
+   ]
+  },
+  {
+   "id": "s131",
+   "n": "131",
+   "part": "p11",
+   "sourceTitle": "THE BARREN FIG TREE FOUND TO HAVE WITHERED",
+   "refs": {
+    "MRK": [
+     [
+      11,
+      19,
+      11,
+      26
+     ]
+    ],
+    "MAT": [
+     [
+      21,
+      19,
+      21,
+      22
+     ]
+    ],
+    "LUK": [
+     [
+      21,
+      37,
+      21,
+      38
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s131",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        11,
+        19,
+        11,
+        26
+       ]
+      ],
+      "MAT": [
+       [
+        21,
+        19,
+        21,
+        22
+       ]
+      ],
+      "LUK": [
+       [
+        21,
+        37,
+        21,
+        38
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 8,
+      "MAT": 4,
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s132",
+   "n": "132",
+   "part": "p11",
+   "sourceTitle": "THE RULERS (SANHEDRIN) FORMALLY CHALLENGE THE AUTHORITY OF JESUS AS AN ACCREDITED TEACHER (RABBI)",
+   "refs": {
+    "MRK": [
+     [
+      11,
+      27,
+      12,
+      12
+     ]
+    ],
+    "MAT": [
+     [
+      21,
+      23,
+      22,
+      14
+     ]
+    ],
+    "LUK": [
+     [
+      20,
+      1,
+      20,
+      19
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s132",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        11,
+        27,
+        12,
+        12
+       ]
+      ],
+      "MAT": [
+       [
+        21,
+        23,
+        22,
+        14
+       ]
+      ],
+      "LUK": [
+       [
+        20,
+        1,
+        20,
+        19
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 19,
+      "MAT": 38,
+      "LUK": 19
+     }
+    }
+   ]
+  },
+  {
+   "id": "s133",
+   "n": "133",
+   "part": "p11",
+   "sourceTitle": "THE PHARISEES AND THE HERODIANS TRY TO ENSNARE JESUS ABOUT PAYING TRIBUTE TO CAESAR",
+   "refs": {
+    "MRK": [
+     [
+      12,
+      13,
+      12,
+      17
+     ]
+    ],
+    "MAT": [
+     [
+      22,
+      15,
+      22,
+      22
+     ]
+    ],
+    "LUK": [
+     [
+      20,
+      20,
+      20,
+      26
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s133",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        12,
+        13,
+        12,
+        17
+       ]
+      ],
+      "MAT": [
+       [
+        22,
+        15,
+        22,
+        22
+       ]
+      ],
+      "LUK": [
+       [
+        20,
+        20,
+        20,
+        26
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 8,
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s134",
+   "n": "134",
+   "part": "p11",
+   "sourceTitle": "THE SADDUCEES ASK HIM A PUZZLING QUESTION ABOUT THE RESURRECTION",
+   "refs": {
+    "MRK": [
+     [
+      12,
+      18,
+      12,
+      27
+     ]
+    ],
+    "MAT": [
+     [
+      22,
+      23,
+      22,
+      33
+     ]
+    ],
+    "LUK": [
+     [
+      20,
+      27,
+      20,
+      40
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s134",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        12,
+        18,
+        12,
+        27
+       ]
+      ],
+      "MAT": [
+       [
+        22,
+        23,
+        22,
+        33
+       ]
+      ],
+      "LUK": [
+       [
+        20,
+        27,
+        20,
+        40
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 10,
+      "MAT": 11,
+      "LUK": 14
+     }
+    }
+   ]
+  },
+  {
+   "id": "s135",
+   "n": "135",
+   "part": "p11",
+   "sourceTitle": "THE PHARISEES REJOICE OVER THE ROUT OF THE SADDUCEES AND A PHARISAIC LAWYER ASKS JESUS A LEGAL QUESTION",
+   "refs": {
+    "MRK": [
+     [
+      12,
+      28,
+      12,
+      34
+     ]
+    ],
+    "MAT": [
+     [
+      22,
+      34,
+      22,
+      40
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s135",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        12,
+        28,
+        12,
+        34
+       ]
+      ],
+      "MAT": [
+       [
+        22,
+        34,
+        22,
+        40
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s136",
+   "n": "136",
+   "part": "p11",
+   "sourceTitle": "JESUS, TO THE JOY OF THE MULTITUDE, SILENCES HIS ENEMIES BY THE PERTINENT QUESTION OF THE MESSIAH'S DESCENT FROM DAVID AND LORDSHIP OVER DAVID",
+   "refs": {
+    "MRK": [
+     [
+      12,
+      35,
+      12,
+      37
+     ]
+    ],
+    "MAT": [
+     [
+      22,
+      41,
+      22,
+      46
+     ]
+    ],
+    "LUK": [
+     [
+      20,
+      41,
+      20,
+      44
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s136",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        12,
+        35,
+        12,
+        37
+       ]
+      ],
+      "MAT": [
+       [
+        22,
+        41,
+        22,
+        46
+       ]
+      ],
+      "LUK": [
+       [
+        20,
+        41,
+        20,
+        44
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 3,
+      "MAT": 6,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s137",
+   "n": "137",
+   "part": "p11",
+   "sourceTitle": "IN HIS LAST PUBLIC DISCOURSE, JESUS SOLEMNLY DENOUNCES THE SCRIBES AND PHARISEES (COMP. SECT. 107)",
+   "refs": {
+    "MRK": [
+     [
+      12,
+      38,
+      12,
+      40
+     ]
+    ],
+    "MAT": [
+     [
+      23,
+      1,
+      23,
+      39
+     ]
+    ],
+    "LUK": [
+     [
+      20,
+      45,
+      20,
+      47
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s137",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        12,
+        38,
+        12,
+        40
+       ]
+      ],
+      "MAT": [
+       [
+        23,
+        1,
+        23,
+        39
+       ]
+      ],
+      "LUK": [
+       [
+        20,
+        45,
+        20,
+        47
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 3,
+      "MAT": 39,
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s138",
+   "n": "138",
+   "part": "p11",
+   "sourceTitle": "JESUS CLOSELY OBSERVES THE CONTRIBUTIONS IN THE TEMPLE, AND COMMENDS THE POOR WIDOW'S GIFT",
+   "refs": {
+    "MRK": [
+     [
+      12,
+      41,
+      12,
+      44
+     ]
+    ],
+    "LUK": [
+     [
+      21,
+      1,
+      21,
+      4
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s138",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        12,
+        41,
+        12,
+        44
+       ]
+      ],
+      "LUK": [
+       [
+        21,
+        1,
+        21,
+        4
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s139",
+   "n": "139",
+   "part": "p12",
+   "sourceTitle": "SITTING ON THE MOUNT OF OLIVES, JESUS SPEAKS TO HIS DISCIPLES ABOUT THE DESTRUCTION OF JERUSALEM, AND HIS OWN SECOND COMING IN APOCALYPTIC LANGUAGE. THE GREAT ESCHATOLOGICAL DISCOURSE",
+   "refs": {
+    "MRK": [
+     [
+      13,
+      1,
+      13,
+      37
+     ]
+    ],
+    "MAT": [
+     [
+      24,
+      1,
+      24,
+      51
+     ],
+     [
+      25,
+      1,
+      25,
+      46
+     ]
+    ],
+    "LUK": [
+     [
+      21,
+      5,
+      21,
+      36
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s139",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        13,
+        1,
+        13,
+        37
+       ]
+      ],
+      "MAT": [
+       [
+        24,
+        1,
+        24,
+        51
+       ],
+       [
+        25,
+        1,
+        25,
+        46
+       ]
+      ],
+      "LUK": [
+       [
+        21,
+        5,
+        21,
+        36
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 37,
+      "MAT": 97,
+      "LUK": 32
+     }
+    }
+   ]
+  },
+  {
+   "id": "s140",
+   "n": "140",
+   "part": "p12",
+   "sourceTitle": "JESUS PREDICTS HIS CRUCIFIXION TWO DAYS HENCE (JEWISH FRIDAY)",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      1,
+      14,
+      2
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      1,
+      26,
+      5
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      1,
+      22,
+      2
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s140",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        1,
+        14,
+        2
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        1,
+        26,
+        5
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        1,
+        22,
+        2
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 5,
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s141",
+   "n": "141",
+   "part": "p12",
+   "sourceTitle": "AT THE FEAST IN THE HOUSE OF SIMON THE LEPER MARY OF BETHANY ANOINTS JESUS FOR HIS BURIAL",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      3,
+      14,
+      9
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      6,
+      26,
+      13
+     ]
+    ],
+    "JHN": [
+     [
+      12,
+      2,
+      12,
+      8
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s141",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        3,
+        14,
+        9
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        6,
+        26,
+        13
+       ]
+      ],
+      "JHN": [
+       [
+        12,
+        2,
+        12,
+        8
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 8,
+      "JHN": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s142",
+   "n": "142",
+   "part": "p12",
+   "sourceTitle": "JUDAS, STUNG BY THE REBUKE OF JESUS AT THE FEAST, BARGAINS WITH THE RULERS TO BETRAY JESUS",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      10,
+      14,
+      11
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      14,
+      26,
+      16
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      3,
+      22,
+      6
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s142",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        10,
+        14,
+        11
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        14,
+        26,
+        16
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        3,
+        22,
+        6
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "MAT": 3,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s143",
+   "n": "143",
+   "part": "p12",
+   "sourceTitle": "THE PREPARATION FOR THE PASCHAL MEAL AT THE HOME OF A FRIEND (POSSIBLY THAT OF JOHN MARK'S FATHER AND MOTHER)",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      12,
+      14,
+      16
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      17,
+      26,
+      19
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      7,
+      22,
+      13
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s143",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        12,
+        14,
+        16
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        17,
+        26,
+        19
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        7,
+        22,
+        13
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 3,
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s144",
+   "n": "144",
+   "part": "p12",
+   "sourceTitle": "JESUS PARTAKES OF THE PASCHAL MEAL WITH THE TWELVE APOSTLES AND REBUKES THEIR JEALOUSY",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      17,
+      14,
+      17
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      20,
+      26,
+      20
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      14,
+      22,
+      16
+     ],
+     [
+      22,
+      24,
+      22,
+      30
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s144",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        17,
+        14,
+        17
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        20,
+        26,
+        20
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        14,
+        22,
+        16
+       ],
+       [
+        22,
+        24,
+        22,
+        30
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 1,
+      "MAT": 1,
+      "LUK": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s145",
+   "n": "145",
+   "part": "p12",
+   "sourceTitle": "DURING THE PASCHAL MEAL, JESUS WASHES THE FEET OF HIS DISCIPLES",
+   "refs": {
+    "JHN": [
+     [
+      13,
+      1,
+      13,
+      20
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s145",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        13,
+        1,
+        13,
+        20
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 20
+     }
+    }
+   ]
+  },
+  {
+   "id": "s146",
+   "n": "146",
+   "part": "p12",
+   "sourceTitle": "AT THE PASCHAL MEAL JESUS POINTS OUT JUDAS AS THE BETRAYER",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      18,
+      14,
+      21
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      21,
+      26,
+      25
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      21,
+      22,
+      23
+     ]
+    ],
+    "JHN": [
+     [
+      13,
+      21,
+      13,
+      30
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s146",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        18,
+        14,
+        21
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        21,
+        26,
+        25
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        21,
+        22,
+        23
+       ]
+      ],
+      "JHN": [
+       [
+        13,
+        21,
+        13,
+        30
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 5,
+      "LUK": 3,
+      "JHN": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s147",
+   "n": "147",
+   "part": "p12",
+   "sourceTitle": "AFTER THE DEPARTURE OF JUDAS JESUS WARNS THE DISCIPLES (PETER IN PARTICULAR) AGAINST DESERTION, WHILE ALL PROTEST THEIR LOYALTY",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      27,
+      14,
+      31
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      31,
+      26,
+      35
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      31,
+      22,
+      38
+     ]
+    ],
+    "JHN": [
+     [
+      13,
+      31,
+      13,
+      38
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s147",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        27,
+        14,
+        31
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        31,
+        26,
+        35
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        31,
+        22,
+        38
+       ]
+      ],
+      "JHN": [
+       [
+        13,
+        31,
+        13,
+        38
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 5,
+      "LUK": 8,
+      "JHN": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s148",
+   "n": "148",
+   "part": "p12",
+   "sourceTitle": "JESUS INSTITUTES THE MEMORIAL OF EATING BREAD AND DRINKING WINE",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      22,
+      14,
+      25
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      26,
+      26,
+      29
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      17,
+      22,
+      20
+     ]
+    ],
+    "1CO": [
+     [
+      11,
+      23,
+      11,
+      26
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s148",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        22,
+        14,
+        25
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        26,
+        26,
+        29
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        17,
+        22,
+        20
+       ]
+      ],
+      "1CO": [
+       [
+        11,
+        23,
+        11,
+        26
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 4,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s149",
+   "n": "149",
+   "part": "p12",
+   "sourceTitle": "THE FAREWELL DISCOURSE TO HIS DISCIPLES IN THE UPPER ROOM",
+   "refs": {
+    "JHN": [
+     [
+      14,
+      1,
+      14,
+      31
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s149",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        14,
+        1,
+        14,
+        31
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 31
+     }
+    }
+   ]
+  },
+  {
+   "id": "s150",
+   "n": "150",
+   "part": "p12",
+   "sourceTitle": "THE DISCOURSE ON THE WAY TO GETHSEMANE",
+   "refs": {
+    "JHN": [
+     [
+      15,
+      1,
+      15,
+      27
+     ],
+     [
+      16,
+      1,
+      16,
+      33
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s150",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        15,
+        1,
+        15,
+        27
+       ],
+       [
+        16,
+        1,
+        16,
+        33
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 60
+     }
+    }
+   ]
+  },
+  {
+   "id": "s151",
+   "n": "151",
+   "part": "p12",
+   "sourceTitle": "CHRIST'S INTERCESSORY PRAYER",
+   "refs": {
+    "JHN": [
+     [
+      17,
+      1,
+      17,
+      26
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s151",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        17,
+        1,
+        17,
+        26
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 26
+     }
+    }
+   ]
+  },
+  {
+   "id": "s152",
+   "n": "152",
+   "part": "p12",
+   "sourceTitle": "GOING FORTH TO GETHSEMANE, JESUS SUFFERS LONG IN AGONY",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      26,
+      14,
+      26
+     ],
+     [
+      14,
+      32,
+      14,
+      42
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      30,
+      26,
+      30
+     ],
+     [
+      26,
+      36,
+      26,
+      46
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      39,
+      22,
+      46
+     ]
+    ],
+    "JHN": [
+     [
+      18,
+      1,
+      18,
+      1
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s152",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        26,
+        14,
+        26
+       ],
+       [
+        14,
+        32,
+        14,
+        42
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        30,
+        26,
+        30
+       ],
+       [
+        26,
+        36,
+        26,
+        46
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        39,
+        22,
+        46
+       ]
+      ],
+      "JHN": [
+       [
+        18,
+        1,
+        18,
+        1
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 12,
+      "MAT": 12,
+      "LUK": 8,
+      "JHN": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s153",
+   "n": "153",
+   "part": "p13",
+   "sourceTitle": "JESUS IS BETRAYED, ARRESTED, AND FORSAKEN",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      43,
+      14,
+      52
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      47,
+      26,
+      56
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      47,
+      22,
+      53
+     ]
+    ],
+    "JHN": [
+     [
+      18,
+      2,
+      18,
+      12
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s153",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        43,
+        14,
+        52
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        47,
+        26,
+        56
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        47,
+        22,
+        53
+       ]
+      ],
+      "JHN": [
+       [
+        18,
+        2,
+        18,
+        12
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 10,
+      "MAT": 10,
+      "LUK": 7,
+      "JHN": 11
+     }
+    }
+   ]
+  },
+  {
+   "id": "s154",
+   "n": "154",
+   "part": "p13",
+   "sourceTitle": "JESUS FIRST EXAMINED BY ANNAS, THE EX-HIGH PRIEST",
+   "refs": {
+    "JHN": [
+     [
+      18,
+      12,
+      18,
+      14
+     ],
+     [
+      18,
+      19,
+      18,
+      23
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s154",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        18,
+        12,
+        18,
+        14
+       ],
+       [
+        18,
+        19,
+        18,
+        23
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s155",
+   "n": "155",
+   "part": "p13",
+   "sourceTitle": "JESUS HURRIEDLY TRIED AND CONDEMNED BY CAIAPHAS AND THE SANHEDRIN, WHO MOCK AND BUFFET HIM",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      53,
+      14,
+      53
+     ],
+     [
+      14,
+      55,
+      14,
+      65
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      57,
+      26,
+      57
+     ],
+     [
+      26,
+      59,
+      26,
+      68
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      54,
+      22,
+      54
+     ],
+     [
+      22,
+      63,
+      22,
+      65
+     ]
+    ],
+    "JHN": [
+     [
+      18,
+      24,
+      18,
+      24
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s155",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        53,
+        14,
+        53
+       ],
+       [
+        14,
+        55,
+        14,
+        65
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        57,
+        26,
+        57
+       ],
+       [
+        26,
+        59,
+        26,
+        68
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        54,
+        22,
+        54
+       ],
+       [
+        22,
+        63,
+        22,
+        65
+       ]
+      ],
+      "JHN": [
+       [
+        18,
+        24,
+        18,
+        24
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 12,
+      "MAT": 11,
+      "LUK": 4,
+      "JHN": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s156",
+   "n": "156",
+   "part": "p13",
+   "sourceTitle": "PETER THRICE DENIES HIS LORD",
+   "refs": {
+    "MRK": [
+     [
+      14,
+      54,
+      14,
+      54
+     ],
+     [
+      14,
+      66,
+      14,
+      72
+     ]
+    ],
+    "MAT": [
+     [
+      26,
+      58,
+      26,
+      58
+     ],
+     [
+      26,
+      69,
+      26,
+      75
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      54,
+      22,
+      62
+     ]
+    ],
+    "JHN": [
+     [
+      18,
+      15,
+      18,
+      18
+     ],
+     [
+      18,
+      25,
+      18,
+      27
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s156",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        14,
+        54,
+        14,
+        54
+       ],
+       [
+        14,
+        66,
+        14,
+        72
+       ]
+      ],
+      "MAT": [
+       [
+        26,
+        58,
+        26,
+        58
+       ],
+       [
+        26,
+        69,
+        26,
+        75
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        54,
+        22,
+        62
+       ]
+      ],
+      "JHN": [
+       [
+        18,
+        15,
+        18,
+        18
+       ],
+       [
+        18,
+        25,
+        18,
+        27
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 8,
+      "MAT": 8,
+      "LUK": 9,
+      "JHN": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s157",
+   "n": "157",
+   "part": "p13",
+   "sourceTitle": "AFTER DAWN, JESUS IS FORMALLY CONDEMNED BY THE SANHEDRIN",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      1,
+      15,
+      1
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      1,
+      27,
+      1
+     ]
+    ],
+    "LUK": [
+     [
+      22,
+      66,
+      22,
+      71
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s157",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        1,
+        15,
+        1
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        1,
+        27,
+        1
+       ]
+      ],
+      "LUK": [
+       [
+        22,
+        66,
+        22,
+        71
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 1,
+      "MAT": 1,
+      "LUK": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s158",
+   "n": "158",
+   "part": "p13",
+   "sourceTitle": "REMORSE AND SUICIDE OF JUDAS THE BETRAYER",
+   "refs": {
+    "MAT": [
+     [
+      27,
+      3,
+      27,
+      10
+     ]
+    ],
+    "ACT": [
+     [
+      1,
+      18,
+      1,
+      19
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s158",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        27,
+        3,
+        27,
+        10
+       ]
+      ],
+      "ACT": [
+       [
+        1,
+        18,
+        1,
+        19
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s159",
+   "n": "159",
+   "part": "p13",
+   "sourceTitle": "JESUS BEFORE PILATE THE FIRST TIME",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      1,
+      15,
+      5
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      2,
+      27,
+      2
+     ],
+     [
+      27,
+      11,
+      27,
+      14
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      1,
+      23,
+      5
+     ]
+    ],
+    "JHN": [
+     [
+      18,
+      28,
+      18,
+      38
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s159",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        1,
+        15,
+        5
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        2,
+        27,
+        2
+       ],
+       [
+        27,
+        11,
+        27,
+        14
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        1,
+        23,
+        5
+       ]
+      ],
+      "JHN": [
+       [
+        18,
+        28,
+        18,
+        38
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 5,
+      "LUK": 5,
+      "JHN": 11
+     }
+    }
+   ]
+  },
+  {
+   "id": "s160",
+   "n": "160",
+   "part": "p13",
+   "sourceTitle": "JESUS BEFORE HEROD ANTIPAS THE TETRARCH",
+   "refs": {
+    "LUK": [
+     [
+      23,
+      6,
+      23,
+      12
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s160",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        23,
+        6,
+        23,
+        12
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s161",
+   "n": "161",
+   "part": "p13",
+   "sourceTitle": "JESUS THE SECOND TIME BEFORE PILATE",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      6,
+      15,
+      15
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      15,
+      27,
+      26
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      13,
+      23,
+      25
+     ]
+    ],
+    "JHN": [
+     [
+      18,
+      39,
+      19,
+      16
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s161",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        6,
+        15,
+        15
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        15,
+        27,
+        26
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        13,
+        23,
+        25
+       ]
+      ],
+      "JHN": [
+       [
+        18,
+        39,
+        19,
+        16
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 10,
+      "MAT": 12,
+      "LUK": 13,
+      "JHN": 18
+     }
+    }
+   ]
+  },
+  {
+   "id": "s162",
+   "n": "162",
+   "part": "p13",
+   "sourceTitle": "THE ROMAN SOLDIERS MOCK JESUS",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      16,
+      15,
+      19
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      27,
+      27,
+      30
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s162",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        16,
+        15,
+        19
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        27,
+        27,
+        30
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s163",
+   "n": "163",
+   "part": "p13",
+   "sourceTitle": "JESUS ON THE WAY TO THE CROSS (VIA DOLOROSA) ON GOLGOTHA",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      20,
+      15,
+      23
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      31,
+      27,
+      34
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      26,
+      23,
+      33
+     ]
+    ],
+    "JHN": [
+     [
+      19,
+      16,
+      19,
+      17
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s163",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        20,
+        15,
+        23
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        31,
+        27,
+        34
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        26,
+        23,
+        33
+       ]
+      ],
+      "JHN": [
+       [
+        19,
+        16,
+        19,
+        17
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 4,
+      "LUK": 8,
+      "JHN": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s164",
+   "n": "164",
+   "part": "p13",
+   "sourceTitle": "THE FIRST THREE HOURS ON THE CROSS",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      24,
+      15,
+      32
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      35,
+      27,
+      44
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      33,
+      23,
+      43
+     ]
+    ],
+    "JHN": [
+     [
+      19,
+      18,
+      19,
+      27
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s164",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        24,
+        15,
+        32
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        35,
+        27,
+        44
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        33,
+        23,
+        43
+       ]
+      ],
+      "JHN": [
+       [
+        19,
+        18,
+        19,
+        27
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 9,
+      "MAT": 10,
+      "LUK": 11,
+      "JHN": 10
+     }
+    }
+   ]
+  },
+  {
+   "id": "s165",
+   "n": "165",
+   "part": "p13",
+   "sourceTitle": "THE THREE HOURS OF DARKNESS FROM NOON TO THREE P.M.",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      33,
+      15,
+      37
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      45,
+      27,
+      50
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      44,
+      23,
+      46
+     ]
+    ],
+    "JHN": [
+     [
+      19,
+      28,
+      19,
+      30
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s165",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        33,
+        15,
+        37
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        45,
+        27,
+        50
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        44,
+        23,
+        46
+       ]
+      ],
+      "JHN": [
+       [
+        19,
+        28,
+        19,
+        30
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 6,
+      "LUK": 3,
+      "JHN": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s166",
+   "n": "166",
+   "part": "p13",
+   "sourceTitle": "THE PHENOMENA ACCOMPANYING THE DEATH OF CHRIST",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      38,
+      15,
+      41
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      51,
+      27,
+      56
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      45,
+      23,
+      45
+     ],
+     [
+      23,
+      47,
+      23,
+      49
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s166",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        38,
+        15,
+        41
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        51,
+        27,
+        56
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        45,
+        23,
+        45
+       ],
+       [
+        23,
+        47,
+        23,
+        49
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 6,
+      "LUK": 4
+     }
+    }
+   ]
+  },
+  {
+   "id": "s167",
+   "n": "167",
+   "part": "p13",
+   "sourceTitle": "THE BURIAL OF THE BODY OF JESUS IN THE TOMB OF JOSEPH OF ARIMATHEA AFTER PROOF OF HIS DEATH",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      42,
+      15,
+      46
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      57,
+      27,
+      60
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      50,
+      23,
+      54
+     ]
+    ],
+    "JHN": [
+     [
+      19,
+      31,
+      19,
+      42
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s167",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        42,
+        15,
+        46
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        57,
+        27,
+        60
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        50,
+        23,
+        54
+       ]
+      ],
+      "JHN": [
+       [
+        19,
+        31,
+        19,
+        42
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 5,
+      "MAT": 4,
+      "LUK": 5,
+      "JHN": 12
+     }
+    }
+   ]
+  },
+  {
+   "id": "s168",
+   "n": "168",
+   "part": "p13",
+   "sourceTitle": "THE WATCH OF THE WOMEN BY THE TOMB OF JESUS",
+   "refs": {
+    "MRK": [
+     [
+      15,
+      47,
+      15,
+      47
+     ]
+    ],
+    "MAT": [
+     [
+      27,
+      61,
+      27,
+      66
+     ]
+    ],
+    "LUK": [
+     [
+      23,
+      55,
+      23,
+      56
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s168",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        15,
+        47,
+        15,
+        47
+       ]
+      ],
+      "MAT": [
+       [
+        27,
+        61,
+        27,
+        66
+       ]
+      ],
+      "LUK": [
+       [
+        23,
+        55,
+        23,
+        56
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 1,
+      "MAT": 6,
+      "LUK": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s169",
+   "n": "169",
+   "part": "p14",
+   "sourceTitle": "THE VISIT OF THE WOMEN TO THE TOMB OF JESUS",
+   "refs": {
+    "MRK": [
+     [
+      16,
+      1,
+      16,
+      1
+     ]
+    ],
+    "MAT": [
+     [
+      28,
+      1,
+      28,
+      1
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s169",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        16,
+        1,
+        16,
+        1
+       ]
+      ],
+      "MAT": [
+       [
+        28,
+        1,
+        28,
+        1
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 1,
+      "MAT": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s170",
+   "n": "170",
+   "part": "p14",
+   "sourceTitle": "THE EARTHQUAKE, THE ROLLING AWAY OF THE STONE BY AN ANGEL, AND THE FRIGHT OF THE ROMAN WATCHERS",
+   "refs": {
+    "MAT": [
+     [
+      28,
+      2,
+      28,
+      4
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s170",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        28,
+        2,
+        28,
+        4
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s171",
+   "n": "171",
+   "part": "p14",
+   "sourceTitle": "THE VISIT OF THE WOMEN TO THE TOMB OF JESUS ABOUT SUNRISE SUNDAY MORNING AND THE MESSAGE OF THE ANGELS ABOUT THE EMPTY TOMB",
+   "refs": {
+    "MRK": [
+     [
+      16,
+      2,
+      16,
+      8
+     ]
+    ],
+    "MAT": [
+     [
+      28,
+      5,
+      28,
+      8
+     ]
+    ],
+    "LUK": [
+     [
+      24,
+      1,
+      24,
+      8
+     ]
+    ],
+    "JHN": [
+     [
+      20,
+      1,
+      20,
+      1
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s171",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        16,
+        2,
+        16,
+        8
+       ]
+      ],
+      "MAT": [
+       [
+        28,
+        5,
+        28,
+        8
+       ]
+      ],
+      "LUK": [
+       [
+        24,
+        1,
+        24,
+        8
+       ]
+      ],
+      "JHN": [
+       [
+        20,
+        1,
+        20,
+        1
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 7,
+      "MAT": 4,
+      "LUK": 8,
+      "JHN": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": "s172",
+   "n": "172",
+   "part": "p14",
+   "sourceTitle": "MARY MAGDALENE AND THE OTHER WOMEN REPORT TO THE APOSTLES, AND PETER AND JOHN VISIT THE EMPTY TOMB",
+   "refs": {
+    "LUK": [
+     [
+      24,
+      9,
+      24,
+      12
+     ]
+    ],
+    "JHN": [
+     [
+      20,
+      2,
+      20,
+      10
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s172",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        24,
+        9,
+        24,
+        12
+       ]
+      ],
+      "JHN": [
+       [
+        20,
+        2,
+        20,
+        10
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 4,
+      "JHN": 9
+     }
+    }
+   ]
+  },
+  {
+   "id": "s173",
+   "n": "173",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE OF JESUS TO MARY MAGDALENE AND THE MESSAGE TO THE DISCIPLES",
+   "refs": {
+    "MRK": [
+     [
+      16,
+      9,
+      16,
+      11
+     ]
+    ],
+    "JHN": [
+     [
+      20,
+      11,
+      20,
+      18
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s173",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        16,
+        9,
+        16,
+        11
+       ]
+      ],
+      "JHN": [
+       [
+        20,
+        11,
+        20,
+        18
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 3,
+      "JHN": 8
+     }
+    }
+   ]
+  },
+  {
+   "id": "s174",
+   "n": "174",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE OF JESUS TO THE OTHER WOMEN",
+   "refs": {
+    "MAT": [
+     [
+      28,
+      9,
+      28,
+      10
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s174",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        28,
+        9,
+        28,
+        10
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": "s175",
+   "n": "175",
+   "part": "p14",
+   "sourceTitle": "SOME OF THE GUARD REPORT TO THE JEWISH RULERS",
+   "refs": {
+    "MAT": [
+     [
+      28,
+      11,
+      28,
+      15
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s175",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MAT": [
+       [
+        28,
+        11,
+        28,
+        15
+       ]
+      ]
+     },
+     "counts": {
+      "MAT": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s176",
+   "n": "176",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE TO TWO DISCIPLES (CLEOPAS AND ANOTHER) ON THE WAY TO EMMAUS",
+   "refs": {
+    "MRK": [
+     [
+      16,
+      12,
+      16,
+      13
+     ]
+    ],
+    "LUK": [
+     [
+      24,
+      13,
+      24,
+      32
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s176",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        16,
+        12,
+        16,
+        13
+       ]
+      ],
+      "LUK": [
+       [
+        24,
+        13,
+        24,
+        32
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "LUK": 20
+     }
+    }
+   ]
+  },
+  {
+   "id": "s177",
+   "n": "177",
+   "part": "p14",
+   "sourceTitle": "THE REPORT OF THE TWO DISCIPLES AND THE NEWS OF THE APPEARANCE TO SIMON PETER",
+   "refs": {
+    "LUK": [
+     [
+      24,
+      33,
+      24,
+      35
+     ]
+    ],
+    "1CO": [
+     [
+      15,
+      5,
+      15,
+      5
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s177",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        24,
+        33,
+        24,
+        35
+       ]
+      ],
+      "1CO": [
+       [
+        15,
+        5,
+        15,
+        5
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": "s178",
+   "n": "178",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE TO THE ASTONISHED DISCIPLES (THOMAS ABSENT) WITH A COMMISSION AND THEIR FAILURE TO CONVINCE THOMAS",
+   "refs": {
+    "MRK": [
+     [
+      16,
+      14,
+      16,
+      14
+     ]
+    ],
+    "LUK": [
+     [
+      24,
+      36,
+      24,
+      43
+     ]
+    ],
+    "JHN": [
+     [
+      20,
+      19,
+      20,
+      25
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s178",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        16,
+        14,
+        16,
+        14
+       ]
+      ],
+      "LUK": [
+       [
+        24,
+        36,
+        24,
+        43
+       ]
+      ],
+      "JHN": [
+       [
+        20,
+        19,
+        20,
+        25
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 1,
+      "LUK": 8,
+      "JHN": 7
+     }
+    }
+   ]
+  },
+  {
+   "id": "s179",
+   "n": "179",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE TO THE DISCIPLES THE NEXT SUNDAY NIGHT AND THE CONVINCING OF THOMAS",
+   "refs": {
+    "JHN": [
+     [
+      20,
+      26,
+      20,
+      31
+     ]
+    ],
+    "1CO": [
+     [
+      15,
+      5,
+      15,
+      5
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s179",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        20,
+        26,
+        20,
+        31
+       ]
+      ],
+      "1CO": [
+       [
+        15,
+        5,
+        15,
+        5
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s180",
+   "n": "180",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE TO SEVEN DISCIPLES BESIDE THE SEA OF GALILEE. THE MIRACULOUS DRAUGHT OF FISHES",
+   "refs": {
+    "JHN": [
+     [
+      21,
+      1,
+      21,
+      25
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s180",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "JHN": [
+       [
+        21,
+        1,
+        21,
+        25
+       ]
+      ]
+     },
+     "counts": {
+      "JHN": 25
+     }
+    }
+   ]
+  },
+  {
+   "id": "s181",
+   "n": "181",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE TO ABOUT FIVE HUNDRED ON AN APPOINTED MOUNTAIN IN GALILEE, AND A COMMISSION GIVEN",
+   "refs": {
+    "MRK": [
+     [
+      16,
+      15,
+      16,
+      18
+     ]
+    ],
+    "MAT": [
+     [
+      28,
+      16,
+      28,
+      20
+     ]
+    ],
+    "1CO": [
+     [
+      15,
+      6,
+      15,
+      6
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s181",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        16,
+        15,
+        16,
+        18
+       ]
+      ],
+      "MAT": [
+       [
+        28,
+        16,
+        28,
+        20
+       ]
+      ],
+      "1CO": [
+       [
+        15,
+        6,
+        15,
+        6
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 4,
+      "MAT": 5
+     }
+    }
+   ]
+  },
+  {
+   "id": "s182",
+   "n": "182",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE TO JAMES THE BROTHER OF JESUS",
+   "refs": {
+    "1CO": [
+     [
+      15,
+      7,
+      15,
+      7
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s182",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "1CO": [
+       [
+        15,
+        7,
+        15,
+        7
+       ]
+      ]
+     },
+     "counts": {}
+    }
+   ]
+  },
+  {
+   "id": "s183",
+   "n": "183",
+   "part": "p14",
+   "sourceTitle": "THE APPEARANCE TO THE DISCIPLES WITH ANOTHER COMMISSION",
+   "refs": {
+    "LUK": [
+     [
+      24,
+      44,
+      24,
+      49
+     ]
+    ],
+    "ACT": [
+     [
+      1,
+      3,
+      1,
+      8
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s183",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "LUK": [
+       [
+        24,
+        44,
+        24,
+        49
+       ]
+      ],
+      "ACT": [
+       [
+        1,
+        3,
+        1,
+        8
+       ]
+      ]
+     },
+     "counts": {
+      "LUK": 6
+     }
+    }
+   ]
+  },
+  {
+   "id": "s184",
+   "n": "184",
+   "part": "p14",
+   "sourceTitle": "THE LAST APPEARANCE AND THE ASCENSION",
+   "refs": {
+    "MRK": [
+     [
+      16,
+      19,
+      16,
+      20
+     ]
+    ],
+    "LUK": [
+     [
+      24,
+      50,
+      24,
+      53
+     ]
+    ],
+    "ACT": [
+     [
+      1,
+      9,
+      1,
+      12
+     ]
+    ]
+   },
+   "rows": [
+    {
+     "id": "s184",
+     "sourceTitle": null,
+     "group": null,
+     "refs": {
+      "MRK": [
+       [
+        16,
+        19,
+        16,
+        20
+       ]
+      ],
+      "LUK": [
+       [
+        24,
+        50,
+        24,
+        53
+       ]
+      ],
+      "ACT": [
+       [
+        1,
+        9,
+        1,
+        12
+       ]
+      ]
+     },
+     "counts": {
+      "MRK": 2,
+      "LUK": 4
+     }
+    }
+   ]
+  }
+ ]
+}

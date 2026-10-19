@@ -1,0 +1,228 @@
+/* Jesus Tracker — design tokens.
+ *
+ * Light states follow the time of day the gospel text itself gives (see
+ * CLAUDE.md, "Light system"). Put data-light="…" on <body> or on the explorer
+ * root; with no attribute the "unstated" state applies. Colour tokens are
+ * registered with @property so a change of state animates instead of jumping.
+ *
+ * Text colours are fixed per state and pass WCAG AA on paper, paper-raised and
+ * paper-sunk. --glow is for halos only; marks and lines use --glow-ink (≥3:1).
+ * Gospel colours are validated (CVD + contrast, all pairs) on every surface of
+ * their mode — see scripts/design/palette-search.mjs.
+ */
+
+@property --paper { syntax: '<color>'; inherits: true; initial-value: #E9DFC6; }
+@property --paper-raised { syntax: '<color>'; inherits: true; initial-value: #F3ECDA; }
+@property --paper-sunk { syntax: '<color>'; inherits: true; initial-value: #DED2B5; }
+@property --ink { syntax: '<color>'; inherits: true; initial-value: #262528; }
+@property --ink-soft { syntax: '<color>'; inherits: true; initial-value: #57534E; }
+@property --ink-faint { syntax: '<color>'; inherits: true; initial-value: #8F887C; }
+@property --line { syntax: '<color>'; inherits: true; initial-value: #CDBF9F; }
+@property --glow { syntax: '<color>'; inherits: true; initial-value: #D98E2B; }
+@property --glow-ink { syntax: '<color>'; inherits: true; initial-value: #A85F0C; }
+@property --veil { syntax: '<color>'; inherits: true; initial-value: rgba(0, 0, 0, 0); }
+@property --gospel-mat { syntax: '<color>'; inherits: true; initial-value: #C14106; }
+@property --gospel-mrk { syntax: '<color>'; inherits: true; initial-value: #6E3985; }
+@property --gospel-luk { syntax: '<color>'; inherits: true; initial-value: #0C7F5E; }
+@property --gospel-jhn { syntax: '<color>'; inherits: true; initial-value: #1371D0; }
+
+:root {
+  /* Gospel colours, from pigments and dyes of the Roman world:
+     cinnabar, murex purple, malachite, Egyptian blue. */
+  --day-gospel-mat: #C14106;
+  --day-gospel-mrk: #6E3985;
+  --day-gospel-luk: #0C7F5E;
+  --day-gospel-jhn: #1371D0;
+  --dark-gospel-mat: #BD371B;
+  --dark-gospel-mrk: #A9399D;
+  --dark-gospel-luk: #32A889;
+  --dark-gospel-jhn: #3292F1;
+
+  /* Night primitives (also used as the dark theme of standalone pages). */
+  --night-paper: #171B2B;
+  --night-paper-raised: #20263A;
+  --night-paper-sunk: #11141F;
+  --night-ink: #EEE6D3;
+  --night-ink-soft: #B9B1A0;
+  --night-ink-faint: #7C7869;
+  --night-line: #2F3650;
+  --night-glow: #F2C063;
+  --night-glow-ink: #F2C063;
+  --night-veil: rgba(14, 18, 42, 0.64);
+
+  /* Unstated: neutral papyrus, no claim about the time of day. */
+  --paper: #E9DFC6;
+  --paper-raised: #F3ECDA;
+  --paper-sunk: #DED2B5;
+  --ink: #262528;
+  --ink-soft: #57534E;
+  --ink-faint: #8F887C;
+  --line: #CDBF9F;
+  --glow: #D98E2B;
+  --glow-ink: #A85F0C;
+  --veil: rgba(0, 0, 0, 0);
+  --gospel-mat: var(--day-gospel-mat);
+  --gospel-mrk: var(--day-gospel-mrk);
+  --gospel-luk: var(--day-gospel-luk);
+  --gospel-jhn: var(--day-gospel-jhn);
+
+  /* Map base colours stay constant; the veil carries the time of day. */
+  --land: #E2D4B0;
+  --land-high: #D3C196;
+  --contour: #A99772;
+  --water: #8FBAB1;
+  --water-deep: #6E9F96;
+  --shore: #2F665E;
+
+  /* Type — "Field Notes" pairing is the default; see [data-type] below. */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-scripture: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  --font-ui: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hand: 'Shantell Sans', 'Segoe Print', 'Bradley Hand', cursive;
+  --display-weight: 560;
+  --display-tracking: -0.01em;
+
+  --step--2: 0.75rem;
+  --step--1: 0.875rem;
+  --step-0: 1rem;
+  --step-1: 1.25rem;
+  --step-2: 1.5625rem;
+  --step-3: clamp(1.6rem, 1.2rem + 1.6vw, 1.95rem);
+  --step-4: clamp(2rem, 1.4rem + 2.6vw, 2.75rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  --radius-s: 3px;
+  --radius-m: 6px;
+
+  --light-duration: 900ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+/* ---- Light states ------------------------------------------------------ */
+
+[data-light="unstated"] {
+  --paper: #E9DFC6; --paper-raised: #F3ECDA; --paper-sunk: #DED2B5;
+  --ink: #262528; --ink-soft: #57534E; --ink-faint: #8F887C; --line: #CDBF9F;
+  --glow: #D98E2B; --glow-ink: #A85F0C; --veil: rgba(0, 0, 0, 0);
+}
+
+/* "While it was still dark" (Mk 1:35, Jn 20:1), "the fourth watch" (Mt 14:25). */
+[data-light="predawn"] {
+  --paper: #CDD3D9; --paper-raised: #DCE1E6; --paper-sunk: #BEC5CD;
+  --ink: #1C222B; --ink-soft: #434C58; --ink-faint: #76808C; --line: #AEB7C1;
+  --glow: #E7B45C; --glow-ink: #8E5A12; --veil: rgba(52, 72, 104, 0.34);
+}
+
+/* "Just after sunrise" (Mk 16:2), "early morning" (Jn 18:28, Jn 21:4). */
+[data-light="dawn"] {
+  --paper: #F0DCCB; --paper-raised: #F8EBDF; --paper-sunk: #E6CCB7;
+  --ink: #2E2224; --ink-soft: #5E4A47; --ink-faint: #9A807A; --line: #DDBFAA;
+  --glow: #F2A65A; --glow-ink: #A9540F; --veil: rgba(236, 132, 104, 0.16);
+}
+
+/* A stated daylight hour, e.g. "the third hour" (Mk 15:25). */
+[data-light="day"] {
+  --paper: #EFE5CB; --paper-raised: #F8F1DF; --paper-sunk: #E3D6B6;
+  --ink: #24221F; --ink-soft: #534D44; --ink-faint: #8C8371; --line: #D3C39E;
+  --glow: #E39A2E; --glow-ink: #A15C0B; --veil: rgba(255, 236, 190, 0.08);
+}
+
+/* "About the sixth hour" (Jn 4:6, Jn 19:14). */
+[data-light="midday"] {
+  --paper: #F6F1E4; --paper-raised: #FDFBF5; --paper-sunk: #ECE4D0;
+  --ink: #1A1917; --ink-soft: #45413A; --ink-faint: #7F786A; --line: #DED4BC;
+  --glow: #F0B23E; --glow-ink: #9C5A0A; --veil: rgba(255, 252, 238, 0.30);
+}
+
+/* "When evening came" (Mt 14:15, Mk 14:17), "after sunset" (Mk 1:32). */
+[data-light="evening"] {
+  --paper: #E8CDA0; --paper-raised: #F1DDB9; --paper-sunk: #DDBC86;
+  --ink: #2A1D12; --ink-soft: #5A4330; --ink-faint: #8E7154; --line: #D2B07A;
+  --glow: #E8892A; --glow-ink: #8A4610; --veil: rgba(196, 102, 28, 0.24);
+}
+
+/* "At night" (Jn 3:2), "into the night" (Jn 13:30), "by night" (Lk 2:8). */
+[data-light="night"] {
+  --paper: var(--night-paper); --paper-raised: var(--night-paper-raised); --paper-sunk: var(--night-paper-sunk);
+  --ink: var(--night-ink); --ink-soft: var(--night-ink-soft); --ink-faint: var(--night-ink-faint); --line: var(--night-line);
+  --glow: var(--night-glow); --glow-ink: var(--night-glow-ink); --veil: var(--night-veil);
+}
+
+/* "From the sixth hour until the ninth hour darkness came over all the land"
+   (Mt 27:45, Mk 15:33, Lk 23:44). */
+[data-light="darkness"] {
+  --paper: #121212; --paper-raised: #1B1A19; --paper-sunk: #0B0B0B;
+  --ink: #E2DED6; --ink-soft: #A8A39A; --ink-faint: #6E6A64; --line: #2A2826;
+  --glow: #B5533A; --glow-ink: #C8643F; --veil: rgba(6, 6, 6, 0.80);
+}
+
+[data-light="night"], [data-light="darkness"] {
+  --gospel-mat: var(--dark-gospel-mat);
+  --gospel-mrk: var(--dark-gospel-mrk);
+  --gospel-luk: var(--dark-gospel-luk);
+  --gospel-jhn: var(--dark-gospel-jhn);
+  color-scheme: dark;
+}
+
+[data-light="unstated"], [data-light="predawn"], [data-light="dawn"],
+[data-light="day"], [data-light="midday"], [data-light="evening"] {
+  --gospel-mat: var(--day-gospel-mat);
+  --gospel-mrk: var(--day-gospel-mrk);
+  --gospel-luk: var(--day-gospel-luk);
+  --gospel-jhn: var(--day-gospel-jhn);
+  color-scheme: light;
+}
+
+/* A light-state root recomputes text colour and type from its own tokens
+   instead of inheriting the parent's already-resolved values. */
+[data-light] { color: var(--ink); }
+[data-type] { font-family: var(--font-ui); }
+
+[data-light] {
+  transition-property: --paper, --paper-raised, --paper-sunk, --ink, --ink-soft, --ink-faint,
+    --line, --glow, --glow-ink, --veil, --gospel-mat, --gospel-mrk, --gospel-luk, --gospel-jhn;
+  transition-duration: var(--light-duration);
+  transition-timing-function: var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-light] { transition-duration: 0ms; }
+}
+
+/* ---- Type pairings (to be decided by testing) ------------------------- */
+
+[data-type="field-notes"] {
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-scripture: 'Newsreader', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'Courier Prime', 'Courier New', ui-monospace, monospace;
+  --font-ui: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display-weight: 560;
+  --display-tracking: -0.01em;
+}
+
+[data-type="codex"] {
+  --font-display: 'Cormorant', 'Iowan Old Style', Georgia, serif;
+  --font-scripture: 'Literata', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --font-ui: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display-weight: 600;
+  --display-tracking: 0;
+}
+
+[data-type="inscription"] {
+  --font-display: 'Marcellus', 'Iowan Old Style', Georgia, serif;
+  --font-scripture: 'Alegreya', 'Iowan Old Style', Georgia, serif;
+  --font-mono: 'Martian Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --font-ui: 'Alegreya Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display-weight: 400;
+  --display-tracking: 0.02em;
+}

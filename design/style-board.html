@@ -1,0 +1,1327 @@
+<title>Jesus Tracker Style Board</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Style board 1 for the Jesus Tracker explorer: light states, type, gospel colours, shoutout cards, map key, timeline and art direction.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400&family=Courier+Prime:wght@400;700&family=Figtree:wght@400..700&family=Shantell+Sans:wght@400..600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,500..700;1,500..600&family=Literata:ital,opsz,wght@0,7..72,400..600;1,7..72,400&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:wght@400..600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Marcellus&family=Alegreya:ital,wght@0,400..600;1,400&family=Alegreya+Sans:wght@400;500;700&family=Martian+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<style>
+/* Layout: a long review page. A sticky control bar (type + page light), then
+   sections in reading order; the miniature explorer is the opening exhibit.
+   Every colour and font comes from tokens.css, the site's real design tokens. */
+
+/* Viewer dark theme = the night light state. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: var(--night-paper); --paper-raised: var(--night-paper-raised); --paper-sunk: var(--night-paper-sunk);
+    --ink: var(--night-ink); --ink-soft: var(--night-ink-soft); --ink-faint: var(--night-ink-faint); --line: var(--night-line);
+    --glow: var(--night-glow); --glow-ink: var(--night-glow-ink); --veil: var(--night-veil);
+    --gospel-mat: var(--dark-gospel-mat); --gospel-mrk: var(--dark-gospel-mrk);
+    --gospel-luk: var(--dark-gospel-luk); --gospel-jhn: var(--dark-gospel-jhn);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: var(--night-paper); --paper-raised: var(--night-paper-raised); --paper-sunk: var(--night-paper-sunk);
+  --ink: var(--night-ink); --ink-soft: var(--night-ink-soft); --ink-faint: var(--night-ink-faint); --line: var(--night-line);
+  --glow: var(--night-glow); --glow-ink: var(--night-glow-ink); --veil: var(--night-veil);
+  --gospel-mat: var(--dark-gospel-mat); --gospel-mrk: var(--dark-gospel-mrk);
+  --gospel-luk: var(--dark-gospel-luk); --gospel-jhn: var(--dark-gospel-jhn);
+  color-scheme: dark;
+}
+
+:root {
+  --page-max: 1180px;
+  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
+  --fibres: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='f' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.006 0.55' numOctaves='3' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.36 0 0 0 0 0.30 0 0 0 0 0.20 0 0 0 1.4 -0.62'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)' opacity='0.14'/%3E%3C/svg%3E");
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 76px; }
+body {
+  background-color: var(--paper);
+  background-image: var(--fibres);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--step-0);
+  line-height: 1.5;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+  z-index: 30; background: var(--paper-raised);
+}
+button, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); text-wrap: balance; margin: 0; line-height: 1.12; }
+p { margin: 0; }
+a { color: inherit; text-underline-offset: 3px; }
+.mono { font-family: var(--font-mono); }
+.eyebrow { font-family: var(--font-mono); font-size: var(--step--1); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.fine { font-size: var(--step--1); color: var(--ink-soft); }
+.scripture { font-family: var(--font-scripture); }
+.ref { font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); white-space: nowrap; }
+sup.v { font-family: var(--font-mono); font-size: 0.68em; color: var(--ink-soft); margin-right: 0.15em; }
+
+/* ---- control bar ---- */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--paper-raised); border-bottom: 1px solid var(--line); }
+.bar-inner {
+  max-width: var(--page-max); margin-inline: auto; padding-block: 10px;
+  padding-left: var(--gutter-l); padding-right: var(--gutter-r);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand strong { font-family: var(--font-display); font-weight: var(--display-weight); font-size: var(--step-1); }
+.ctl { display: flex; align-items: center; gap: 8px; font-size: var(--step--1); color: var(--ink-soft); }
+.seg { display: inline-flex; border: 1px solid var(--ink); border-radius: var(--radius-m); overflow: hidden; }
+.seg button { border: 0; background: transparent; padding: 6px 11px; cursor: pointer; font-size: var(--step--1); color: var(--ink); }
+.seg button + button { border-left: 1px solid var(--ink); }
+.seg button[aria-checked="true"], .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+select { background: var(--paper); border: 1px solid var(--ink); border-radius: var(--radius-m); padding: 5px 8px; font-size: var(--step--1); color: var(--ink); }
+.btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); border-radius: var(--radius-m); padding: 6px 12px; cursor: pointer; font-size: var(--step--1); }
+.btn.ghost { background: transparent; color: var(--ink); }
+
+/* ---- page structure ---- */
+.page { max-width: var(--page-max); margin-inline: auto; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
+.intro { padding-block: var(--space-7) var(--space-6); display: grid; gap: var(--space-5); grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-items: end; }
+.intro h1 { font-size: var(--step-4); margin-top: var(--space-2); }
+.intro .dek { font-size: var(--step-1); color: var(--ink-soft); max-width: 36em; margin-top: var(--space-4); line-height: 1.45; }
+.howto { border-left: 2px solid var(--ink); padding-left: var(--space-4); display: grid; gap: var(--space-2); font-size: var(--step--1); color: var(--ink-soft); }
+.howto b { color: var(--ink); font-weight: 600; }
+section.block { padding-block: var(--space-7); border-top: 1px solid var(--line); }
+.block-head { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); max-width: 46rem; }
+.block-head h2 { font-size: var(--step-3); }
+.block-head p { color: var(--ink-soft); }
+
+/* ---- miniature explorer ---- */
+.mx { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--paper); }
+.mx-panel { padding: var(--space-4); display: grid; gap: var(--space-4); align-content: start; background: var(--paper-raised); border-right: 1px solid var(--line); min-width: 0; }
+.mx-nav { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: var(--step--1); color: var(--ink-soft); }
+.mx-nav .count { margin-right: auto; }
+.icon-btn { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--line); background: var(--paper); border-radius: var(--radius-s); cursor: pointer; color: var(--ink); }
+.icon-btn[disabled] { opacity: 0.45; cursor: default; }
+.mx-title { font-size: var(--step-2); }
+.place-line { display: grid; gap: 6px; }
+.place-line .near { font-size: var(--step-0); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed var(--ink-soft); background: transparent; border-radius: 999px; padding: 3px 10px; cursor: pointer; font-size: var(--step--1); color: var(--ink); }
+.chip .score { font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); }
+.chip[aria-checked="true"] { border-style: solid; border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.chip[aria-checked="true"] .score { color: var(--paper); opacity: 0.8; }
+.readouts { margin: 0; display: grid; gap: 7px; font-size: var(--step--1); }
+.readouts div { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.readouts dt { font-family: var(--font-mono); font-size: var(--step--2); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.readouts dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.readouts dd .sub { color: var(--ink-soft); }
+.units { display: inline-flex; gap: 4px; margin-top: 4px; }
+.units button { border: 1px solid var(--line); background: transparent; border-radius: var(--radius-s); padding: 1px 6px; font-family: var(--font-mono); font-size: var(--step--2); cursor: pointer; color: var(--ink-soft); }
+.units button[aria-pressed="true"] { border-color: var(--ink); color: var(--ink); }
+.tabs { display: flex; gap: 4px; align-items: stretch; border-bottom: 1px solid var(--line); }
+.tab { flex: 1; border: 0; border-bottom: 3px solid transparent; background: transparent; padding: 6px 2px 7px; cursor: pointer; display: grid; justify-items: center; gap: 2px; color: var(--ink-soft); }
+.tab .mono-g { font-family: var(--font-mono); font-weight: 700; font-size: var(--step--1); }
+.tab .tod { font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--g); }
+.tab .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--g); }
+.coverage { align-self: center; font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); padding-left: 6px; white-space: nowrap; }
+.passage { font-family: var(--font-scripture); font-size: 1.06rem; line-height: 1.6; display: grid; gap: 8px; }
+.passage .gap { color: var(--ink-faint); font-family: var(--font-mono); font-size: var(--step--1); }
+.timeline-note { font-size: var(--step--1); color: var(--ink-soft); display: flex; gap: 8px; align-items: baseline; }
+.timeline-note .swatch { width: 10px; height: 10px; border-radius: 2px; background: var(--paper-sunk); border: 1px solid var(--ink-soft); flex: none; align-self: center; }
+.mini-cards { display: grid; gap: 8px; }
+.mx-map { position: relative; min-width: 0; background: var(--land); }
+@media (min-width: 821px) {
+  /* The map sets the height; the panel scrolls inside it, as in the real explorer. */
+  .mx-panel { contain: size; overflow-y: auto; }
+}
+.mx-map svg { display: block; width: 100%; height: auto; }
+.mx-map .labels { position: absolute; inset: 0; pointer-events: none; }
+.lbl { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font-size: 12px; color: var(--ink); text-shadow: 0 0 3px var(--paper), 0 0 3px var(--paper), 0 0 6px var(--paper); line-height: 1.1; }
+.lbl.place { font-family: var(--font-ui); font-weight: 600; }
+.lbl.place small { display: block; font-weight: 400; font-size: 10.5px; color: var(--ink-soft); }
+.lbl.region { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--ink-soft); }
+.lbl.water { font-family: var(--font-hand); font-size: 17px; color: color-mix(in oklab, var(--shore) 65%, var(--ink) 35%); text-shadow: none; }
+.lbl.water small { display: block; font-family: var(--font-mono); font-size: 10.5px; color: inherit; text-align: center; }
+.lbl.active { color: var(--ink); }
+.lbl.left { transform: translate(calc(-100% - 10px), -50%); }
+.lbl.right { transform: translate(10px, -50%); }
+.mx-map .scene-ctl { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; align-items: center; background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-m); padding: 4px 6px 4px 10px; font-size: var(--step--2); color: var(--ink-soft); }
+.mx-map .scene-ctl select { padding: 2px 4px; }
+.mx-map .legend { position: absolute; left: 10px; bottom: 10px; background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-m); padding: 6px 10px; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-soft); display: grid; gap: 3px; }
+.legend .row { display: flex; align-items: center; gap: 8px; }
+.legend svg { width: 28px; height: 8px; }
+.try { margin-top: var(--space-3); font-size: var(--step--1); color: var(--ink-soft); }
+
+/* map SVG classes */
+.m-land { fill: var(--land); }
+.m-high { fill: var(--land-high); }
+.m-contour { fill: none; stroke: var(--contour); stroke-width: 1; }
+.m-hach { stroke: var(--contour); stroke-width: 1; stroke-linecap: round; }
+.m-water { fill: var(--water); }
+.m-shore { fill: none; stroke: var(--shore); stroke-width: 1.6; }
+.m-shore2 { fill: none; stroke: var(--shore); stroke-width: 0.7; opacity: 0.55; }
+.m-ripple { fill: none; stroke: var(--water-deep); stroke-width: 1.1; stroke-linecap: round; }
+.m-river { fill: none; stroke: var(--shore); stroke-width: 2; stroke-linecap: round; }
+.m-veil { fill: var(--veil); }
+.m-route { fill: none; stroke: var(--ink-soft); stroke-width: 1.6; stroke-linecap: round; }
+.m-route.boat { stroke-dasharray: 0.5 6; stroke-width: 2.4; }
+.m-route.foot { stroke-dasharray: 6 5; }
+.m-travelled-glow { fill: none; stroke: var(--glow); stroke-width: 8; stroke-linecap: round; opacity: 0.35; }
+.m-travelled { fill: none; stroke: var(--glow-ink); stroke-width: 2.6; stroke-linecap: round; }
+.m-dot { fill: var(--ink); stroke: var(--paper-raised); stroke-width: 1.5; }
+.m-dot.minor { fill: var(--ink-soft); }
+.m-cand { fill: none; stroke: var(--ink); stroke-width: 1.4; stroke-dasharray: 3 3; }
+.m-near { fill: var(--glow); fill-opacity: 0.12; stroke: var(--glow-ink); stroke-width: 1; stroke-dasharray: 2 4; }
+.m-lamp { fill: var(--glow-ink); stroke: var(--paper-raised); stroke-width: 2; }
+.m-halo { fill: var(--glow); opacity: 0.4; transform-box: fill-box; transform-origin: center; animation: halo 2.8s ease-in-out infinite; }
+.m-scale { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+.m-scale-text { fill: var(--ink-soft); font-family: var(--font-mono); font-size: 11px; }
+.m-north { fill: var(--ink); font-family: var(--font-mono); font-size: 12px; }
+@keyframes halo { 0%, 100% { transform: scale(0.85); opacity: 0.45; } 50% { transform: scale(1.25); opacity: 0.18; } }
+
+/* ---- shoutout cards ---- */
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.card { background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-m); padding: var(--space-4); display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.card.compact { padding: 10px 12px; gap: 6px; }
+.card-head { display: flex; align-items: center; gap: 8px; }
+.card-head svg { width: 18px; height: 18px; flex: none; }
+.card-kind { font-family: var(--font-mono); font-size: var(--step--2); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+.badge { margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; border: 1px dashed var(--ink-soft); color: var(--ink-soft); border-radius: 999px; padding: 1px 8px; white-space: nowrap; }
+.card h3 { font-size: var(--step-1); }
+.card.compact h3 { font-size: var(--step-0); }
+.card p { color: var(--ink); }
+.card.compact p { font-size: var(--step--1); }
+.quote { font-family: var(--font-scripture); font-size: 1.04rem; line-height: 1.55; border-left: 2px solid var(--ink-faint); padding-left: 12px; display: grid; gap: 4px; }
+.quote .ref { display: block; }
+.inscription { font-family: var(--font-mono); letter-spacing: 0.14em; background: var(--paper-sunk); border-radius: var(--radius-s); padding: 10px 12px; line-height: 1.7; font-size: var(--step--1); overflow-x: auto; }
+.standing { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: var(--step--2); border: 1px solid var(--line); border-radius: var(--radius-s); padding: 2px 7px; color: var(--ink-soft); background: var(--paper); }
+.tag b { font-weight: 600; color: var(--ink); }
+.sources { margin: 0; padding-left: 1.2em; font-size: var(--step--1); color: var(--ink-soft); display: grid; gap: 2px; }
+.compare2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.compare2 > div { border-top: 3px solid var(--g); padding-top: 6px; display: grid; gap: 6px; font-family: var(--font-scripture); font-size: 0.98rem; line-height: 1.5; }
+.profile { width: 100%; height: auto; display: block; }
+.profile text { font-family: var(--font-mono); font-size: 10px; fill: var(--ink-soft); }
+.profile .pl { fill: none; stroke: var(--ink); stroke-width: 1.6; }
+.profile .pf { fill: var(--paper-sunk); }
+.profile .sea { stroke: var(--ink-faint); stroke-dasharray: 3 3; }
+
+/* ---- light states ---- */
+.swatches { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.swatch-card { text-align: left; border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--paper); color: var(--ink); padding: 0; cursor: pointer; overflow: hidden; display: grid; min-width: 0; }
+.swatch-card[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: 2px; }
+.swatch-card svg { display: block; width: 100%; height: auto; }
+.swatch-card .sw-body { padding: 10px 12px 12px; display: grid; gap: 4px; background: var(--paper-raised); }
+.swatch-card .sw-name { font-family: var(--font-display); font-weight: var(--display-weight); font-size: var(--step-1); }
+.swatch-card .sw-q { font-family: var(--font-scripture); font-size: 0.95rem; line-height: 1.4; color: var(--ink); }
+.swatch-card .sw-ref { font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); }
+.week { margin-top: var(--space-6); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: var(--space-5); align-items: start; }
+.week ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: step; }
+.week li { counter-increment: step; }
+.week .wk { width: 100%; text-align: left; border: 0; background: transparent; cursor: pointer; display: grid; grid-template-columns: 26px 12px minmax(0, 1fr); gap: 8px; align-items: baseline; padding: 6px 8px; border-radius: var(--radius-s); color: var(--ink); }
+.week .wk::before { content: counter(step); font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); text-align: right; }
+.week .wk:hover { background: color-mix(in oklab, var(--paper-sunk) 60%, transparent); }
+.week .chip-l { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--ink-soft); align-self: center; }
+.week .q { font-family: var(--font-scripture); line-height: 1.4; }
+.week .q .ref { margin-left: 6px; }
+.week li[aria-current="step"] .wk { background: var(--paper-sunk); }
+.week-note { display: grid; gap: var(--space-3); color: var(--ink-soft); }
+.week-note h3 { color: var(--ink); font-size: var(--step-2); }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 40; width: min(640px, calc(100% - 32px)); background: var(--paper-raised); border: 1px solid var(--ink); border-radius: 8px; padding: 10px 14px; display: flex; gap: 12px; align-items: center; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18); }
+.toast .q { font-family: var(--font-scripture); font-size: 1rem; line-height: 1.4; flex: 1; min-width: 0; }
+.toast .ref { display: block; }
+
+/* ---- type specimens ---- */
+.types { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-4); }
+.type-card { background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-m); padding: var(--space-4); display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.type-card .tc-name { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.type-card .tc-fonts { font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); }
+.type-card .tc-title { font-family: var(--font-display); font-weight: var(--display-weight); letter-spacing: var(--display-tracking); font-size: var(--step-3); line-height: 1.08; }
+.type-card .tc-text { font-family: var(--font-scripture); font-size: 1.06rem; line-height: 1.6; }
+.type-card .tc-read { font-family: var(--font-mono); font-size: var(--step--1); border-block: 1px solid var(--line); padding-block: 6px; font-variant-numeric: tabular-nums; }
+.type-card .tc-ui { font-family: var(--font-ui); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: var(--step--1); }
+.type-card .tc-hand { font-family: var(--font-hand); color: var(--shore); font-size: 1.2rem; }
+.type-card .tc-use[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+/* ---- gospels ---- */
+.gospels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-4); }
+.g-card { display: grid; gap: 8px; justify-items: start; min-width: 0; }
+.roundel { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--g); color: #fff; font-family: var(--font-mono); font-weight: 700; font-size: 1.2rem; box-shadow: inset 0 0 0 3px var(--paper-raised), 0 0 0 1px var(--g); }
+.g-card h3 { font-size: var(--step-1); }
+.g-card .pig { font-size: var(--step--1); color: var(--ink-soft); }
+.g-card .hex { font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); }
+.lane-demos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin-top: var(--space-5); }
+.lane-demo { border-radius: var(--radius-m); border: 1px solid var(--line); background: var(--paper); padding: 12px 14px; display: grid; gap: 6px; }
+.lane-demo .ld-row { display: grid; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 8px; font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); }
+.lane-demo .ld-track { position: relative; height: 12px; border-bottom: 1px solid var(--line); }
+.lane-demo .ld-track i { position: absolute; top: 1px; width: 10px; height: 10px; border-radius: 50%; background: var(--g); transform: translateX(-50%); box-shadow: 0 0 0 2px var(--paper); }
+.lane-demo .ld-name { font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); }
+.emblems { margin-top: var(--space-5); overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: var(--step--1); }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { font-family: var(--font-mono); font-size: var(--step--2); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 400; }
+td.who { font-weight: 600; }
+td .sub { display: block; font-weight: 400; color: var(--ink-soft); font-size: var(--step--2); font-family: var(--font-mono); }
+
+/* ---- map key ---- */
+.key { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: var(--space-3); }
+.icon-tile { display: grid; justify-items: center; gap: 6px; padding: 12px 6px; border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--paper-raised); font-size: var(--step--1); text-align: center; }
+.icon-tile svg { width: 32px; height: 32px; color: var(--ink); }
+.markers { display: grid; gap: 10px; }
+.marker-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: center; font-size: var(--step--1); }
+.marker-row svg { width: 56px; height: 30px; overflow: visible; }
+.marker-row b { font-weight: 600; display: block; }
+.marker-row span { color: var(--ink-soft); }
+.lamp-demo { display: flex; gap: var(--space-4); align-items: center; margin-top: var(--space-4); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-m); background: var(--paper-sunk); }
+.lamp-demo svg { width: 84px; height: 84px; flex: none; overflow: visible; }
+
+/* ---- timeline ---- */
+.tl { border: 1px solid var(--line); border-radius: 8px; background: var(--paper-raised); padding: var(--space-4); display: grid; gap: var(--space-3); }
+.tl-controls { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.tl-readout { font-size: var(--step--1); min-height: 2.9em; display: grid; gap: 2px; }
+.tl-readout .t { font-family: var(--font-display); font-weight: var(--display-weight); font-size: var(--step-1); }
+.tl-readout .r { font-family: var(--font-mono); color: var(--ink-soft); font-size: var(--step--2); }
+.tl-scroll { overflow-x: auto; padding-bottom: 6px; }
+.tl-grid { min-width: 760px; display: grid; grid-template-columns: 52px minmax(0, 1fr); row-gap: 4px; position: relative; }
+.tl-lab { font-family: var(--font-mono); font-size: var(--step--2); color: var(--ink-soft); align-self: center; }
+.tl-row { position: relative; height: 20px; }
+.tl-row.lane { border-bottom: 1px dotted var(--line); }
+.tl-row.phases { height: 26px; }
+.tl-row.light { height: 14px; }
+.tl-row.axis { height: 22px; }
+.tl-phase { position: absolute; top: 0; height: 22px; border-radius: 3px; background: var(--paper-sunk); border: 1px solid var(--line); font-size: 11px; padding: 3px 6px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--ink-soft); transition: left 700ms var(--ease-out), width 700ms var(--ease-out); }
+.tl-dot { position: absolute; top: 4px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--g); border: 0; padding: 0; cursor: pointer; box-shadow: 0 0 0 2px var(--paper-raised); transition: left 700ms var(--ease-out), transform 150ms; }
+.tl-dot.oth { background: var(--paper-raised); box-shadow: inset 0 0 0 2px var(--ink-soft), 0 0 0 2px var(--paper-raised); }
+.tl-dot:hover { transform: scale(1.3); }
+.tl-dot[aria-current="true"] { box-shadow: 0 0 0 2px var(--paper-raised), 0 0 0 4px var(--ink); }
+.tl-cell { position: absolute; top: 1px; height: 12px; width: 12px; margin-left: -6px; display: flex; border-radius: 2px; overflow: hidden; outline: 1px solid var(--line); transition: left 700ms var(--ease-out); }
+.tl-cell i { flex: 1; }
+.tl-tick { position: absolute; top: 0; font-family: var(--font-mono); font-size: 10.5px; color: var(--ink-soft); transform: translateX(-50%); white-space: nowrap; transition: opacity 300ms; }
+.tl-tick::before { content: ""; display: block; width: 1px; height: 5px; background: var(--ink-faint); margin: 0 auto 2px; }
+.tl-break { position: absolute; top: 0; bottom: 0; width: 2.6%; background: repeating-linear-gradient(135deg, transparent 0 4px, var(--line) 4px 5px); opacity: 0; transition: opacity 400ms; }
+.tl-playhead { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--ink); pointer-events: none; transition: left 300ms var(--ease-out); }
+.tl-playhead::before { content: ""; position: absolute; top: -3px; left: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--glow-ink); box-shadow: 0 0 0 3px color-mix(in oklab, var(--glow) 45%, transparent); }
+.tl-plot { position: relative; outline: none; touch-action: pan-y; }
+.tl-plot:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+.tl-bracket { position: absolute; top: 0; height: 18px; border: 1px solid var(--ink-faint); border-top: 0; font-family: var(--font-mono); font-size: 10px; color: var(--ink-soft); display: grid; place-items: end center; padding-bottom: 1px; opacity: 0; transition: opacity 400ms, left 700ms var(--ease-out), width 700ms var(--ease-out); white-space: nowrap; }
+.tl-foot { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: var(--step--2); color: var(--ink-soft); font-family: var(--font-mono); }
+.tl-foot span { display: inline-flex; align-items: center; gap: 6px; }
+.tl-foot i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; outline: 1px solid var(--line); }
+
+/* ---- art comparison ---- */
+.art { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); }
+.art figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.art svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: var(--radius-m); }
+.art figcaption { font-size: var(--step--1); color: var(--ink-soft); }
+.art figcaption b { color: var(--ink); font-family: var(--font-display); font-weight: var(--display-weight); font-size: var(--step-1); display: block; }
+.a-sky { fill: var(--paper-raised); }
+.a-far { fill: var(--land-high); }
+.a-water { fill: var(--water); }
+.a-shore { fill: none; stroke: var(--shore); stroke-width: 1.4; }
+.a-ripple { fill: none; stroke: var(--water-deep); stroke-width: 1.2; stroke-linecap: round; }
+.a-grass { fill: color-mix(in oklab, var(--land) 62%, #6E8B3D 38%); }
+.a-blade { stroke: color-mix(in oklab, var(--ink) 45%, #4F6B2A 55%); stroke-width: 1; stroke-linecap: round; opacity: 0.55; }
+.a-patch { fill: color-mix(in oklab, var(--ink) 18%, transparent); }
+.a-ink { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.a-basket { fill: color-mix(in oklab, var(--land-high) 70%, #8A6A3A 30%); stroke: var(--ink); stroke-width: 1.1; }
+.a-loaf { fill: color-mix(in oklab, var(--land) 50%, #C08A4A 50%); stroke: var(--ink); stroke-width: 1; }
+.a-fish { fill: var(--water-deep); stroke: var(--ink); stroke-width: 1; }
+.a-boat { fill: color-mix(in oklab, var(--land-high) 40%, #6B4A2E 60%); stroke: var(--ink); stroke-width: 1.1; }
+.a-person { stroke: var(--ink); stroke-width: 0.9; }
+.a-veil { fill: var(--veil); }
+
+/* ---- feedback ---- */
+.asks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); counter-reset: ask; list-style: none; padding: 0; margin: 0; }
+.asks li { counter-increment: ask; background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-m); padding: var(--space-4); display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; }
+.asks li::before { content: counter(ask); font-family: var(--font-display); font-weight: var(--display-weight); font-size: var(--step-2); line-height: 1; color: var(--ink-soft); }
+.asks b { display: block; margin-bottom: 4px; }
+.asks span { color: var(--ink-soft); font-size: var(--step--1); }
+footer.foot { border-top: 1px solid var(--line); padding-block: var(--space-6) var(--space-7); display: grid; gap: 6px; font-size: var(--step--1); color: var(--ink-soft); }
+
+@media (max-width: 980px) {
+  .swatches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .types { grid-template-columns: minmax(0, 1fr); }
+  .gospels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .key, .week { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 820px) {
+  .intro { grid-template-columns: minmax(0, 1fr); padding-block: var(--space-6) var(--space-5); }
+  .mx { grid-template-columns: minmax(0, 1fr); }
+  .mx-map { order: -1; }
+  .mx-panel { border-right: 0; border-top: 1px solid var(--line); }
+  .cards, .art, .asks, .lane-demos { grid-template-columns: minmax(0, 1fr); }
+  .compare2 { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+  .swatches { grid-template-columns: minmax(0, 1fr); }
+  .brand { width: 100%; }
+  .lbl { font-size: 10.5px; }
+  .lbl.place small { display: none; }
+  .lbl.water { font-size: 13px; }
+  .mx-map .legend { display: none; }
+  section.block { padding-block: var(--space-6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .m-halo { animation: none; }
+  .tl-dot, .tl-cell, .tl-phase, .tl-playhead, .tl-bracket { transition: none; }
+}
+</style>
+
+<header class="bar">
+  <div class="bar-inner">
+    <div class="brand"><strong>Jesus Tracker</strong><span class="eyebrow">Style board 1</span></div>
+    <div class="ctl">
+      <span id="type-label">Type</span>
+      <div class="seg" role="radiogroup" aria-labelledby="type-label" id="type-seg">
+        <button type="button" role="radio" aria-checked="true" data-type-set="field-notes">Field Notes</button>
+        <button type="button" role="radio" aria-checked="false" data-type-set="codex">Codex</button>
+        <button type="button" role="radio" aria-checked="false" data-type-set="inscription">Inscription</button>
+      </div>
+    </div>
+    <label class="ctl" for="page-light">Page light
+      <select id="page-light">
+        <option value="">Your theme</option>
+        <option value="unstated">Not stated</option>
+        <option value="predawn">Pre-dawn</option>
+        <option value="dawn">Dawn</option>
+        <option value="day">Day</option>
+        <option value="midday">Midday</option>
+        <option value="evening">Evening</option>
+        <option value="night">Night</option>
+        <option value="darkness">Darkness</option>
+      </select>
+    </label>
+    <button type="button" class="btn" id="play-week">▶ Play the final week</button>
+  </div>
+</header>
+
+<main class="page">
+  <div class="intro">
+    <div>
+      <p class="eyebrow">For review · 18 October 2026</p>
+      <h1>How the explorer looks and feels</h1>
+      <p class="dek">Papyrus and basalt ink, a lamp-light for where Jesus is, four gospel colours taken from ancient pigments, and lighting that changes only when the gospel text gives a time of day.</p>
+    </div>
+    <div class="howto">
+      <p><b>Try the controls.</b> The bar above switches the type pairing and the light for the whole page.</p>
+      <p><b>Real text, real places.</b> Scripture is the Berean Standard Bible. Site scores are from OpenBible.info.</p>
+      <p><b>Comment on anything.</b> Cards marked AI draft haven't been checked yet; the sources are there so they can be.</p>
+    </div>
+  </div>
+
+  <!-- 1. Miniature explorer -->
+  <section class="block" id="explorer" aria-labelledby="explorer-h">
+    <div class="block-head">
+      <p class="eyebrow">1 · The explorer, in miniature</p>
+      <h2 id="explorer-h">One event, everything in sync</h2>
+      <p>Event 11 of the 24 in the coming prototype. Switch gospel tabs and the scene's light follows that account. Choose the other Bethsaida site and the pin, route and distance move with it.</p>
+    </div>
+
+    <div class="mx" id="mx" data-light="evening">
+      <div class="mx-panel">
+        <div class="mx-nav">
+          <span class="count">11 / 24</span>
+          <button type="button" class="icon-btn" disabled aria-label="Previous event (in the prototype)">◀</button>
+          <button type="button" class="icon-btn" disabled aria-label="Next event (in the prototype)">▶</button>
+          <button type="button" class="btn ghost" id="walk">▶ Walk</button>
+        </div>
+        <h3 class="mx-title">Feeding the five thousand</h3>
+        <div class="place-line">
+          <span class="near">Near Bethsaida <span class="fine">· site identification</span></span>
+          <div class="chips" role="radiogroup" aria-label="Candidate site for Bethsaida" id="site-chips">
+            <button type="button" class="chip" role="radio" aria-checked="true" data-site="ettell">et-Tell <span class="score">330</span></button>
+            <button type="button" class="chip" role="radio" aria-checked="false" data-site="elaraj">el-Araj <span class="score">283</span></button>
+          </div>
+          <p class="fine">Scores from OpenBible.info. The default is the highest score.</p>
+        </div>
+        <dl class="readouts">
+          <div><dt>Region</dt><dd>Gaulanitis <span class="sub">· Philip, tetrarch · Josephus, Ant. 18.28 (Whiston 18.2.1)</span></dd></div>
+          <div><dt>Date</dt><dd>c. AD 29 <span class="sub">(AD 30 chronology)</span> · c. AD 32 <span class="sub">(AD 33)</span></dd></div>
+          <div><dt>Feast</dt><dd>Passover near <span class="sub">· Jn 6:4</span></dd></div>
+          <div><dt>Time</dt><dd id="mx-time">Evening · “When evening came” <span class="sub">· Mt 14:15</span></dd></div>
+          <div><dt>Leg</dt><dd><span id="mx-leg">Capernaum → et-Tell ≈ 6.1 km</span> <span class="sub">· by boat, Mk 6:32 · route reconstructed</span>
+            <span class="units" role="group" aria-label="Distance units" id="units">
+              <button type="button" aria-pressed="true" data-unit="km">km</button>
+              <button type="button" aria-pressed="false" data-unit="stadia">stadia</button>
+              <button type="button" aria-pressed="false" data-unit="mi">Roman miles</button>
+            </span></dd></div>
+          <div><dt>Order</dt><dd>Robertson (1922) <span class="sub">· harmony sequence</span></dd></div>
+        </dl>
+        <div>
+          <div class="tabs" role="tablist" aria-label="Gospel accounts" id="gospel-tabs">
+            <button type="button" class="tab" role="tab" id="tab-mat" aria-controls="passage" aria-selected="true" data-g="mat" style="--g: var(--gospel-mat)"><span class="dot"></span><span class="mono-g">Mt</span><span class="tod">evening</span></button>
+            <button type="button" class="tab" role="tab" id="tab-mrk" aria-controls="passage" aria-selected="false" tabindex="-1" data-g="mrk" style="--g: var(--gospel-mrk)"><span class="dot"></span><span class="mono-g">Mk</span><span class="tod">evening</span></button>
+            <button type="button" class="tab" role="tab" id="tab-luk" aria-controls="passage" aria-selected="false" tabindex="-1" data-g="luk" style="--g: var(--gospel-luk)"><span class="dot"></span><span class="mono-g">Lk</span><span class="tod">evening</span></button>
+            <button type="button" class="tab" role="tab" id="tab-jhn" aria-controls="passage" aria-selected="false" tabindex="-1" data-g="jhn" style="--g: var(--gospel-jhn)"><span class="dot"></span><span class="mono-g">Jn</span><span class="tod">not stated</span></button>
+            <span class="coverage">4 of 4</span>
+          </div>
+        </div>
+        <div class="passage" id="passage" role="tabpanel" aria-labelledby="tab-mat"></div>
+        <div class="mini-cards">
+          <article class="card compact">
+            <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg><span class="card-kind">Comparing the accounts</span><span class="badge">AI draft</span></div>
+            <h3>Where did it happen?</h3>
+            <p>Luke: Jesus “withdrew to a town called Bethsaida” (9:10). Mark: “a solitary place” (6:32), after which the disciples sail “on ahead of Him to Bethsaida” (6:45). John: “the other side of the Sea of Galilee” (6:1).</p>
+            <p class="fine">Proposed explanations: a short crossing along the shore after the meal; a second place called Bethsaida; or the writers arranging the scene differently. Citations to be added in review.</p>
+          </article>
+          <article class="card compact">
+            <div class="card-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14c2 3 12 3 14 0l2-3h-6c-1.5-2-6.5-2-8 0H4z"/><path d="M20 8c0-1.6 1-2.6 1-3.6"/></svg><span class="card-kind">Culture &amp; custom</span><span class="badge">AI draft</span></div>
+            <h3>Barley loaves</h3>
+            <p>Only John says the loaves were barley (6:9, 6:13). Barley was the cheaper grain: “A quart of wheat for a denarius, and three quarts of barley for a denarius” (Rev 6:6).</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="mx-map" id="mx-map">
+        <svg id="map-svg" viewBox="0 0 636 555" role="img" aria-label="Map of the Sea of Galilee showing Capernaum, the two candidate sites for Bethsaida, and the route by boat between them."></svg>
+        <div class="labels" id="map-labels" aria-hidden="true"></div>
+        <label class="scene-ctl" for="scene-light">Scene light
+          <select id="scene-light">
+            <option value="follow">Follow the text</option>
+            <option value="unstated">Not stated</option>
+            <option value="predawn">Pre-dawn</option>
+            <option value="dawn">Dawn</option>
+            <option value="day">Day</option>
+            <option value="midday">Midday</option>
+            <option value="evening">Evening</option>
+            <option value="night">Night</option>
+            <option value="darkness">Darkness</option>
+          </select>
+        </label>
+        <div class="legend" aria-hidden="true">
+          <div class="row"><svg viewBox="0 0 28 8"><path d="M2 4h24" class="m-route boat"/></svg>by boat (stated)</div>
+          <div class="row"><svg viewBox="0 0 28 8"><path d="M2 4h24" class="m-route foot"/></svg>on foot (reconstructed)</div>
+          <div class="row"><svg viewBox="0 0 28 8"><path d="M2 4h24" class="m-travelled"/></svg>travelled so far</div>
+        </div>
+      </div>
+    </div>
+    <p class="try">Try: switch Mt / Mk / Lk / Jn (John gives no time of day, so the scene turns neutral), pick el-Araj, change the units, press Walk.</p>
+  </section>
+
+  <!-- 2. Light -->
+  <section class="block" id="light" aria-labelledby="light-h">
+    <div class="block-head">
+      <p class="eyebrow">2 · The light follows the text</p>
+      <h2 id="light-h">Eight light states, each tied to the words that trigger it</h2>
+      <p>The scene stays neutral unless a gospel states or clearly implies a time. Pick a state to light the whole page with it, or play the final week, where the accounts are full of time cues.</p>
+    </div>
+    <div class="swatches" id="swatches"></div>
+
+    <div class="week">
+      <div class="week-note">
+        <h3>The final week, told by light alone</h3>
+        <p>Eleven moments from the accounts, in order. Play it and the page moves through evening, night, morning, the darkness from the sixth to the ninth hour, evening, the Sabbath, and then the first day of the week.</p>
+        <p>Steps 10 and 11 are the same morning in two accounts: John says it was still dark, Mark says just after sunrise. In the explorer, the light follows the gospel you're reading.</p>
+        <div><button type="button" class="btn" id="play-week-2">▶ Play the final week</button></div>
+      </div>
+      <ol id="week-list"></ol>
+    </div>
+  </section>
+
+  <!-- 3. Type -->
+  <section class="block" id="type" aria-labelledby="type-h">
+    <div class="block-head">
+      <p class="eyebrow">3 · Type</p>
+      <h2 id="type-h">Three pairings to test</h2>
+      <p>Each has a display face for titles, a reading face for Scripture, a mono for readouts, and a face for the interface. Map annotations use a marker hand in all three. “Use” applies a pairing to the whole page.</p>
+    </div>
+    <div class="types" id="types"></div>
+  </section>
+
+  <!-- 4. Gospels -->
+  <section class="block" id="gospels" aria-labelledby="gospels-h">
+    <div class="block-head">
+      <p class="eyebrow">4 · The four accounts</p>
+      <h2 id="gospels-h">Colours from Roman-era pigments and dyes</h2>
+      <p>Cinnabar, murex purple, malachite and Egyptian blue. Checked with a colour-vision simulation for the two common kinds of colour blindness: every pair stays distinct, in day and night states, and every colour keeps 3:1 contrast on all eight backgrounds. Lanes also carry a monogram, so colour is never the only cue.</p>
+    </div>
+    <div class="gospels" id="gospel-cards"></div>
+    <div class="lane-demos">
+      <div class="lane-demo" data-light="unstated" id="ld-day"></div>
+      <div class="lane-demo" data-light="night" id="ld-night"></div>
+    </div>
+    <div class="emblems">
+      <table>
+        <caption class="fine" style="caption-side: bottom; text-align: left; padding-top: 8px;">The four living creatures of Ezekiel 1:10 and Revelation 4:7, matched to the gospels differently by early writers. Sources: Irenaeus, Against Heresies 3.11.8; Jerome, Commentary on Matthew, preface; Augustine, Harmony of the Gospels 1.6.9. <span class="badge" style="margin-left: 6px;">AI draft</span></caption>
+        <thead><tr><th scope="col">Writer</th><th scope="col">Matthew</th><th scope="col">Mark</th><th scope="col">Luke</th><th scope="col">John</th></tr></thead>
+        <tbody>
+          <tr><td class="who">Irenaeus <span class="sub">c. 180</span></td><td>man</td><td>eagle</td><td>ox (calf)</td><td>lion</td></tr>
+          <tr><td class="who">Jerome <span class="sub">398</span></td><td>man</td><td>lion</td><td>ox (calf)</td><td>eagle</td></tr>
+          <tr><td class="who">Augustine <span class="sub">c. 400</span></td><td>lion</td><td>man</td><td>ox (calf)</td><td>eagle</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 5. Shoutouts -->
+  <section class="block" id="shoutouts" aria-labelledby="shout-h">
+    <div class="block-head">
+      <p class="eyebrow">5 · Shoutouts</p>
+      <h2 id="shout-h">Eight kinds of card</h2>
+      <p>Every card carries its sources, a standing tag where scholars differ, and a review status. Nothing marked AI draft will be published until a person has checked it.</p>
+    </div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <!-- 6. Map key -->
+  <section class="block" id="key" aria-labelledby="key-h">
+    <div class="block-head">
+      <p class="eyebrow">6 · Places and the traveller</p>
+      <h2 id="key-h">The map key</h2>
+      <p>Ink icons for kinds of place, and line styles that say how much the text tells us about a route.</p>
+    </div>
+    <div class="key">
+      <div class="icons" id="icons"></div>
+      <div>
+        <div class="markers" id="markers"></div>
+        <div class="lamp-demo">
+          <svg viewBox="-42 -42 84 84" aria-hidden="true"><circle r="26" class="m-halo"/><circle r="9" class="m-lamp"/></svg>
+          <p><b>The traveller light.</b> Jesus is never drawn. His position is always this light, and it walks the route when you move between events.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Timeline -->
+  <section class="block" id="timeline" aria-labelledby="tl-h">
+    <div class="block-head">
+      <p class="eyebrow">7 · Timeline</p>
+      <h2 id="tl-h">Four lanes, and a light row for the whole story</h2>
+      <p>The 24 events planned for the prototype. Each lane is one gospel. The light row shows each account's light, so you can see night and darkness gather in the final week. Click a dot, drag along the lanes, or use the arrow keys.</p>
+    </div>
+    <div class="tl" id="tl">
+      <div class="tl-controls">
+        <div class="ctl"><span id="axis-label">Axis</span>
+          <div class="seg" role="radiogroup" aria-labelledby="axis-label" id="axis-seg">
+            <button type="button" role="radio" aria-checked="true" data-axis="seq">Sequence</button>
+            <button type="button" role="radio" aria-checked="false" data-axis="time">Time</button>
+          </div>
+        </div>
+        <div class="ctl"><span id="chron-label">Chronology</span>
+          <div class="seg" role="radiogroup" aria-labelledby="chron-label" id="chron-seg">
+            <button type="button" role="radio" aria-checked="true" data-chron="ad30">AD 30</button>
+            <button type="button" role="radio" aria-checked="false" data-chron="ad33">AD 33</button>
+          </div>
+        </div>
+        <span class="fine">Dates are approximate, from two common reconstructions, and shown here to test the layout.</span>
+      </div>
+      <div class="tl-readout" id="tl-readout" aria-live="polite"></div>
+      <div class="tl-scroll">
+        <div class="tl-grid" id="tl-grid"></div>
+      </div>
+      <div class="tl-foot" id="tl-foot"></div>
+    </div>
+  </section>
+
+  <!-- 8. Art -->
+  <section class="block" id="art" aria-labelledby="art-h">
+    <div class="block-head">
+      <p class="eyebrow">8 · People in the art</p>
+      <h2 id="art-h">Two approaches, one scene</h2>
+      <p>Both draw only what the text describes: green grass (Mk 6:39), groups of hundreds and fifties (Mk 6:40), five loaves and two fish, twelve basketfuls (Mk 6:43), boats on the shore. In both, Jesus is the light, not a figure.</p>
+    </div>
+    <div class="art">
+      <figure><svg id="art-a" viewBox="0 0 600 360" role="img" aria-label="Approach A: a grassy slope by the lake with groups shown as abstract patches, baskets, loaves and fish, and a light."></svg><figcaption><b>A · No figures</b>Groups are patches on the grass. Nothing about anyone's appearance is implied.</figcaption></figure>
+      <figure><svg id="art-b" viewBox="0 0 600 360" role="img" aria-label="Approach B: the same slope with small faceless seated figures in groups, baskets, loaves and fish, and a light."></svg><figcaption><b>B · Faceless figures</b>Small seated shapes with no faces or features. Warmer and more human; still no picture of Jesus.</figcaption></figure>
+    </div>
+  </section>
+
+  <!-- 9. Feedback -->
+  <section class="block" id="feedback" aria-labelledby="fb-h">
+    <div class="block-head">
+      <p class="eyebrow">9 · What I need from you</p>
+      <h2 id="fb-h">Five calls before the prototype</h2>
+      <p>Answer in a comment on this page or in our chat. Mixing is fine, for example Field Notes titles with Codex Scripture.</p>
+    </div>
+    <ol class="asks">
+      <li><div><b>Type pairing</b><span>Field Notes, Codex or Inscription, or a mix of parts.</span></div></li>
+      <li><div><b>Strength of the light</b><span>Too strong, too subtle, or right? Is any state wrong for its verses?</span></div></li>
+      <li><div><b>People in the art</b><span>A (no figures) or B (faceless figures)?</span></div></li>
+      <li><div><b>Gospel colours</b><span>Do cinnabar, murex, malachite and Egyptian blue feel right together and with the papyrus?</span></div></li>
+      <li><div><b>Tone</b><span>Anything that would put off a church group or a sceptic: words, density, the cards, the readouts?</span></div></li>
+    </ol>
+  </section>
+
+  <footer class="foot">
+    <p>Next: the interactive prototype, with the real map (terrain, water, ruler boundaries), 24 events, the full timeline and the mobile layout.</p>
+    <p>Bible text: Berean Standard Bible, public domain. Site candidates and scores: OpenBible.info, CC BY 4.0. Map drawing is schematic, from approximate coordinates. Sample content, not yet reviewed.</p>
+  </footer>
+</main>
+
+<div class="toast" id="toast" hidden role="status" aria-live="polite">
+  <div class="q" id="toast-q"></div>
+  <button type="button" class="btn ghost" id="toast-stop">Stop</button>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = (s, r = document) => r.querySelector(s);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch { /* storage unavailable */ } },
+  };
+  function svgEl(tag, attrs = {}, parent) {
+    const el = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    if (parent) parent.appendChild(el);
+    return el;
+  }
+  function h(tag, attrs = {}, html) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+    if (html != null) el.innerHTML = html;
+    return el;
+  }
+  function rng(seed) { // mulberry32
+    return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  }
+  function smooth(pts, closed = true) {
+    const n = pts.length, get = (i) => closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))];
+    let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < (closed ? n : n - 1); i++) {
+      const p0 = get(i - 1), p1 = get(i), p2 = get(i + 1), p3 = get(i + 2);
+      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+      d += ` C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+    }
+    return closed ? d + ' Z' : d;
+  }
+  function haversineKm([lon1, lat1], [lon2, lat2]) {
+    const r = Math.PI / 180, dLat = (lat2 - lat1) * r, dLon = (lon2 - lon1) * r;
+    const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(dLon / 2) ** 2;
+    return 2 * 6371 * Math.asin(Math.sqrt(a));
+  }
+  const run = (name, fn) => { try { fn(); } catch (err) { console.error(`[style board] ${name} failed`, err); } };
+
+  const STATES = ['unstated', 'predawn', 'dawn', 'day', 'midday', 'evening', 'night', 'darkness'];
+  const STATE_NAMES = { unstated: 'Not stated', predawn: 'Pre-dawn', dawn: 'Dawn', day: 'Day', midday: 'Midday', evening: 'Evening', night: 'Night', darkness: 'Darkness' };
+  const GOSPELS = { mat: 'Matthew', mrk: 'Mark', luk: 'Luke', jhn: 'John' };
+  const ABBR = { mat: 'Mt', mrk: 'Mk', luk: 'Lk', jhn: 'Jn', oth: 'NT' };
+
+  // Paper colour of each light state, read from tokens.css so there is one source.
+  const statePaper = {};
+  run('state colours', () => {
+    const probe = h('div', { 'aria-hidden': 'true', style: 'position:absolute;width:0;height:0;overflow:hidden' });
+    document.body.appendChild(probe);
+    for (const s of STATES) {
+      const el = h('span', { 'data-light': s, style: 'transition:none' });
+      probe.appendChild(el);
+      statePaper[s] = getComputedStyle(el).getPropertyValue('--paper').trim();
+    }
+    probe.remove();
+  });
+
+  /* ---------- type + page light ---------- */
+  const typeButtons = [...document.querySelectorAll('[data-type-set]')];
+  function setType(t) {
+    document.body.dataset.type = t;
+    typeButtons.forEach((b) => b.setAttribute('aria-checked', String(b.dataset.typeSet === t)));
+    document.querySelectorAll('.tc-use').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.use === t)));
+    store.set('jt-type', t);
+  }
+  const pageLight = $('#page-light');
+  function setPageLight(s) {
+    if (s) document.body.dataset.light = s; else delete document.body.dataset.light;
+    pageLight.value = s || '';
+    document.querySelectorAll('.swatch-card').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.state === s)));
+  }
+  run('controls', () => {
+    typeButtons.forEach((b) => b.addEventListener('click', () => setType(b.dataset.typeSet)));
+    pageLight.addEventListener('change', () => { stopWeek(); setPageLight(pageLight.value); });
+    setType(store.get('jt-type') || 'field-notes');
+  });
+
+  /* ---------- 1. miniature explorer ---------- */
+  const MAP = { lon0: 35.42, lat0: 32.95, kx: 1872, ky: 2220, w: 636, h: 555 };
+  const P = ([lon, lat]) => [(lon - MAP.lon0) * MAP.kx, (MAP.lat0 - lat) * MAP.ky];
+  const PLACES = {
+    capernaum: { name: 'Capernaum', ll: [35.5750, 32.8825], note: 'Tell Hum' },
+    ettell: { name: 'et-Tell', ll: [35.6308, 32.9106], note: 'Bethsaida candidate' },
+    elaraj: { name: 'el-Araj', ll: [35.6191, 32.8933], note: 'Bethsaida candidate' },
+    chorazin: { name: 'Chorazin', ll: [35.5640, 32.9110] },
+    magdala: { name: 'Magdala', ll: [35.5110, 32.8260] },
+    tiberias: { name: 'Tiberias', ll: [35.5260, 32.7920], note: 'founded c. AD 20' },
+    kursi: { name: 'Kursi', ll: [35.6530, 32.8260] },
+    hippos: { name: 'Hippos', ll: [35.6610, 32.7790], note: 'Decapolis' },
+  };
+  const SHORE_LL = [[35.5750, 32.8800], [35.5480, 32.8720], [35.5280, 32.8580], [35.5170, 32.8450], [35.5150, 32.8250], [35.5300, 32.8000], [35.5350, 32.7850], [35.5470, 32.7700], [35.5600, 32.7400], [35.5750, 32.7100], [35.5950, 32.7050], [35.6000, 32.7150], [35.6200, 32.7350], [35.6400, 32.7800], [35.6500, 32.8250], [35.6400, 32.8600], [35.6250, 32.8850], [35.6050, 32.8900]];
+  const JORDAN_N = [[35.6270, 32.9500], [35.6262, 32.9300], [35.6245, 32.9100], [35.6232, 32.8980], [35.6222, 32.8905]];
+  const JORDAN_S = [[35.5750, 32.7092], [35.5735, 32.7000], [35.5700, 32.6900]];
+  const ROUTES = {
+    ettell: { boat: [[35.5750, 32.8805], [35.5900, 32.8840], [35.6050, 32.8885], [35.6190, 32.8915]], foot: [[35.6190, 32.8915], [35.6260, 32.9000], [35.6308, 32.9106]] },
+    elaraj: { boat: [[35.5750, 32.8805], [35.5900, 32.8840], [35.6050, 32.8885], [35.6191, 32.8925]], foot: [] },
+  };
+  const PASSAGES = {
+    mat: { light: 'evening', time: 'Evening · “When evening came” <span class="sub">· Mt 14:15</span>', verses: [
+      ['14:15', 'When evening came, the disciples came to Him and said, “This is a desolate place, and the hour is already late. Dismiss the crowds so they can go to the villages and buy themselves some food.”'],
+      ['gap'],
+      ['14:19', 'And He directed the crowds to sit down on the grass. Taking the five loaves and the two fish and looking up to heaven, He spoke a blessing. Then He broke the loaves and gave them to the disciples, and the disciples gave them to the people.'],
+      ['14:20', 'They all ate and were satisfied, and the disciples picked up twelve basketfuls of broken pieces that were left over.'],
+      ['14:21', 'About five thousand men were fed, besides women and children.']] },
+    mrk: { light: 'evening', time: 'Evening, implied · “the hour was already late” <span class="sub">· Mk 6:35</span>', verses: [
+      ['6:35', 'By now the hour was already late. So the disciples came to Jesus and said, “This is a desolate place, and the hour is already late.'],
+      ['6:36', 'Dismiss the crowd so they can go to the surrounding countryside and villages and buy themselves something to eat.”'],
+      ['gap'],
+      ['6:39', 'Then Jesus directed them to have the people sit in groups on the green grass.'],
+      ['6:40', 'So they sat down in groups of hundreds and fifties.'],
+      ['6:41', 'Taking the five loaves and the two fish and looking up to heaven, Jesus spoke a blessing and broke the loaves. Then He gave them to His disciples to set before the people. And He divided the two fish among them all.'],
+      ['6:42', 'They all ate and were satisfied,'],
+      ['6:43', 'and the disciples picked up twelve basketfuls of broken pieces of bread and fish.'],
+      ['6:44', 'And there were five thousand men who had eaten the loaves.']] },
+    luk: { light: 'evening', time: 'Evening · “As the day neared its end” <span class="sub">· Lk 9:12</span>', verses: [
+      ['9:12', 'As the day neared its end, the Twelve came to Jesus and said, “Dismiss the crowd so they can go to the surrounding villages and countryside for lodging and provisions. For we are in a desolate place here.”'],
+      ['gap'],
+      ['9:14', '(There were about five thousand men.) He told His disciples, “Have them sit down in groups of about fifty each.”'],
+      ['9:15', 'They did so, and everyone was seated.'],
+      ['9:16', 'Taking the five loaves and the two fish and looking up to heaven, Jesus spoke a blessing and broke them. Then He gave them to the disciples to set before the people.'],
+      ['9:17', 'They all ate and were satisfied, and the disciples picked up twelve basketfuls of broken pieces that were left over.']] },
+    jhn: { light: 'unstated', time: 'Not stated <span class="sub">· John gives no time for the meal</span>', verses: [
+      ['6:10', '“Have the people sit down,” Jesus said. Now there was plenty of grass in that place, so the men sat down, about five thousand of them.'],
+      ['6:11', 'Then Jesus took the loaves and the fish, gave thanks, and distributed to those who were seated as much as they wanted.'],
+      ['6:12', 'And when everyone was full, He said to His disciples, “Gather the pieces that are left over, so that nothing will be wasted.”'],
+      ['6:13', 'So they collected them and filled twelve baskets with the pieces of the five barley loaves left over by those who had eaten.']] },
+  };
+  const mx = $('#mx');
+  const mxState = { gospel: 'mat', site: 'ettell', unit: 'km', scene: 'follow' };
+  const UNITS = { km: [1, 'km'], stadia: [1 / 0.185, 'stadia'], mi: [1 / 1.48, 'Roman miles'] };
+  const fmt = (km) => { const [f, label] = UNITS[mxState.unit]; const v = km * f; return `${v >= 10 ? Math.round(v) : v.toFixed(1)} ${label}`; };
+
+  let routeEls = null;
+  run('map', () => {
+    const svg = $('#map-svg');
+    const R = rng(7);
+    const shore = SHORE_LL.map(P);
+    const cx = shore.reduce((s, p) => s + p[0], 0) / shore.length, cy = shore.reduce((s, p) => s + p[1], 0) / shore.length;
+    svgEl('rect', { x: 0, y: 0, width: MAP.w, height: MAP.h, class: 'm-land' }, svg);
+    // Golan plateau (east) and Galilean hills (west), as soft higher ground.
+    svgEl('path', { class: 'm-high', opacity: '0.75', d: smooth([[505, -20], [478, 90], [470, 210], [482, 330], [470, 450], [490, 580], [660, 580], [660, -20]]) }, svg);
+    svgEl('path', { class: 'm-high', opacity: '0.55', d: smooth([[-20, -20], [120, -20], [150, 70], [95, 170], [118, 300], [80, 430], [110, 580], [-20, 580]]) }, svg);
+    // Basin contours: offset the shoreline outward, tighter on the steep east side.
+    const n = shore.length;
+    const normals = shore.map((p, i) => {
+      const a = shore[(i - 1 + n) % n], b = shore[(i + 1) % n];
+      let nx = b[1] - a[1], ny = -(b[0] - a[0]);
+      const len = Math.hypot(nx, ny) || 1; nx /= len; ny /= len;
+      if ((p[0] + nx - cx) ** 2 + (p[1] + ny - cy) ** 2 < (p[0] - cx) ** 2 + (p[1] - cy) ** 2) { nx = -nx; ny = -ny; }
+      return [nx, ny];
+    });
+    const sideFactor = (p) => { const t = Math.atan2(p[1] - cy, p[0] - cx); return 0.95 - 0.42 * Math.max(0, Math.cos(t)) + 0.32 * Math.max(0, -Math.sin(t)); };
+    [12, 27, 45, 66, 90, 118, 150, 186, 226].forEach((d, k) => {
+      const ring = shore.map((p, i) => { const f = sideFactor(p) * d * (1 + (R() - 0.5) * 0.16); return [p[0] + normals[i][0] * f, p[1] + normals[i][1] * f]; });
+      svgEl('path', { class: 'm-contour', d: smooth(ring), opacity: (0.75 - k * 0.055).toFixed(2) }, svg);
+    });
+    // Arbel cliffs: hachures.
+    for (let i = 0; i < 16; i++) { const y = 262 + i * 2.6, x = 136 + Math.sin(i * 0.7) * 3; svgEl('line', { class: 'm-hach', x1: x, y1: y, x2: x - 9 - R() * 5, y2: y + 3, opacity: '0.8' }, svg); }
+    // The lake.
+    const lakeD = smooth(shore);
+    const lake = svgEl('path', { class: 'm-water', d: lakeD }, svg);
+    const inner = shore.map((p, i) => [p[0] - normals[i][0] * 6, p[1] - normals[i][1] * 6]);
+    svgEl('path', { class: 'm-shore2', d: smooth(inner) }, svg);
+    svgEl('path', { class: 'm-shore', d: lakeD }, svg);
+    const inLake = (x, y) => { try { return lake.isPointInFill(new DOMPoint(x, y)) && lake.isPointInFill(new DOMPoint(x + 12, y)); } catch { return x > 220 && x < 380 && y > 200 && y < 480; } };
+    for (let placed = 0, tries = 0; placed < 20 && tries < 200; tries++) {
+      const x = 190 + R() * 230, y = 170 + R() * 350;
+      if (!inLake(x, y)) continue;
+      svgEl('path', { class: 'm-ripple', d: `M${x.toFixed(1)},${y.toFixed(1)} q 6,-3 12,0`, opacity: '0.7' }, svg);
+      placed++;
+    }
+    svgEl('path', { class: 'm-river', d: smooth(JORDAN_N.map(P), false) }, svg);
+    svgEl('path', { class: 'm-river', d: smooth(JORDAN_S.map(P), false) }, svg);
+    // Time-of-day veil sits above terrain and water, below routes, markers and labels.
+    svgEl('rect', { x: 0, y: 0, width: MAP.w, height: MAP.h, class: 'm-veil' }, svg);
+
+    const routes = svgEl('g', {}, svg);
+    const markers = svgEl('g', {}, svg);
+    routeEls = { routes, markers };
+
+    // Scale bar (5 km) and north arrow.
+    const sb = svgEl('g', { transform: `translate(${MAP.w - 150}, ${MAP.h - 30})` }, svg);
+    svgEl('path', { class: 'm-scale', d: 'M0,0 v-6 M0,0 h100 v-6 M50,0 v-4' }, sb);
+    const sbText = svgEl('text', { class: 'm-scale-text', x: 0, y: 14 }, sb);
+    sbText.id = 'scale-text';
+    const north = svgEl('g', { transform: `translate(${MAP.w - 26}, 70)` }, svg);
+    svgEl('path', { d: 'M0,-14 L5,4 L0,0 L-5,4 Z', class: 'm-dot' }, north);
+    svgEl('text', { class: 'm-north', x: -4, y: -20 }, north).textContent = 'N';
+
+    // HTML labels (stay legible at any size).
+    const labels = $('#map-labels');
+    const pct = (ll) => { const [x, y] = P(ll); return [x / MAP.w * 100, y / MAP.h * 100]; };
+    const addLabel = (ll, html, cls, extra = '') => { const [x, y] = pct(ll); const el = h('span', { class: `lbl ${cls}`, style: `left:${x}%;top:${y}%;${extra}` }, html); labels.appendChild(el); return el; };
+    addLabel([35.575, 32.80], 'Sea of Galilee<small>c. −210 m</small>', 'water', 'transform:translate(-50%,-50%) rotate(-8deg)');
+    addLabel([35.47, 32.905], 'Galilee', 'region');
+    addLabel([35.700, 32.905], 'Gaulanitis', 'region');
+    addLabel([35.71, 32.73], 'Decapolis', 'region');
+    addLabel([35.494, 32.835], 'Arbel', 'place left', 'font-weight:400;font-size:11px;color:var(--ink-soft)');
+    for (const [id, p] of Object.entries(PLACES)) {
+      const side = ['kursi', 'hippos', 'ettell', 'elaraj', 'magdala'].includes(id) ? 'right' : 'left';
+      const el = addLabel(p.ll, `${p.name}${p.note ? `<small>${p.note}</small>` : ''}`, `place ${side}`);
+      el.dataset.place = id;
+    }
+  });
+
+  function drawRoute(animate) {
+    if (!routeEls) return;
+    const { routes, markers } = routeEls;
+    routes.replaceChildren(); markers.replaceChildren();
+    const r = ROUTES[mxState.site];
+    const boatPts = r.boat.map(P), footPts = r.foot.map(P);
+    const full = footPts.length ? boatPts.concat(footPts.slice(1)) : boatPts;
+    svgEl('path', { class: 'm-route boat', d: smooth(boatPts, false) }, routes);
+    if (footPts.length) svgEl('path', { class: 'm-route foot', d: smooth(footPts, false) }, routes);
+    const glow = svgEl('path', { class: 'm-travelled-glow', d: smooth(full, false) }, routes);
+    const line = svgEl('path', { class: 'm-travelled', d: smooth(full, false) }, routes);
+    // Places.
+    for (const [id, p] of Object.entries(PLACES)) {
+      const [x, y] = P(p.ll);
+      if (id === 'ettell' || id === 'elaraj') {
+        if (id !== mxState.site) svgEl('circle', { class: 'm-cand', cx: x, cy: y, r: 7 }, markers);
+        continue;
+      }
+      svgEl('circle', { class: `m-dot${id === 'capernaum' ? '' : ' minor'}`, cx: x, cy: y, r: id === 'capernaum' ? 4.5 : 3.5 }, markers);
+    }
+    const [tx, ty] = P(PLACES[mxState.site].ll);
+    svgEl('circle', { class: 'm-near', cx: tx, cy: ty, r: 34 }, markers);
+    const halo = svgEl('circle', { class: 'm-halo', cx: tx, cy: ty, r: 15 }, markers);
+    const lamp = svgEl('circle', { class: 'm-lamp', cx: tx, cy: ty, r: 6 }, markers);
+    document.querySelectorAll('#map-labels .lbl.place').forEach((el) => el.classList.toggle('active', el.dataset.place === mxState.site || el.dataset.place === 'capernaum'));
+    if (!animate || reduceMotion) return;
+    const len = line.getTotalLength();
+    [line, glow].forEach((el) => { el.style.strokeDasharray = `${len}`; el.style.strokeDashoffset = `${len}`; });
+    const t0 = performance.now(), dur = 2200;
+    const step = (now) => {
+      const k = Math.min(1, (now - t0) / dur), e = k < 0.5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      const off = len * (1 - e);
+      [line, glow].forEach((el) => { el.style.strokeDashoffset = `${off}`; });
+      const pt = line.getPointAtLength(len * e);
+      [halo, lamp].forEach((el) => { el.setAttribute('cx', pt.x); el.setAttribute('cy', pt.y); });
+      if (k < 1) requestAnimationFrame(step);
+      else [line, glow].forEach((el) => { el.style.strokeDasharray = ''; el.style.strokeDashoffset = ''; });
+    };
+    requestAnimationFrame(step);
+  }
+
+  function updateLeg() {
+    const km = haversineKm(PLACES.capernaum.ll, PLACES[mxState.site].ll);
+    $('#mx-leg').textContent = `Capernaum → ${PLACES[mxState.site].name} ≈ ${fmt(km)}`;
+    const st = $('#scale-text');
+    if (st) st.textContent = mxState.unit === 'km' ? '5 km' : `5 km ≈ ${fmt(5)}`;
+  }
+  function renderPassage() {
+    const p = PASSAGES[mxState.gospel];
+    $('#passage').innerHTML = p.verses.map(([v, t]) => v === 'gap' ? '<p class="gap">…</p>' : `<p><sup class="v">${v}</sup>${t}</p>`).join('');
+    $('#passage').setAttribute('aria-labelledby', `tab-${mxState.gospel}`);
+    $('#mx-time').innerHTML = p.time;
+    applySceneLight();
+  }
+  function applySceneLight() {
+    mx.dataset.light = mxState.scene === 'follow' ? PASSAGES[mxState.gospel].light : mxState.scene;
+  }
+  run('explorer', () => {
+    const tabs = [...document.querySelectorAll('#gospel-tabs .tab')];
+    const select = (tab) => {
+      tabs.forEach((t) => { const on = t === tab; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
+      mxState.gospel = tab.dataset.g; renderPassage();
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => select(t));
+      t.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        next.focus(); select(next);
+      });
+    });
+    document.querySelectorAll('#site-chips .chip').forEach((c) => c.addEventListener('click', () => {
+      mxState.site = c.dataset.site;
+      document.querySelectorAll('#site-chips .chip').forEach((x) => x.setAttribute('aria-checked', String(x === c)));
+      updateLeg(); drawRoute(true);
+    }));
+    document.querySelectorAll('#units button').forEach((b) => b.addEventListener('click', () => {
+      mxState.unit = b.dataset.unit;
+      document.querySelectorAll('#units button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      updateLeg();
+    }));
+    $('#scene-light').addEventListener('change', (e) => { mxState.scene = e.target.value; applySceneLight(); });
+    $('#walk').addEventListener('click', () => drawRoute(true));
+    renderPassage(); updateLeg(); drawRoute(false);
+  });
+
+  /* ---------- 2. light states ---------- */
+  const SWATCH = {
+    unstated: { q: 'Most events. The text gives no time of day, so the scene stays neutral.', ref: '' },
+    predawn: { q: '“Early in the morning, while it was still dark, Jesus got up and went out to a solitary place to pray.”', ref: 'Mk 1:35 · also Mt 14:25, Jn 20:1' },
+    dawn: { q: '“Very early on the first day of the week, just after sunrise, they went to the tomb.”', ref: 'Mk 16:2 · also Jn 18:28, Jn 21:4' },
+    day: { q: '“It was the third hour when they crucified Him.”', ref: 'Mk 15:25 · also Mk 15:34' },
+    midday: { q: '“It was about the sixth hour.”', ref: 'Jn 4:6 · most read this as about noon; the counting of hours is debated' },
+    evening: { q: '“When evening came, the disciples came to Him…”', ref: 'Mt 14:15 · also Mk 1:32, Mk 4:35, Lk 24:29' },
+    night: { q: '“He came to Jesus at night…”', ref: 'Jn 3:2 · also Lk 2:8, Jn 13:30' },
+    darkness: { q: '“From the sixth hour until the ninth hour darkness came over all the land.”', ref: 'Mt 27:45 · Mk 15:33 · Lk 23:44' },
+  };
+  function miniScene(svg, seed) {
+    const R = rng(seed);
+    svgEl('rect', { x: 0, y: 0, width: 240, height: 96, style: 'fill: var(--paper-raised)' }, svg);
+    svgEl('path', { class: 'm-high', d: 'M0,52 C40,40 70,46 110,38 C150,30 190,44 240,36 L240,96 L0,96 Z' }, svg);
+    svgEl('path', { class: 'm-water', d: 'M0,62 C60,58 180,58 240,62 L240,96 L0,96 Z' }, svg);
+    svgEl('path', { class: 'm-shore', d: 'M0,62 C60,58 180,58 240,62', style: 'stroke-width:1' }, svg);
+    for (let i = 0; i < 6; i++) { const x = 20 + R() * 200, y = 70 + R() * 20; svgEl('path', { class: 'm-ripple', d: `M${x},${y} q5,-2.5 10,0` }, svg); }
+    svgEl('rect', { x: 0, y: 0, width: 240, height: 96, class: 'm-veil' }, svg);
+    svgEl('circle', { cx: 168, cy: 30, r: 11, style: 'fill: var(--glow); opacity: .35' }, svg);
+    svgEl('circle', { cx: 168, cy: 30, r: 4, class: 'm-lamp', style: 'stroke-width:1.5' }, svg);
+  }
+  run('swatches', () => {
+    const wrap = $('#swatches');
+    STATES.forEach((s, i) => {
+      const b = h('button', { type: 'button', class: 'swatch-card', 'data-light': s, 'data-state': s, 'aria-pressed': 'false' });
+      const svg = svgEl('svg', { viewBox: '0 0 240 96', 'aria-hidden': 'true' });
+      miniScene(svg, 20 + i);
+      b.appendChild(svg);
+      b.appendChild(h('span', { class: 'sw-body' }, `<span class="sw-name">${STATE_NAMES[s]}</span><span class="sw-q">${SWATCH[s].q}</span>${SWATCH[s].ref ? `<span class="sw-ref">${SWATCH[s].ref}</span>` : ''}`));
+      b.addEventListener('click', () => { stopWeek(); setPageLight(document.body.dataset.light === s ? '' : s); });
+      wrap.appendChild(b);
+    });
+  });
+
+  const WEEK = [
+    { s: 'evening', ref: 'Mark 14:17', q: 'When evening came, Jesus arrived with the Twelve.' },
+    { s: 'night', ref: 'John 13:30', q: 'As soon as he had received the morsel, Judas went out into the night.' },
+    { s: 'night', ref: 'John 18:3 · implied', q: 'They arrived at the garden carrying lanterns, torches, and weapons.' },
+    { s: 'dawn', ref: 'Mark 15:1', q: 'Early in the morning, the chief priests, elders, scribes, and the whole Sanhedrin devised a plan.' },
+    { s: 'day', ref: 'Mark 15:25', q: 'It was the third hour when they crucified Him.' },
+    { s: 'darkness', ref: 'Mark 15:33', q: 'From the sixth hour until the ninth hour darkness came over all the land.' },
+    { s: 'day', ref: 'Mark 15:34', q: 'At the ninth hour, Jesus cried out in a loud voice, “Eloi, Eloi, lema sabachthani?”…' },
+    { s: 'evening', ref: 'Mark 15:42', q: 'Now it was already evening.' },
+    { s: 'unstated', ref: 'Luke 23:56', q: 'And they rested on the Sabbath, according to the commandment.' },
+    { s: 'predawn', ref: 'John 20:1', q: 'Early on the first day of the week, while it was still dark, Mary Magdalene went to the tomb…' },
+    { s: 'dawn', ref: 'Mark 16:2', q: 'Very early on the first day of the week, just after sunrise, they went to the tomb.' },
+  ];
+  let weekTimer = null, weekIndex = -1, weekPrev = '';
+  const weekItems = [];
+  function showWeekStep(i) {
+    weekIndex = i;
+    const w = WEEK[i];
+    setPageLight(w.s);
+    weekItems.forEach((li, k) => { if (k === i) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current'); });
+    $('#toast-q').innerHTML = `${w.q}<span class="ref">${w.ref} · ${STATE_NAMES[w.s]} · ${i + 1} of ${WEEK.length}</span>`;
+  }
+  const playLabels = (playing) => ['#play-week', '#play-week-2'].forEach((id) => { const b = $(id); if (b) b.textContent = playing ? '■ Stop the final week' : '▶ Play the final week'; });
+  function stopWeek(restore) {
+    if (weekTimer) clearTimeout(weekTimer);
+    weekTimer = null;
+    if (weekIndex >= 0) {
+      weekItems.forEach((li) => li.removeAttribute('aria-current'));
+      $('#toast').hidden = true;
+      weekIndex = -1;
+      playLabels(false);
+      if (restore) setPageLight(weekPrev);
+    }
+  }
+  function playWeek() {
+    if (weekTimer || weekIndex >= 0) { stopWeek(true); return; }
+    weekPrev = document.body.dataset.light || '';
+    $('#toast').hidden = false;
+    playLabels(true);
+    const tick = (i) => {
+      showWeekStep(i);
+      weekTimer = setTimeout(() => { if (i + 1 < WEEK.length) tick(i + 1); else { weekTimer = setTimeout(() => stopWeek(true), 2600); } }, 2600);
+    };
+    tick(0);
+  }
+  run('final week', () => {
+    const ol = $('#week-list');
+    WEEK.forEach((w, i) => {
+      const li = h('li', {}, `<button type="button" class="wk"><span class="chip-l" style="background:${statePaper[w.s] || 'transparent'}"></span><span class="q">${w.q}<span class="ref">${w.ref}</span></span></button>`);
+      li.querySelector('.wk').addEventListener('click', () => { stopWeek(); setPageLight(w.s); });
+      weekItems.push(li); ol.appendChild(li);
+    });
+    $('#play-week').addEventListener('click', playWeek);
+    $('#play-week-2').addEventListener('click', playWeek);
+    $('#toast-stop').addEventListener('click', () => stopWeek(true));
+  });
+
+  /* ---------- 3. type specimens ---------- */
+  run('type', () => {
+    const T = [
+      { id: 'field-notes', name: 'Field Notes', fonts: 'Fraunces · Newsreader · Courier Prime · Figtree', note: 'Soft, hand-made warmth; the typewriter mono nods to BibleProject.' },
+      { id: 'codex', name: 'Codex', fonts: 'Cormorant · Literata · IBM Plex Mono · Instrument Sans', note: 'Bookish and scholarly; the most formal of the three.' },
+      { id: 'inscription', name: 'Inscription', fonts: 'Marcellus · Alegreya · Martian Mono · Alegreya Sans', note: 'Carved-stone capitals, like the Pilate Stone; calligraphic reading face.' },
+    ];
+    const wrap = $('#types');
+    for (const t of T) {
+      const c = h('article', { class: 'type-card', 'data-type': t.id }, `
+        <div class="tc-name"><h3 style="font-size:var(--step-1)">${t.name}</h3><button type="button" class="btn ghost tc-use" data-use="${t.id}" aria-pressed="false">Use</button></div>
+        <p class="tc-fonts">${t.fonts}</p>
+        <p class="tc-title">Feeding the five thousand</p>
+        <p class="tc-text"><sup class="v">39</sup>Then Jesus directed them to have the people sit in groups on the green grass. <sup class="v">40</sup>So they sat down in groups of hundreds and fifties.</p>
+        <p class="tc-read">c. AD 29 · PASSOVER NEAR · JN 6:4 · 6.1 KM</p>
+        <div class="tc-ui"><span class="btn">Compare accounts</span><span class="chip" aria-hidden="true">et-Tell <span class="score">330</span></span><span class="fine">4 of 4</span></div>
+        <p class="tc-hand">Sea of Galilee</p>
+        <p class="fine">${t.note}</p>`);
+      wrap.appendChild(c);
+    }
+    wrap.querySelectorAll('.tc-use').forEach((b) => b.addEventListener('click', () => setType(b.dataset.use)));
+    setType(document.body.dataset.type || 'field-notes');
+  });
+
+  /* ---------- 4. gospels ---------- */
+  run('gospels', () => {
+    const info = { mat: ['Cinnabar', '#C14106', '#BD371B'], mrk: ['Murex purple', '#6E3985', '#A9399D'], luk: ['Malachite', '#0C7F5E', '#32A889'], jhn: ['Egyptian blue', '#1371D0', '#3292F1'] };
+    const wrap = $('#gospel-cards');
+    for (const [g, [pig, day, dark]] of Object.entries(info)) {
+      wrap.appendChild(h('div', { class: 'g-card', style: `--g: var(--gospel-${g})` }, `<span class="roundel">${ABBR[g]}</span><h3>${GOSPELS[g]}</h3><span class="pig">${pig}</span><span class="hex">day ${day} · night ${dark}</span>`));
+    }
+    const sample = { mat: [6, 18, 31, 47, 52, 66, 79, 88, 94], mrk: [14, 31, 47, 58, 66, 79, 88, 94], luk: [6, 18, 27, 40, 52, 66, 79, 88, 94, 97], jhn: [9, 22, 25, 35, 61, 74, 88, 94] };
+    for (const [id, label] of [['#ld-day', 'Day states (on papyrus)'], ['#ld-night', 'Night and darkness']]) {
+      const box = $(id);
+      box.appendChild(h('span', { class: 'ld-name' }, label));
+      for (const g of Object.keys(GOSPELS)) {
+        const row = h('div', { class: 'ld-row', style: `--g: var(--gospel-${g})` }, `<span>${ABBR[g]}</span><div class="ld-track">${sample[g].map((x) => `<i style="left:${x}%"></i>`).join('')}</div>`);
+        box.appendChild(row);
+      }
+    }
+  });
+
+  /* ---------- 5. shoutout cards ---------- */
+  const ICONS = {
+    archaeology: '<path d="M4 20l6-6"/><path d="M10 14l7-7 3 3-7 7z"/><path d="M14 10l2 2"/>',
+    ancient: '<path d="M7 4h11v13a3 3 0 0 1-3 3H7"/><path d="M7 4a3 3 0 0 0-3 3v1h3"/><path d="M7 20a3 3 0 0 1-3-3V8"/><path d="M10 9h5M10 12h5M10 15h3"/>',
+    ot: '<path d="M3 6c3-1 6-1 9 1 3-2 6-2 9-1v12c-3-1-6-1-9 1-3-2-6-2-9-1z"/><path d="M12 7v12"/>',
+    geography: '<path d="M2 20l7-12 4 6 2-3 7 9z"/><path d="M7 16c2-1 4-1 6 0"/>',
+    culture: '<path d="M4 14c2 3 12 3 14 0l2-3h-6c-1.5-2-6.5-2-8 0H4z"/><path d="M20 8c0-1.6 1-2.6 1-3.6"/>',
+    language: '<path d="M4 5h16v10H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/>',
+    textual: '<path d="M6 3h9l3 3v15H6z"/><path d="M15 3v3h3"/><path d="M9 10h6M9 13h6M9 16h3"/>',
+    compare: '<path d="M4 5h7v14H4zM13 5h7v14h-7z"/>',
+  };
+  const icon = (k) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+  run('cards', () => {
+    const CARDS = [
+      { k: 'archaeology', kind: 'Archaeology', title: 'The Pilate Stone', body: '<p>A limestone block found in 1961 by Antonio Frova’s Italian expedition, re-used in the theatre at Caesarea Maritima. Its Latin inscription names Pontius Pilate with the title prefect of Judaea.</p><div class="inscription">[…]S TIBERIEVM<br>[…PO]NTIVS PILATVS<br>[…PRAEF]ECTVS IVDA[EA]E</div>', standing: [['Object genuine', 'consensus'], ['Same Pilate as the gospels', 'consensus']], sources: ['Israel Museum, Jerusalem (original; a replica stands at Caesarea)', 'A. Frova, Rendiconti dell’Istituto Lombardo 95 (1961)', 'Pilate in the gospels: Mt 27:2 · Mk 15:1 · Lk 3:1 · Jn 18:29'] },
+      { k: 'ancient', kind: 'Outside the Bible', title: 'Tacitus on “Christus”', body: '<p>Writing about the fire of Rome under Nero (AD 64), the Roman historian explains who the Christians were.</p><div class="quote"><span>“Christus, from whom the name had its origin, suffered the extreme penalty during the reign of Tiberius at the hands of one of our procurators, Pontius Pilatus.”</span><span class="ref">Tacitus, Annals 15.44 (c. AD 116)</span></div><p class="fine">Tacitus uses the title of his own day, procurator. The Caesarea inscription shows Pilate’s own title was prefect.</p>', standing: [['Passage genuine', 'consensus']], sources: ['Tacitus, Annals 15.44', 'Translation: A. J. Church and W. J. Brodribb (1876), public domain'] },
+      { k: 'ot', kind: 'Old Testament quotation', title: '“To fulfill what was spoken”', body: '<div class="quote"><span>“This took place to fulfill what was spoken through the prophet: “Say to the Daughter of Zion, ‘See, your King comes to you, gentle and riding on a donkey, on a colt, the foal of a donkey.’””</span><span class="ref">Mt 21:4–5</span></div><p>John quotes the same prophecy, “as it is written” (12:14–15). Matthew’s opening words follow Isaiah 62:11.</p><p class="fine">Only quotations the gospel itself marks appear as this card. Possible allusions are labelled proposed.</p>', standing: [], sources: ['Zechariah 9:9 · Isaiah 62:11', 'Mt 21:4–5 · Jn 12:14–15'] },
+      { k: 'geography', kind: 'Geography', title: 'Up to Jerusalem, down to Jericho', body: '<p>Jericho lies about 250 m below sea level and Jerusalem about 750 m above it, roughly 25 km apart. That climb is why the texts go “up to Jerusalem” (Lk 19:28) and “down from Jerusalem to Jericho” (Lk 10:30).</p><svg class="profile" viewBox="0 0 320 96" role="img" aria-label="Elevation: Jericho about minus 250 metres, Jerusalem about plus 750 metres, 25 kilometres apart."><line x1="34" y1="70" x2="300" y2="70" class="sea"/><text x="2" y="73">0 m</text><path class="pf" d="M34,86 L300,16 L300,90 L34,90 Z"/><path class="pl" d="M34,86 L300,16"/><circle cx="34" cy="86" r="3" style="fill:var(--ink)"/><circle cx="300" cy="16" r="3" style="fill:var(--ink)"/><text x="40" y="84">Jericho −250 m</text><text x="214" y="12">Jerusalem +750 m</text><text x="140" y="94">≈ 25 km</text></svg><p class="fine">Straight line between the endpoints. The prototype draws the real profile from the terrain data.</p>', standing: [], sources: ['Elevations: approximate survey values', 'Lk 19:28 · Lk 10:30'] },
+      { k: 'culture', kind: 'Culture & custom', title: 'Water and light at Tabernacles', body: '<p>At the Feast of Tabernacles, priests poured water drawn from the Pool of Siloam at the altar, and great lamps lit the temple courts. John sets two sayings at this feast:</p><div class="quote"><span>“If anyone is thirsty, let him come to Me and drink.”</span><span class="ref">Jn 7:37</span><span>“I am the light of the world.”</span><span class="ref">Jn 8:12 · spoken “near the treasury”, 8:20</span></div>', standing: [['Mishnah (c. AD 200) reflects temple practice of Jesus’ day', 'majority']], sources: ['Mishnah, Sukkah 4:9 (the water); 5:2–4 (the lamps)', 'Jn 7:2 · 7:37–38 · 8:12 · 8:20'] },
+      { k: 'language', kind: 'Language', title: 'Jesus’ Aramaic, kept by Mark', body: '<p>Mark keeps several of Jesus’ Aramaic words and translates them for Greek readers.</p><div class="quote"><span>“Talitha koum!” which means, “Little girl, I say to you, get up!”</span><span class="ref">Mk 5:41</span><span>“Ephphatha!” (which means, “Be opened!”)</span><span class="ref">Mk 7:34</span><span>“Abba, Father”</span><span class="ref">Mk 14:36</span><span>“Eloi, Eloi, lema sabachthani?” which means, “My God, My God, why have You forsaken Me?”</span><span class="ref">Mk 15:34</span></div>', standing: [], sources: ['Mk 5:41 · 7:34 · 14:36 · 15:34'] },
+      { k: 'textual', kind: 'Textual note', title: 'Where Mark ends', body: '<p>The two oldest complete manuscripts of Mark, Codex Sinaiticus and Codex Vaticanus (both 4th century), end at 16:8. Most later manuscripts continue with verses 9–20. The BSB prints 9–20 with a footnote: “Some early manuscripts end the Gospel of Mark after verse 8.”</p><div class="quote"><span>“So the women left the tomb and ran away, trembling and bewildered. And in their fear they did not say a word to anyone.”</span><span class="ref">Mk 16:8</span></div>', standing: [['What the manuscripts contain', 'consensus'], ['Verses 9–20 a later addition', 'majority']], sources: ['Codex Sinaiticus, British Library Add MS 43725', 'Codex Vaticanus, Vatican Library, Vat. gr. 1209', 'BSB footnote at Mark 16:8'] },
+      { k: 'compare', kind: 'Comparing the accounts', title: 'One animal or two?', body: '<div class="compare2"><div style="--g: var(--gospel-mat)"><span class="ref">Matthew 21:2</span><span>“you will find a donkey tied there, with her colt beside her”</span></div><div style="--g: var(--gospel-mrk)"><span class="ref">Mark 11:2 · Luke 19:30 · John 12:14</span><span>“you will find a colt tied there, on which no one has ever sat” · “Finding a young donkey, Jesus sat on it”</span></div></div><p>Proposed explanations: <b>harmonising</b> — the colt’s mother came too, and Matthew mentions both; <b>source-critical</b> — Matthew reads the two parallel lines of Zechariah 9:9 as two animals.</p>', standing: [['Explanation', 'debated']], sources: ['Commentaries on Mt 21:1–7, e.g. R. T. France, The Gospel of Matthew (NICNT, 2007)', 'W. D. Davies and D. C. Allison, Matthew 19–28 (ICC, 1997)'] },
+    ];
+    const wrap = $('#cards');
+    for (const c of CARDS) {
+      const standing = c.standing.length ? `<div class="standing">${c.standing.map(([what, s]) => `<span class="tag">${what} · <b>${s}</b></span>`).join('')}</div>` : '';
+      wrap.appendChild(h('article', { class: 'card' }, `<div class="card-head">${icon(c.k)}<span class="card-kind">${c.kind}</span><span class="badge">AI draft</span></div><h3>${c.title}</h3>${c.body}${standing}<ol class="sources">${c.sources.map((s) => `<li>${s}</li>`).join('')}</ol>`));
+    }
+  });
+
+  /* ---------- 6. map key ---------- */
+  run('key', () => {
+    const PLACE_ICONS = [
+      ['Town', '<path d="M3 20V10h3V7h3v3h6V7h3v3h3v10z"/><path d="M10 20v-4h4v4"/>'],
+      ['Village', '<path d="M3 20v-6l4-3 4 3v6z"/><path d="M13 20v-8l4-3 4 3v8z"/>'],
+      ['Mountain', '<path d="M2 20l7-12 4 6 2-3 7 9z"/>'],
+      ['Spring or pool', '<path d="M12 4c-2 3-3 5-3 6a3 3 0 0 0 6 0c0-1-1-3-3-6z"/><path d="M4 16c2-2 4 2 6 0s4 2 6 0 4 2 4 2"/><path d="M4 20c2-2 4 2 6 0s4 2 6 0 4 2 4 2"/>'],
+      ['Well', '<path d="M5 10h14"/><path d="M7 10v10h10V10"/><path d="M6 7l6-3 6 3"/><path d="M12 7v3"/>'],
+      ['Harbour', '<path d="M3 15h18l-3 4H6z"/><path d="M12 15V4l6 8h-6"/>'],
+      ['Garden', '<path d="M12 21v-7"/><path d="M12 14c-4 0-7-2-7-5s3-5 7-5 7 2 7 5-3 5-7 5z"/><path d="M9 9h.01M14 7h.01M14 11h.01"/>'],
+      ['Tomb', '<path d="M3 20h18"/><path d="M4 20v-7c0-4 4-7 8-7s8 3 8 7v7"/><circle cx="15" cy="16" r="3.5"/>'],
+      ['Temple', '<path d="M4 20h16"/><path d="M6 20v-9h12v9"/><path d="M5 11l7-6 7 6"/><path d="M10 20v-5h4v5"/>'],
+      ['Fortress or palace', '<path d="M4 20V8l3 2V6l3 2V5l2 1 2-1v3l3-2v4l3-2v12z"/>'],
+      ['Region', '<path d="M4 4h16v16H4z"/><path d="M4 12l8-8M4 20L20 4M12 20l8-8"/>'],
+    ];
+    const wrap = $('#icons');
+    for (const [name, d] of PLACE_ICONS) wrap.appendChild(h('div', { class: 'icon-tile' }, `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg><span>${name}</span>`));
+    const MARKERS = [
+      ['<circle cx="28" cy="15" r="5" class="m-dot"/>', 'Visited place', 'An event has already happened here.'],
+      ['<circle cx="28" cy="15" r="5" style="fill:var(--paper-raised);stroke:var(--ink);stroke-width:1.5"/>', 'Coming up', 'An event later in the order.'],
+      ['<circle cx="28" cy="15" r="8" class="m-cand"/>', 'Candidate site', 'Another proposed location, with its score.'],
+      ['<circle cx="28" cy="15" r="13" class="m-near"/><circle cx="28" cy="15" r="3" class="m-lamp" style="stroke-width:1"/>', 'Near a place', 'The text says “near”, so the area is shown, not a point.'],
+      ['<path d="M2 15h52" class="m-route boat"/>', 'By boat, stated', 'The text says they went by boat.'],
+      ['<path d="M2 15h52" class="m-route foot"/>', 'Route reconstructed', 'The way is not given; drawn along likely terrain.'],
+      ['<path d="M2 15h52" class="m-travelled-glow"/><path d="M2 15h52" class="m-travelled"/>', 'Travelled so far', 'Lights up as you move through events.'],
+    ];
+    const mk = $('#markers');
+    for (const [svg, b, s] of MARKERS) mk.appendChild(h('div', { class: 'marker-row' }, `<svg viewBox="0 0 56 30" aria-hidden="true">${svg}</svg><div><b>${b}</b><span>${s}</span></div>`));
+  });
+
+  /* ---------- 7. timeline ---------- */
+  const PHASES = [['birth', 'Birth'], ['prep', 'Preparation'], ['early', 'Early ministry'], ['galilee', 'Galilee'], ['judea', 'Judea'], ['week', 'Final week'], ['risen', 'Resurrection']];
+  const EVENTS = [
+    { t: 'Birth in Bethlehem', ph: 'birth', g: { mat: 'Mt 1:18–25', luk: 'Lk 2:1–20' }, l: { luk: 'night' }, y: [-4.3, -4.3] },
+    { t: 'Magi; flight to Egypt', ph: 'birth', g: { mat: 'Mt 2:1–23' }, l: { mat: 'night' }, y: [-3.6, -3.6] },
+    { t: 'Baptism by John', ph: 'prep', g: { mat: 'Mt 3:13–17', mrk: 'Mk 1:9–11', luk: 'Lk 3:21–22', jhn: 'Jn 1:29–34' }, l: {}, y: [27.75, 29.75] },
+    { t: 'Wedding at Cana', ph: 'early', g: { jhn: 'Jn 2:1–11' }, l: {}, y: [28.1, 30.1] },
+    { t: 'Temple courts cleared (John)', ph: 'early', g: { jhn: 'Jn 2:13–22' }, l: {}, feast: 'Passover', y: [28.27, 30.27] },
+    { t: 'Nicodemus comes at night', ph: 'early', g: { jhn: 'Jn 3:1–21' }, l: { jhn: 'night' }, y: [28.3, 30.3] },
+    { t: 'The Samaritan woman at the well', ph: 'early', g: { jhn: 'Jn 4:1–42' }, l: { jhn: 'midday' }, y: [28.95, 30.95] },
+    { t: 'Fishermen called', ph: 'galilee', g: { mat: 'Mt 4:18–22', mrk: 'Mk 1:16–20', luk: 'Lk 5:1–11' }, l: {}, y: [29.02, 31.05] },
+    { t: 'Sermon on the Mount / on the Plain', ph: 'galilee', g: { mat: 'Mt 5:1–7:29', luk: 'Lk 6:17–49' }, l: {}, y: [29.1, 31.3] },
+    { t: 'Demoniac(s) across the lake', ph: 'galilee', g: { mat: 'Mt 8:28–34', mrk: 'Mk 5:1–20', luk: 'Lk 8:26–39' }, l: {}, y: [29.18, 31.7] },
+    { t: 'Feeding the five thousand', ph: 'galilee', g: { mat: 'Mt 14:13–21', mrk: 'Mk 6:30–44', luk: 'Lk 9:10–17', jhn: 'Jn 6:1–15' }, l: { mat: 'evening', mrk: 'evening', luk: 'evening' }, feast: 'Passover near', y: [29.25, 32.25] },
+    { t: 'Walking on the water', ph: 'galilee', g: { mat: 'Mt 14:22–33', mrk: 'Mk 6:45–52', jhn: 'Jn 6:16–21' }, l: { mat: 'predawn', mrk: 'predawn', jhn: 'night' }, y: [29.26, 32.26] },
+    { t: 'Peter’s declaration at Caesarea Philippi', ph: 'galilee', g: { mat: 'Mt 16:13–20', mrk: 'Mk 8:27–30', luk: 'Lk 9:18–21' }, l: {}, y: [29.6, 32.6] },
+    { t: 'Lazarus raised', ph: 'judea', g: { jhn: 'Jn 11:1–44' }, l: {}, y: [30.1, 33.1] },
+    { t: 'Entry into Jerusalem', ph: 'week', g: { mat: 'Mt 21:1–11', mrk: 'Mk 11:1–11', luk: 'Lk 19:28–44', jhn: 'Jn 12:12–19' }, l: { mrk: 'evening' }, feast: 'Passover', y: [30.252, 33.241] },
+    { t: 'Temple courts cleared (Synoptics)', ph: 'week', g: { mat: 'Mt 21:12–17', mrk: 'Mk 11:15–19', luk: 'Lk 19:45–48' }, l: {}, y: [30.255, 33.244] },
+    { t: 'The Last Supper', ph: 'week', g: { mat: 'Mt 26:17–30', mrk: 'Mk 14:12–26', luk: 'Lk 22:7–38', jhn: 'Jn 13:1–17:26' }, l: { mat: 'evening', mrk: 'evening', jhn: 'night' }, y: [30.263, 33.252] },
+    { t: 'Gethsemane; the arrest', ph: 'week', g: { mat: 'Mt 26:36–56', mrk: 'Mk 14:32–52', luk: 'Lk 22:39–53', jhn: 'Jn 18:1–12' }, l: { mat: 'night', mrk: 'night', luk: 'night', jhn: 'night' }, y: [30.2635, 33.2525] },
+    { t: 'Before Caiaphas; Peter’s denials', ph: 'week', g: { mat: 'Mt 26:57–75', mrk: 'Mk 14:53–72', luk: 'Lk 22:54–71', jhn: 'Jn 18:13–27' }, l: { mat: 'predawn', mrk: 'predawn', luk: 'dawn', jhn: 'predawn' }, y: [30.264, 33.253] },
+    { t: 'Before Pilate', ph: 'week', g: { mat: 'Mt 27:1–26', mrk: 'Mk 15:1–15', luk: 'Lk 23:1–25', jhn: 'Jn 18:28–19:16' }, l: { mat: 'dawn', mrk: 'dawn', jhn: 'dawn' }, y: [30.2645, 33.2535] },
+    { t: 'Crucifixion; burial', ph: 'week', g: { mat: 'Mt 27:27–61', mrk: 'Mk 15:16–47', luk: 'Lk 23:26–56', jhn: 'Jn 19:16–42' }, l: { mat: 'darkness', mrk: 'darkness', luk: 'darkness', jhn: 'midday' }, y: [30.265, 33.254] },
+    { t: 'The empty tomb', ph: 'risen', g: { mat: 'Mt 28:1–10', mrk: 'Mk 16:1–8', luk: 'Lk 24:1–12', jhn: 'Jn 20:1–18' }, l: { mat: 'dawn', mrk: 'dawn', luk: 'dawn', jhn: 'predawn' }, y: [30.271, 33.26] },
+    { t: 'The road to Emmaus', ph: 'risen', g: { luk: 'Lk 24:13–35' }, l: { luk: 'evening' }, y: [30.272, 33.261] },
+    { t: 'Ascension', ph: 'risen', g: { luk: 'Lk 24:50–53', oth: 'Acts 1:6–12' }, l: {}, y: [30.378, 33.367] },
+  ];
+  const yearLabel = (y) => y < 1 ? `${Math.round(1 - y)} BC` : `AD ${Math.floor(y)}`;
+  run('timeline', () => {
+    const tl = { axis: 'seq', chron: 0, cur: 10 };
+    const grid = $('#tl-grid');
+    const rows = {};
+    const addRow = (key, label, cls) => {
+      grid.appendChild(h('span', { class: 'tl-lab' }, label));
+      const row = h('div', { class: `tl-row ${cls}` });
+      grid.appendChild(row); rows[key] = row; return row;
+    };
+    addRow('phases', '', 'phases');
+    addRow('light', 'Light', 'light');
+    for (const g of ['mat', 'mrk', 'luk', 'jhn', 'oth']) { const r = addRow(g, ABBR[g], 'lane'); if (g !== 'oth') r.style.setProperty('--g', `var(--gospel-${g})`); }
+    addRow('axis', '', 'axis');
+    // The plot overlay spans the lanes and carries the playhead; it lets clicks through to the dots.
+    const plot = h('div', { class: 'tl-plot', tabindex: '0', role: 'slider', 'aria-label': 'Timeline position', 'aria-valuemin': '1', 'aria-valuemax': String(EVENTS.length) });
+    plot.style.cssText = 'grid-column:2;grid-row:1 / span 8;position:relative;pointer-events:none;';
+    grid.appendChild(plot);
+    const playhead = h('div', { class: 'tl-playhead' }); plot.appendChild(playhead);
+    const brk = h('div', { class: 'tl-break' }); rows.axis.appendChild(brk);
+    const bracket = h('div', { class: 'tl-bracket' }, 'final week · 7 events in 6 days'); rows.axis.appendChild(bracket);
+
+    const phaseEls = PHASES.map(([id, name]) => { const el = h('div', { class: 'tl-phase', title: name }, name); rows.phases.appendChild(el); return [id, el]; });
+    const cellEls = EVENTS.map((e) => {
+      const present = ['mat', 'mrk', 'luk', 'jhn'].filter((g) => e.g[g]);
+      const el = h('div', { class: 'tl-cell', title: `${e.t}: ${present.map((g) => `${ABBR[g]} ${STATE_NAMES[e.l[g] || 'unstated'].toLowerCase()}`).join(', ')}` });
+      el.innerHTML = present.map((g) => `<i style="background:${statePaper[e.l[g] || 'unstated']}"></i>`).join('');
+      rows.light.appendChild(el); return el;
+    });
+    const dotEls = [];
+    EVENTS.forEach((e, i) => {
+      for (const g of Object.keys(e.g)) {
+        const d = h('button', { type: 'button', class: `tl-dot${g === 'oth' ? ' oth' : ''}`, 'aria-label': `${e.t}, ${e.g[g]}`, title: `${e.t} · ${e.g[g]}`, tabindex: '-1' });
+        d.addEventListener('click', () => select(i));
+        rows[g].appendChild(d); dotEls.push([i, d]);
+      }
+    });
+    const ticks = [];
+    const addTick = (y, mode) => { const el = h('span', { class: 'tl-tick' }, yearLabel(y)); el.dataset.mode = mode; el.dataset.y = y; rows.axis.appendChild(el); ticks.push(el); };
+    [-5, -3].forEach((y) => addTick(y, 'time'));
+    [27, 28, 29, 30, 31, 32, 33].forEach((y) => addTick(y, 'time'));
+
+    // Broken axis: the birth years on the left, the hidden years cut out, then AD 26.6–33.6.
+    const xTime = (y) => y < 10 ? 1 + 9 * (y + 6.5) / 5 : 13 + 76 * (y - 26.6) / 7;
+    const xOf = (i) => tl.axis === 'seq' ? 2 + 96 * i / (EVENTS.length - 1) : xTime(EVENTS[i].y[tl.chron]);
+    function layout() {
+      // Spread events that would overlap in Time mode (the final week spans days).
+      const xs = EVENTS.map((_, i) => xOf(i));
+      if (tl.axis === 'time') for (let i = 1; i < xs.length; i++) if (xs[i] - xs[i - 1] < 1.1 && xs[i] - xs[i - 1] >= 0) xs[i] = xs[i - 1] + 1.1;
+      dotEls.forEach(([i, d]) => { d.style.left = `${xs[i]}%`; });
+      cellEls.forEach((el, i) => { el.style.left = `${xs[i]}%`; });
+      for (const [id, el] of phaseEls) {
+        const idx = EVENTS.map((e, i) => e.ph === id ? i : -1).filter((i) => i >= 0);
+        const a = Math.min(...idx.map((i) => xs[i])) - 1.2, b = Math.max(...idx.map((i) => xs[i])) + 1.2;
+        el.style.left = `${a}%`; el.style.width = `${Math.max(2.4, b - a)}%`;
+      }
+      ticks.forEach((el) => { el.style.left = `${xTime(+el.dataset.y)}%`; el.style.opacity = tl.axis === 'time' ? '1' : '0'; });
+      brk.style.left = '10.3%'; brk.style.opacity = tl.axis === 'time' ? '1' : '0';
+      const wk = EVENTS.map((e, i) => e.ph === 'week' ? i : -1).filter((i) => i >= 0);
+      bracket.style.left = `${xs[wk[0]] - 0.8}%`; bracket.style.width = `${xs[wk[wk.length - 1]] - xs[wk[0]] + 1.6}%`;
+      bracket.style.opacity = tl.axis === 'time' ? '1' : '0';
+      playhead.style.left = `${xs[tl.cur]}%`;
+      tl.xs = xs;
+    }
+    function select(i) {
+      tl.cur = Math.max(0, Math.min(EVENTS.length - 1, i));
+      const e = EVENTS[tl.cur];
+      dotEls.forEach(([k, d]) => d.setAttribute('aria-current', String(k === tl.cur)));
+      playhead.style.left = `${tl.xs[tl.cur]}%`;
+      plot.setAttribute('aria-valuenow', String(tl.cur + 1));
+      plot.setAttribute('aria-valuetext', e.t);
+      const refs = Object.entries(e.g).map(([g, r]) => r).join(' · ');
+      const lights = ['mat', 'mrk', 'luk', 'jhn'].filter((g) => e.g[g]).map((g) => `${ABBR[g]} ${STATE_NAMES[e.l[g] || 'unstated'].toLowerCase()}`).join(', ');
+      $('#tl-readout').innerHTML = `<span class="t">${tl.cur + 1} / ${EVENTS.length} · ${e.t}</span><span class="r">${refs}${e.feast ? ` · ${e.feast}` : ''}</span><span class="r">c. ${yearLabel(e.y[tl.chron])} (${tl.chron ? 'AD 33' : 'AD 30'} chronology) · light: ${lights}</span>`;
+    }
+    const nearest = (clientX) => {
+      const r = plot.getBoundingClientRect(), x = (clientX - r.left) / r.width * 100;
+      let best = 0, bd = Infinity; tl.xs.forEach((v, i) => { const d = Math.abs(v - x); if (d < bd) { bd = d; best = i; } });
+      return best;
+    };
+    let dragging = false;
+    grid.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.tl-dot') || e.clientX < plot.getBoundingClientRect().left) return;
+      dragging = true; grid.setPointerCapture(e.pointerId); plot.focus({ preventScroll: true }); select(nearest(e.clientX));
+    });
+    grid.addEventListener('pointermove', (e) => { if (dragging) select(nearest(e.clientX)); });
+    grid.addEventListener('pointerup', () => { dragging = false; });
+    grid.addEventListener('pointercancel', () => { dragging = false; });
+    plot.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); select(tl.cur + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); select(tl.cur - 1); }
+      if (e.key === 'Home') { e.preventDefault(); select(0); }
+      if (e.key === 'End') { e.preventDefault(); select(EVENTS.length - 1); }
+    });
+    const seg = (id, key, apply) => document.querySelectorAll(`#${id} button`).forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll(`#${id} button`).forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+      apply(b.dataset[key]); layout(); select(tl.cur);
+    }));
+    seg('axis-seg', 'axis', (v) => { tl.axis = v; });
+    seg('chron-seg', 'chron', (v) => { tl.chron = v === 'ad33' ? 1 : 0; });
+    const foot = $('#tl-foot');
+    foot.innerHTML = STATES.map((s) => `<span><i style="background:${statePaper[s]}"></i>${STATE_NAMES[s]}</span>`).join('') + '<span><i style="background:var(--paper-raised);box-shadow:inset 0 0 0 2px var(--ink-soft);border-radius:50%"></i>NT = Acts 1</span>';
+    layout(); select(tl.cur);
+  });
+
+  /* ---------- 8. art comparison ---------- */
+  function vignette(svg, figures) {
+    const R = rng(42);
+    svgEl('rect', { x: 0, y: 0, width: 600, height: 360, class: 'a-sky' }, svg);
+    svgEl('path', { class: 'a-far', d: 'M0,120 C80,96 150,110 230,92 C320,72 400,98 480,84 C530,76 570,86 600,82 L600,170 L0,170 Z' }, svg);
+    svgEl('path', { class: 'a-water', d: 'M0,150 C150,142 450,142 600,150 L600,236 L0,236 Z' }, svg);
+    for (let i = 0; i < 16; i++) { const x = 20 + R() * 560, y = 160 + R() * 60; svgEl('path', { class: 'a-ripple', d: `M${x.toFixed(0)},${y.toFixed(0)} q7,-3 14,0`, opacity: '0.7' }, svg); }
+    // Boats drawn up on the shore.
+    [[96, 218], [148, 224]].forEach(([x, y]) => {
+      svgEl('path', { class: 'a-boat', d: `M${x - 26},${y} L${x + 26},${y} L${x + 18},${y + 9} L${x - 18},${y + 9} Z` }, svg);
+      svgEl('path', { class: 'a-ink', d: `M${x},${y} V${y - 26} L${x + 14},${y - 6}` }, svg);
+    });
+    svgEl('path', { class: 'a-grass', d: 'M0,230 C120,214 260,222 380,212 C470,205 540,214 600,208 L600,360 L0,360 Z' }, svg);
+    svgEl('path', { class: 'a-shore', d: 'M0,230 C120,214 260,222 380,212 C470,205 540,214 600,208' }, svg);
+    for (let i = 0; i < 140; i++) { const x = R() * 600, y = 236 + R() * 120; svgEl('line', { class: 'a-blade', x1: x.toFixed(1), y1: y.toFixed(1), x2: (x + (R() - 0.5) * 3).toFixed(1), y2: (y - 4 - R() * 4).toFixed(1) }, svg); }
+    // Groups "of hundreds and fifties" (Mk 6:40), drawn as blocks of patches or figures.
+    const groups = [[300, 258, 7, 3], [410, 252, 6, 3], [505, 262, 5, 3], [330, 306, 8, 3], [455, 304, 7, 3], [230, 300, 5, 2]];
+    for (const [gx, gy, cols, rowsN] of groups) {
+      for (let r = 0; r < rowsN; r++) for (let c = 0; c < cols; c++) {
+        const x = gx + c * 13 + (r % 2) * 6 + (R() - 0.5) * 2, y = gy + r * 13 + (R() - 0.5) * 2;
+        if (figures) {
+          const tone = ['#9C6B4E', '#7E5A43', '#B2805C', '#6D4C3A'][Math.floor(R() * 4)];
+          const cloth = ['#8C6F55', '#6F7F6A', '#A88F6A', '#7B6A86', '#5F7486'][Math.floor(R() * 5)];
+          svgEl('path', { class: 'a-person', d: `M${(x - 5).toFixed(1)},${(y + 8).toFixed(1)} q5,-11 10,0 z`, style: `fill:${cloth}` }, svg);
+          svgEl('circle', { class: 'a-person', cx: x.toFixed(1), cy: (y - 4).toFixed(1), r: 3, style: `fill:${tone}` }, svg);
+        } else {
+          svgEl('ellipse', { class: 'a-patch', cx: x.toFixed(1), cy: (y + 2).toFixed(1), rx: 5, ry: 3.2 }, svg);
+        }
+      }
+    }
+    // Twelve basketfuls (Mk 6:43), five loaves and two fish.
+    for (let i = 0; i < 12; i++) {
+      const x = 40 + i * 17, y = 318 + (i % 2) * 4;
+      svgEl('path', { class: 'a-basket', d: `M${x - 7},${y} L${x + 7},${y} L${x + 5},${y + 11} L${x - 5},${y + 11} Z` }, svg);
+      svgEl('path', { class: 'a-ink', d: `M${x - 6},${y + 4} H${x + 6} M${x - 5.5},${y + 7.5} H${x + 5.5}`, style: 'stroke-width:0.7' }, svg);
+    }
+    for (let i = 0; i < 5; i++) svgEl('ellipse', { class: 'a-loaf', cx: 190 + i * 13, cy: 272, rx: 6, ry: 3.8 }, svg);
+    [[194, 286], [222, 288]].forEach(([x, y]) => svgEl('path', { class: 'a-fish', d: `M${x - 9},${y} q9,-6 16,0 l5,-4 v8 l-5,-4 q-7,6 -16,0 z` }, svg));
+    svgEl('rect', { x: 0, y: 0, width: 600, height: 360, class: 'a-veil' }, svg);
+    // The light marks where Jesus is; he is not drawn.
+    svgEl('circle', { cx: 252, cy: 262, r: 24, class: 'm-halo' }, svg);
+    svgEl('circle', { cx: 252, cy: 262, r: 7, class: 'm-lamp' }, svg);
+  }
+  run('art', () => { vignette($('#art-a'), false); vignette($('#art-b'), true); });
+})();
+</script>

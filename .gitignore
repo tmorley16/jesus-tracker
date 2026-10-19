@@ -1,0 +1,24 @@
+# dependencies and build output
+node_modules/
+dist/
+dist-artifact/
+.astro/
+
+# pinned source downloads are fetched by script; their hashes live in data/SOURCES.md
+data/raw/
+
+# local previews and test artefacts
+design/.preview/
+test-results/
+test-results-*/
+*.tmp.config.ts
+playwright-report/
+
+# personal Claude Code settings
+.claude/settings.local.json
+
+# environment and OS files
+.env
+.env.*
+.DS_Store
+Thumbs.db
