@@ -35,8 +35,8 @@ interface Saved {
   modern: boolean;
   notes: NotesShown;
 }
-/** Settings version: 2 starts everyone once on Dynamic colours with the map shown. */
-const VERSION = 2;
+/** Settings version: 2 starts everyone once on Dynamic colours with the map shown; 3 compresses the hidden years. */
+const VERSION = 3;
 function load(): Partial<Saved> & { v?: number } {
   try { return JSON.parse(localStorage.getItem(KEY) ?? '{}'); } catch { return {}; }
 }
@@ -71,8 +71,9 @@ interface UI extends Saved {
 }
 
 const raw = load();
-// Before version 2 the first visit followed a dark device and started without the map; drop those choices once.
-const saved: Partial<Saved> = raw.v === VERSION ? raw : { ...raw, appearance: undefined, map: undefined };
+// Before version 2 the first visit followed a dark device and started without the map; before 3 the hidden years weren't
+// compressed by default. Drop those choices once.
+const saved: Partial<Saved> = raw.v === VERSION ? raw : raw.v === 2 ? { ...raw, compress: undefined } : { ...raw, appearance: undefined, map: undefined, compress: undefined };
 const isBook = (b: unknown): b is Book => (BOOKS as unknown[]).includes(b);
 const validBooks = (v: unknown): Book[] | null => (Array.isArray(v) && v.every(isBook) ? (v as Book[]) : null);
 // First visit: Dynamic colours whatever the device's setting, with the map on screen.
@@ -97,7 +98,7 @@ export const useUI = create<UI>()((set, get) => {
     textSize: saved.textSize ?? 'm',
     spacing: saved.spacing === 'chrono' ? 'chrono' : 'text',
     reckoning: saved.reckoning === 'ad33' ? 'ad33' : 'ad30',
-    compress: saved.compress === true,
+    compress: saved.compress !== false,
     traveller: TRAVELLERS.includes(saved.traveller as Traveller) ? (saved.traveller as Traveller) : 'light',
     wander: saved.wander !== false,
     landLight: saved.landLight !== false,

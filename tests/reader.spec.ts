@@ -99,6 +99,7 @@ test('a dark device still starts on Dynamic colours', async ({ page }) => {
 });
 
 test('the Timeline button hides and shows the scrubber, and remembers it', async ({ page }) => {
+  test.skip(isPhone(), 'a phone always shows the timeline');
   await open(page);
   const btn = page.getByRole('button', { name: 'Timeline', exact: true });
   await expect(btn).toHaveAttribute('aria-pressed', 'true');
@@ -696,7 +697,11 @@ test('the timeline’s Years switch shows estimated years, and Text switches bac
   await shot(page, '08-chronological');
   await page.getByRole('group', { name: 'Timeline scale' }).getByRole('button', { name: 'Text' }).click();
   await expect(years).toHaveAttribute('aria-pressed', 'false');
-  // The switch goes with the timeline.
+  // On a desktop the switch goes with the timeline; a phone always shows both.
+  if (isPhone()) {
+    await expect(page.getByRole('button', { name: 'Timeline', exact: true })).toHaveCount(0);
+    return;
+  }
   await page.getByRole('button', { name: 'Timeline', exact: true }).click();
   await expect(page.getByRole('group', { name: 'Timeline scale' })).toHaveCount(0);
 });
@@ -750,4 +755,24 @@ test('from his death until the angel at the tomb, the colours turn cold and his 
   await goTo(page, 'The earthquake');
   await expect(page.locator('body')).not.toHaveAttribute('data-dead', '');
   await expect(page.locator('body')).toHaveAttribute('data-tint', 'dawn');
+});
+
+test('the timeline keeps its full width, with the scale in the toolbar and a way back from zooming in', async ({ page }) => {
+  await open(page);
+  const width = () => page.locator('.timeline canvas').evaluate((c) => c.getBoundingClientRect().width);
+  const full = await page.locator('.timeline').evaluate((t) => t.clientWidth - 16);
+  expect(await width()).toBeGreaterThan(full - 4);
+  // The switch sits in the toolbar; zooming in brings a way back to the whole timeline.
+  await expect(page.locator('.toolbar').getByRole('group', { name: 'Timeline scale' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Show the whole timeline' })).toHaveCount(0);
+  await page.locator('.timeline-track').focus();
+  await page.keyboard.press('+');
+  await page.getByRole('button', { name: 'Show the whole timeline' }).click();
+  await expect(page.getByRole('button', { name: 'Show the whole timeline' })).toHaveCount(0);
+  await shot(page, '16-controls');
+  // A phone fits the whole toolbar on one row, and has no way to hide the timeline.
+  if (isPhone()) {
+    expect(await page.locator('.toolbar').evaluate((t) => t.offsetHeight)).toBeLessThan(50);
+    await expect(page.getByRole('button', { name: 'Timeline', exact: true })).toHaveCount(0);
+  }
 });

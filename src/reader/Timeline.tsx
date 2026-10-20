@@ -29,6 +29,18 @@ function ellipsize(ctx: CanvasRenderingContext2D, text: string, max: number): st
   return lo > 2 ? `${text.slice(0, lo)}…` : '';
 }
 
+/** The timeline's scale: by length of text, or estimated years. */
+export function ScaleSwitch() {
+  const spacing = useUI((s) => s.spacing);
+  const setSpacing = useUI((s) => s.setSpacing);
+  return (
+    <div className="timeline-scale" role="group" aria-label="Timeline scale">
+      <button type="button" aria-pressed={spacing !== 'chrono'} onClick={() => setSpacing('text')} title="By length of text: the timeline works like a map of the page">Text</button>
+      <button type="button" aria-pressed={spacing === 'chrono'} onClick={() => setSpacing('chrono')} title="Chronological: estimated historical years (AD 30 or AD 33 reckoning in Settings)">Years</button>
+    </div>
+  );
+}
+
 export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -374,7 +386,6 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
 
   const current = useUI((s) => s.current);
   const spacing = useUI((s) => s.spacing);
-  const setSpacing = useUI((s) => s.setSpacing);
   const reckoning = useUI((s) => s.reckoning);
   const tipRow = tip ? ROWS[tip.row] : null;
   const dateText = (i: number) => `c. ${fmtYear(ROWS[i].date[reckoning])}`;
@@ -400,15 +411,13 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
           onPointerLeave={onPointerLeave}
         />
       </div>
-      <div className="timeline-scale" role="group" aria-label="Timeline scale">
-        <button type="button" aria-pressed={spacing !== 'chrono'} onClick={() => setSpacing('text')} title="By length of text: the timeline works like a map of the page">Text</button>
-        <button type="button" aria-pressed={spacing === 'chrono'} onClick={() => setSpacing('chrono')} title="Chronological: estimated historical years (AD 30 or AD 33 reckoning in Settings)">Years</button>
-      </div>
-      <div className="timeline-zoom" role="group" aria-label="Zoom the timeline">
-        {!compact && <button type="button" onClick={() => { io.current.lastManual = performance.now(); zoomAt(playhead.getState().u, 1.8); }} aria-label="Zoom in">+</button>}
-        {!compact && <button type="button" onClick={() => zoomAt(playhead.getState().u, 1 / 1.8)} aria-label="Zoom out" disabled={!zoomed}>−</button>}
-        {(zoomed || !compact) && <button type="button" onClick={() => setView(1, 0)} aria-label="Show the whole timeline" disabled={!zoomed}>⤢</button>}
-      </div>
+      {/* The timeline keeps its full width: the scale switch is in the toolbar, and zooming is by wheel, pinch or the
+          + − 0 keys, with a way back to the whole timeline floating on it while zoomed. */}
+      {zoomed && (
+        <div className="timeline-controls">
+          <button type="button" className="whole" onClick={() => setView(1, 0)} aria-label="Show the whole timeline" title="Show the whole timeline (0)">⤢{!compact && ' Whole timeline'}</button>
+        </div>
+      )}
       {tipRow && (
         <div className="timeline-tip" style={{ left: clamp(tip!.x - 150, 6, Math.max(6, view.current.w - 306)) }} role="tooltip">
           <p className="kicker">§{tipRow.n} · {tipRow.partTitle}{tipRow.subTitle ? ` · ${tipRow.sectionTitle}` : ''}</p>

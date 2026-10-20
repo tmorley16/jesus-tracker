@@ -3,7 +3,7 @@ import { computeLayout, rowAtU } from './layoutModel';
 import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVerse, rowTitle, versePos, type Book, type Reckoning, type Row, type Texts, type VersePos } from './model';
 import { Splitter } from './Splitter';
 import { Synopsis } from './Synopsis';
-import { Timeline } from './Timeline';
+import { ScaleSwitch, Timeline } from './Timeline';
 import { layout, nav, playhead, scene, useUI, type Appearance, type NotesShown, type TextSize, type Traveller } from './state';
 
 const MapPane = lazy(() => import('./MapPane'));
@@ -69,7 +69,7 @@ export default function Reader() {
       const ui = useUI.getState();
       if (e.key === '/') { e.preventDefault(); document.getElementById('goto')?.focus(); return; }
       if (e.key.toLowerCase() === 'm') { ui.toggleMap(); return; }
-      if (e.key.toLowerCase() === 't') { ui.toggleTimeline(); return; }
+      if (e.key.toLowerCase() === 't' && !compact) { ui.toggleTimeline(); return; }
       const n = Number(e.key);
       if (n >= 1 && n <= 4) { if (compact) ui.setSingle(BOOKS[n - 1]); else ui.toggleBook(BOOKS[n - 1]); }
     };
@@ -99,7 +99,7 @@ export default function Reader() {
   return (
     <div className="jt" data-size={textSize} data-compact={compact ? '' : undefined}>
       <Toolbar compact={compact} gospels={gospels} />
-      {timeline && <Timeline shown={mapBooks} compact={compact} />}
+      {(timeline || compact) && <Timeline shown={mapBooks} compact={compact} />}
       <div className="panes" ref={panesRef} data-layout={split} style={{ '--map-share': String(share) } as CSSProperties}>
         {gospels.length > 0 && <Synopsis texts={texts} shown={gospels} single={gospels.length === 1} />}
         {split === 'split' && <Splitter panesRef={panesRef} share={share} vertical={compact} />}
@@ -169,8 +169,8 @@ function Toolbar({ compact, gospels }: { compact: boolean; gospels: Book[] }) {
             <i aria-hidden="true" />{compact ? BOOK_ABBR[b] : BOOK_NAME[b]}
           </button>
         ))}
-        <button type="button" className="map-chip" aria-pressed={map} onClick={ui.toggleMap} title="Show or hide the map (M)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" /><path d="M9 4v14M15 6v14" /></svg>Map
+        <button type="button" className="map-chip" aria-pressed={map} aria-label="Map" onClick={ui.toggleMap} title="Show or hide the map (M)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" /><path d="M9 4v14M15 6v14" /></svg>{!compact && 'Map'}
         </button>
       </div>
       {(!compact || searching) && <GoTo compact={compact} onDone={() => setSearching(false)} />}
@@ -180,10 +180,16 @@ function Toolbar({ compact, gospels }: { compact: boolean; gospels: Book[] }) {
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>
           </button>
         )}
-        <button type="button" className="icon timeline-btn" aria-pressed={timeline} aria-label="Timeline" onClick={ui.toggleTimeline} title="Show or hide the timeline (T)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 9v6M21 9v6" /><rect x="10" y="7" width="4" height="10" rx="1.5" /></svg>
-          {!compact && 'Timeline'}
-        </button>
+        {/* Phones always show the timeline, so there only the scale switch. */}
+        <div className={!compact && timeline ? 'tl-group joined' : 'tl-group'}>
+          {!compact && (
+            <button type="button" className="icon timeline-btn" aria-pressed={timeline} aria-label="Timeline" onClick={ui.toggleTimeline} title="Show or hide the timeline (T)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 9v6M21 9v6" /><rect x="10" y="7" width="4" height="10" rx="1.5" /></svg>
+              Timeline
+            </button>
+          )}
+          {(compact || timeline) && <ScaleSwitch />}
+        </div>
         <button type="button" className="icon settings-btn" aria-label="Settings" aria-haspopup="dialog" onClick={() => ui.setSettingsOpen(!useUI.getState().settingsOpen)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" /></svg>
         </button>

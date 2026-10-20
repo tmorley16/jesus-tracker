@@ -57,22 +57,28 @@ p { margin: 0; }
 
 /* ---- timeline ---- */
 .timeline {
-  position: relative; z-index: 10; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center;
+  position: relative; z-index: 10; display: grid; grid-template-columns: minmax(0, 1fr); align-items: center;
   padding-block: 4px; padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px));
   background: var(--paper-raised); border-bottom: 1px solid var(--line);
 }
 .timeline-track { position: relative; min-width: 0; border-radius: 4px; }
 .timeline-track:focus-visible { outline-offset: 0; }
 .timeline canvas { display: block; cursor: pointer; touch-action: none; }
-/* Text or Years: a two-way switch beside the zoom buttons. */
-.timeline-scale { display: flex; flex-direction: column; padding-left: 8px; }
-.timeline-scale button { height: 24px; padding: 0 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; font-size: 0.75rem; line-height: 1; }
-.timeline-scale button:first-child { border-radius: 6px 6px 0 0; }
-.timeline-scale button:last-child { border-radius: 0 0 6px 6px; border-top: 0; }
+/* The timeline keeps its full width: the scale switch sits in the toolbar, and a way back to the whole timeline floats
+   on it only while zoomed. */
+.timeline-controls { position: absolute; top: 4px; right: max(8px, env(safe-area-inset-right, 0px)); z-index: 2; display: flex; align-items: center; padding-left: 6px; background: var(--paper-raised); }
+.timeline-controls .whole { height: 18px; padding: 0 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); cursor: pointer; font-size: 0.72rem; line-height: 1; }
+.jt[data-compact] .timeline-controls .whole { height: 15px; padding: 0 5px; }
+/* Text or Years, in the toolbar; on a desktop it joins the Timeline button as one control. */
+.tl-group { display: flex; }
+.timeline-scale { display: flex; }
+.timeline-scale button { height: 32px; padding: 0 9px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; font-size: 0.8rem; line-height: 1; }
+.timeline-scale button + button { border-left: 0; }
+.timeline-scale button:first-child { border-radius: 8px 0 0 8px; }
+.timeline-scale button:last-child { border-radius: 0 8px 8px 0; }
 .timeline-scale button[aria-pressed="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
-.timeline-zoom { display: flex; flex-direction: column; gap: 4px; padding-left: 8px; }
-.timeline-zoom button { width: 28px; height: 26px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); cursor: pointer; font-size: 0.95rem; line-height: 1; }
-.timeline-zoom button:disabled { opacity: 0.4; cursor: default; }
+.tl-group.joined .timeline-btn { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.tl-group.joined .timeline-scale button:first-child { border-radius: 0; border-left: 0; }
 .timeline-tip {
   position: absolute; top: calc(100% + 6px); z-index: 40; width: 300px; padding: 10px 12px; pointer-events: none;
   background: var(--paper-raised); border: 1px solid var(--ink-faint); border-radius: 8px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
@@ -338,16 +344,21 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .maplibregl-canvas { transition: filter var(--light-duration) ease; }
 
 /* ---- phones ---- */
-.jt[data-compact] .toolbar { gap: 8px; padding-block: 6px; }
-.jt[data-compact] .gospels button { padding: 4px 10px 4px 8px; }
+/* One row on a phone: tighter chips, the Map chip as an icon, and smaller tools. */
+.jt[data-compact] .toolbar { gap: 6px; padding-block: 6px; padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px)); }
+.jt[data-compact] .gospels { gap: 4px; }
+.jt[data-compact] .gospels button { gap: 5px; padding: 4px 8px 4px 7px; }
+.jt[data-compact] .gospels button i { width: 8px; height: 8px; }
+.jt[data-compact] .gospels .map-chip { padding: 4px 7px; }
+.jt[data-compact] .tools { gap: 4px; }
+.jt[data-compact] .icon { height: 30px; min-width: 30px; padding: 0 6px; }
+.jt[data-compact] .timeline-scale button { height: 30px; padding: 0 7px; font-size: 0.75rem; }
 .jt[data-compact] .goto { position: absolute; z-index: 30; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); top: 6px; max-width: none; }
 .jt[data-compact] .col-h { padding: 6px 16px 7px; }
 .jt[data-compact] .row-head { padding: 8px 16px 6px; }
 .jt[data-compact] .row-head h3 { font-size: 1.08rem; }
 .jt[data-compact] .cell { padding: 4px 16px 16px; }
 .jt[data-compact] .part-div { padding: 24px 16px 6px; }
-.jt[data-compact] .timeline-zoom, .jt[data-compact] .timeline-scale { padding-left: 4px; }
-.jt[data-compact] .timeline-scale button { height: 22px; padding: 0 6px; font-size: 0.7rem; }
 .jt[data-compact] .timeline-tip { display: none; }
 .jt[data-compact] .panes[data-layout="split"] { grid-template-columns: minmax(0, 1fr); grid-template-rows: calc(var(--map-share) * (100% - 10px)) 10px minmax(0, 1fr); }
 .jt[data-compact] .panes[data-layout="split"] .map-pane { order: -2; }
