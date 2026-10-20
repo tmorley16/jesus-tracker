@@ -2,7 +2,7 @@
 // and the note itself, shown on hover or focus and kept open when clicked or tapped.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { BOOK_ABBR, NOTES, NOTE_KIND_NAME, noteForOmitted, parseLoc, rowForVerse, type Book, type Note } from './model';
-import { nav, useUI, type NotesShown } from './state';
+import { showRow, type NotesShown } from './state';
 
 const letter = (n: number) => String.fromCharCode(97 + (n % 26)).repeat(Math.floor(n / 26) + 1);
 const noteId = (book: Book, key: string, i: number) => `${book}|${key}|${i}`;
@@ -59,13 +59,7 @@ function NoteBody({ note, onGo }: { note: Note; onGo: (loc: string) => void }) {
 /** Scroll to the row with a verse, opening that gospel first if it's hidden (on a phone, reading it in place of the one shown). */
 export function showVerse(book: Book, c: number, v: number) {
   const i = rowForVerse(book, c, v);
-  if (i < 0) return;
-  const ui = useUI.getState();
-  const compact = window.matchMedia('(max-width: 760px)').matches; // as Reader decides
-  if (compact ? ui.single !== book || !ui.visible.includes(book) : !ui.visible.includes(book)) {
-    if (compact || ui.visible.length === 1) ui.setSingle(book); else ui.toggleBook(book);
-    requestAnimationFrame(() => requestAnimationFrame(() => nav.toRow?.(i))); // after the new column is measured
-  } else nav.toRow?.(i);
+  if (i >= 0) showRow(i, book);
 }
 
 interface Open { id: string; anchor: HTMLElement; pinned: boolean }

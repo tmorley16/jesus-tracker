@@ -1,9 +1,9 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { computeLayout, rowAtU } from './layoutModel';
-import { BOOK_ABBR, BOOK_NAME, PARALLELS, ROWS, TEXT_NOTES, fmtRef, rowTitle, versesOf, type Book, type Row, type Texts } from './model';
+import { BOOKS, BOOK_ABBR, BOOK_NAME, PARALLELS, ROWS, TEXT_NOTES, fmtRef, rowTitle, versesOf, type Book, type Row, type Texts } from './model';
 import { NotePopover, VerseText, showVerse } from './Notes';
 import { PlaceChip } from './places';
-import { layout, nav, playhead, useUI } from './state';
+import { layout, nav, playhead, useUI, type NotesShown } from './state';
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
@@ -19,6 +19,7 @@ export function Synopsis({ texts, shown, single }: { texts: Texts | null; shown:
   const textSize = useUI((s) => s.textSize);
   const reckoning = useUI((s) => s.reckoning);
   const compress = useUI((s) => s.compress);
+  const notes = useUI((s) => s.notes);
   const geo = useRef<Geo>({ tops: [], heights: [], vis: [], origin: 0, span: 1, anchor: 0 });
   const anim = useRef({ target: 0, tau: 160, raf: 0, last: 0, lastSet: 0 });
   const spacingRef = useRef(spacing);
@@ -132,7 +133,7 @@ export function Synopsis({ texts, shown, single }: { texts: Texts | null; shown:
       s.scrollTop = g.tops[i] + (i === row ? f : 0) * g.heights[i] - g.anchor;
     }
     update();
-  }, [shown, texts, textSize, spacing, reckoning, compress, measure, update]);
+  }, [shown, texts, textSize, notes, spacing, reckoning, compress, measure, update]);
 
   useEffect(() => {
     const s = scrollRef.current, wrap = rowsRef.current;
@@ -182,7 +183,7 @@ export function Synopsis({ texts, shown, single }: { texts: Texts | null; shown:
           const visible = shown.some((b) => row.refs[b]);
           const partStart = visible && row.part !== lastPart;
           if (visible) lastPart = row.part;
-          return <RowView key={row.id} row={row} shown={shown} texts={texts} hidden={!visible} partStart={partStart} single={single} />;
+          return <RowView key={row.id} row={row} shown={shown} texts={texts} hidden={!visible} partStart={partStart} single={single} notes={notes} />;
         })}
       </div>
       <div className="reader-end" aria-hidden="true" />
@@ -204,11 +205,11 @@ function ColumnHead({ book }: { book: Book }) {
   );
 }
 
-const RowView = memo(function RowView({ row, shown, texts, hidden, partStart, single }: {
-  row: Row; shown: Book[]; texts: Texts | null; hidden: boolean; partStart: boolean; single: boolean;
+const RowView = memo(function RowView({ row, shown, texts, hidden, partStart, single, notes }: {
+  row: Row; shown: Book[]; texts: Texts | null; hidden: boolean; partStart: boolean; single: boolean; notes: NotesShown;
 }) {
   if (hidden) return <section data-row={row.i} hidden />;
-  const others = single ? (['MAT', 'MRK', 'LUK', 'JHN'] as Book[]).filter((b) => row.refs[b] && !shown.includes(b)) : [];
+  const others = single ? BOOKS.filter((b) => row.refs[b] && !shown.includes(b)) : [];
   const setSingle = useUI.getState().setSingle;
   return (
     <section className="row" data-row={row.i} id={`row-${row.id}`} aria-labelledby={`h-${row.id}`}>
@@ -232,15 +233,14 @@ const RowView = memo(function RowView({ row, shown, texts, hidden, partStart, si
       </header>
       {row.moved && row.subIndex === 0 && <p className="row-note">{row.moved}</p>}
       <div className="cells" style={{ gridTemplateColumns: `repeat(${shown.length}, minmax(0, 1fr))` }}>
-        {shown.map((b) => <Cell key={b} row={row} book={b} texts={texts} labelEmpty={shown.length > 1} />)}
+        {shown.map((b) => <Cell key={b} row={row} book={b} texts={texts} labelEmpty={shown.length > 1} notesShown={notes} />)}
       </div>
     </section>
   );
 });
 
-function Cell({ row, book, texts, labelEmpty }: { row: Row; book: Book; texts: Texts | null; labelEmpty: boolean }) {
+function Cell({ row, book, texts, labelEmpty, notesShown }: { row: Row; book: Book; texts: Texts | null; labelEmpty: boolean; notesShown: NotesShown }) {
   const ranges = row.refs[book];
-  const notesShown = useUI((s) => s.notes);
   if (!ranges) return <div className="cell empty" style={gospelVar(book)}>{labelEmpty && <span>Not in {BOOK_NAME[book]}</span>}</div>;
   const blocks = texts ? versesOf(texts[book], ranges) : null;
   const pos = (c: number, v: number) => c * 1000 + v;

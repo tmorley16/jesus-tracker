@@ -13,7 +13,7 @@ export async function entities(ids) {
   for (let i = 0; i < missing.length; i += 50) {
     const batch = missing.slice(i, i + 50);
     const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${batch.join('|')}&props=labels|claims|sitelinks&languages=en&sitefilter=enwiki&format=json`;
-    const res = await fetch(url, { headers: { 'User-Agent': 'JesusTracker/0.1 (data build script)' } });
+    const res = await fetch(url, { headers: { 'User-Agent': 'JesusTracker/0.1 (data build script)' }, signal: AbortSignal.timeout(60_000) });
     if (!res.ok) throw new Error(`Wikidata answered ${res.status}`);
     const j = await res.json();
     for (const id of batch) {

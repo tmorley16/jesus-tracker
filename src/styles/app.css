@@ -148,8 +148,10 @@ button.omit:hover, button.omit[aria-expanded] { color: var(--ink); text-decorati
 /* ---- BSB footnotes: a letter in the text where the BSB puts each note, and the note itself ---- */
 .fn-mark {
   margin: 0 0.06em; padding: 0 0.16em; border: 0; border-radius: 3px; background: none; color: var(--ink-soft);
-  font: 600 0.6em/1 var(--font-mono); vertical-align: 0.5em; cursor: pointer;
+  position: relative; font: 600 0.6em/1 var(--font-mono); vertical-align: 0.5em; cursor: pointer;
 }
+/* A larger hit area than the letter (about 24 px square), without moving the text. */
+.fn-mark::after { content: ""; position: absolute; inset: -7px -8px; }
 .fn[data-kind="textual"] .fn-mark { color: var(--g); font-weight: 800; }
 .fn-mark:hover, .fn.open .fn-mark { background: color-mix(in oklab, var(--g) 20%, transparent); color: var(--ink); }
 .note-pop {

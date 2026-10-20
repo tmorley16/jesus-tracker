@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const shot = (page: Page, name: string) => page.screenshot({ path: `test-results/shots/${test.info().project.name}-${name}.png` });
+const shot = (page: Page, name: string) => page.screenshot({ path: `${test.info().project.outputDir}/shots/${test.info().project.name}-${name}.png` });
 const currentRow = async (page: Page) => Number(await page.locator('.timeline-track').getAttribute('aria-valuenow'));
 
 async function open(page: Page) {
@@ -772,7 +772,20 @@ test('the timeline keeps its full width, with the scale in the toolbar and a way
   await shot(page, '16-controls');
   // A phone fits the whole toolbar on one row, and has no way to hide the timeline.
   if (isPhone()) {
-    expect(await page.locator('.toolbar').evaluate((t) => t.offsetHeight)).toBeLessThan(50);
+    expect(await page.locator('.toolbar').evaluate((t) => (t as HTMLElement).offsetHeight)).toBeLessThan(50);
     await expect(page.getByRole('button', { name: 'Timeline', exact: true })).toHaveCount(0);
   }
+});
+
+test('a section no gospel narrates (the appearance to James, §182) can be picked from Go to without losing the reader', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await open(page);
+  if (test.info().project.name === 'phone') await page.getByRole('button', { name: 'Go to a passage or event' }).click();
+  await page.locator('#goto').fill('James');
+  await page.getByRole('option').filter({ hasText: '§182' }).click();
+  await page.waitForTimeout(1500);
+  expect(errors).toEqual([]);
+  await expect(page.locator('.cols-head')).toBeVisible();
+  await expect(page.locator('.passage').first()).toBeVisible();
 });

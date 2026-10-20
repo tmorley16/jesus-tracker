@@ -43,11 +43,10 @@ const MENTIONS = new Map<string, number>();
 for (const r of ROWS) for (const k of r.place ? (typeof r.place === 'string' ? [r.place] : Object.values(r.place)) : []) MENTIONS.set(k!, (MENTIONS.get(k!) ?? 0) + 1);
 const MOST = Math.max(...MENTIONS.values());
 
-type Colours = ReturnType<typeof readColours>;
 function readColours(el: Element) {
   const cs = getComputedStyle(el);
   const v = (n: string) => cs.getPropertyValue(n).trim();
-  return { land: v('--land'), water: v('--water'), shore: v('--shore'), ink: v('--ink'), faint: v('--ink-faint'), glow: v('--glow'), glowInk: v('--glow-ink'), veil: v('--map-veil') || v('--veil') || 'rgba(0,0,0,0)' };
+  return { land: v('--land'), water: v('--water'), shore: v('--shore'), ink: v('--ink'), veil: v('--map-veil') || v('--veil') || 'rgba(0,0,0,0)' };
 }
 /** The colour with alpha a (accepts #rrggbb and rgb()/rgba(), which registered custom properties compute to). */
 function withAlpha(colour: string, a: number) {
@@ -80,6 +79,8 @@ const wikiUrl = (title: string) => `https://en.wikipedia.org/wiki/${encodeURICom
 const osmUrl = ([lon, lat]: LonLat, z: number) => `https://www.openstreetmap.org/?mlat=${lat.toFixed(5)}&mlon=${lon.toFixed(5)}#map=${z}/${lat.toFixed(5)}/${lon.toFixed(5)}`;
 const googleUrl = ([lon, lat]: LonLat) => `https://www.google.com/maps/search/?api=1&query=${lat.toFixed(5)}%2C${lon.toFixed(5)}`;
 interface Link { label: string; href: string }
+/** Only web links reach the page (the data's URLs are third-party). */
+const webUrl = (href: string) => /^https?:\/\//i.test(href);
 function placeLinks(key: string, p: PlaceData): Link[] {
   const ll = p.candidates[0].lonlat;
   const z = p.kind === 'region' ? Math.max(5, Math.min(11, Math.round(12 - Math.log2((AREAS[key] ?? 20) / 2)))) : p.kind === 'water' ? 11 : 15;
@@ -88,9 +89,9 @@ function placeLinks(key: string, p: PlaceData): Link[] {
   if (p.openbible) links.push({ label: 'OpenBible.info', href: p.openbible.url });
   // Google Maps where it has a point to show; OpenStreetMap, framed to the area, for regions.
   links.push(p.kind === 'region' ? { label: 'OpenStreetMap', href: osmUrl(ll, z) } : { label: 'Google Maps', href: googleUrl(ll) });
-  return links;
+  return links.filter((l) => webUrl(l.href));
 }
-const linksHtml = (links: Link[]) => `<p class="pp-links">${links.map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join('')}</p>`;
+const linksHtml = (links: Link[]) => `<p class="pp-links">${links.filter((l) => webUrl(l.href)).map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join('')}</p>`;
 /** A modern name OpenBible gives for where the place is shown, when it differs from the place's own. */
 function modernName(p: PlaceData): string | null {
   const label = p.candidates[0]?.label ?? '';
@@ -169,7 +170,8 @@ function makePopup(map: MlMap) {
   const hideSoon = () => { clearTimeout(showT); clearTimeout(hideT); if (!pinned) hideT = window.setTimeout(hide, 300); };
   const hover = (by: object, content: Content) => {
     clearTimeout(hideT); clearTimeout(showT);
-    if (pinned) return;
+    // Pinned, or already showing this one (the mouse moving about a region's area): nothing to rebuild.
+    if (pinned || (owner === by && popup.isOpen())) return;
     showT = window.setTimeout(() => { const c = content(false); if (c) open(c, by, false); }, 150);
   };
   const show = (by: object, content: Content) => {
@@ -191,7 +193,6 @@ function makePopup(map: MlMap) {
 export default function MapPane({ books }: { books: Book[] }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
-  const colours = useRef<Colours | null>(null);
   const traveller = useRef<TravellerMarker | null>(null);
   const popup = useRef<ReturnType<typeof makePopup> | null>(null);
   const head = useRef(1); // how much of the newest leg is drawn (0–1)
@@ -206,6 +207,8 @@ export default function MapPane({ books }: { books: Book[] }) {
   const applyColours = useRef<() => void>(() => {});
   const landLight = useRef<LandLight | null>(null);
   const drawRoute = useRef<() => void>(() => {});
+  // What the route's sources were last sent, so an unchanged route isn't sent again.
+  const sent = useRef<{ plan: unknown; trail: string; arrows: string }>({ plan: null, trail: '', arrows: '' });
   // The lakes' shapes, so the shore of the water he's at can light up.
   const lakeShapes = useRef<FC | null>(null);
   const [places, setPlaces] = useState<Record<string, PlaceData> | null>(null);
@@ -213,6 +216,14 @@ export default function MapPane({ books }: { books: Book[] }) {
   const [ground, setGround] = useState<Ground | null>(null);
   const [peaks, setPeaks] = useState<Peak[]>([]);
   const [ready, setReady] = useState(false);
+  // The map's own data (land, lakes, rivers, places) failed to load.
+  const [failed, setFailed] = useState(false);
+  // The places by Wikidata ID, to tell a peak that is also a place (the Mount of Olives).
+  const placesByWiki = useMemo(() => {
+    const m = new Map<string, string[]>();
+    for (const [k, p] of Object.entries(places ?? {})) if (p.wiki?.id) m.set(p.wiki.id, [...(m.get(p.wiki.id) ?? []), k]);
+    return m;
+  }, [places]);
   const current = useUI((s) => s.current);
   const travellerKind = useUI((s) => s.traveller);
   const wander = useUI((s) => s.wander);
@@ -259,16 +270,25 @@ export default function MapPane({ books }: { books: Book[] }) {
   useEffect(() => {
     let cancelled = false;
     let ro: ResizeObserver | null = null;
+    let labelFrame = 0;
     (async () => {
-      const get = (p: string) => fetch(new URL(p, document.baseURI)).then((r) => r.json());
+      const get = (p: string) => fetch(new URL(p, document.baseURI)).then((r) => { if (!r.ok) throw new Error(`${p}: ${r.status}`); return r.json(); });
       // The light's contours download alongside the map's own data, ready by the time the map has loaded.
       const regionLines = get('data/terrain/region.json');
       regionLines.catch(() => { /* the light is a nicety */ });
-      const [land, lakes, rivers, pl, pk] = await Promise.all([get('data/geo/land.json'), get('data/geo/lakes.json'), get('data/geo/rivers.json'), loadPlaces(), get('data/peaks.json')]);
-      lakeShapes.current = lakes;
+      let data;
+      try {
+        // The peaks are a nicety too: without them the map still shows.
+        data = await Promise.all([get('data/geo/land.json'), get('data/geo/lakes.json'), get('data/geo/rivers.json'), loadPlaces(), get('data/peaks.json').catch(() => ({ peaks: [] as Peak[] }))]);
+      } catch (e) {
+        console.error('Map data failed to load', e);
+        if (!cancelled) setFailed(true);
+        return;
+      }
+      const [land, lakes, rivers, pl, pk] = data;
       if (cancelled || !boxRef.current) return;
+      lakeShapes.current = lakes;
       const c = readColours(boxRef.current);
-      colours.current = c;
       const [W, S, E, N] = WORLD;
       const style: StyleSpecification = {
         version: 8,
@@ -339,12 +359,12 @@ export default function MapPane({ books }: { books: Book[] }) {
       popup.current = pop;
 
       // Labels: placed in priority order on every zoom frame, so they never pile up.
-      let frame = 0, remeasure = false;
+      let remeasure = false;
       declutterSoon.current = (again = false) => {
         remeasure ||= again;
-        if (frame) return;
-        frame = requestAnimationFrame(() => {
-          frame = 0;
+        if (labelFrame) return;
+        labelFrame = requestAnimationFrame(() => {
+          labelFrame = 0;
           const L = labels.current;
           declutter(map, [...L.places.values(), ...L.focus, ...L.peaks, ...L.modern.values()], remeasure);
           remeasure = false;
@@ -355,6 +375,8 @@ export default function MapPane({ books }: { books: Book[] }) {
         if (box.dataset.zoom !== band) { box.dataset.zoom = band; declutterSoon.current(true); }
       };
       map.on('zoom', () => { zoomBand(); declutterSoon.current(); });
+      // Panning doesn't move labels against each other, but brings others into view, which may overlap.
+      map.on('moveend', () => declutterSoon.current());
       zoomBand();
       document.fonts?.ready.then(() => declutterSoon.current(true));
 
@@ -417,7 +439,6 @@ export default function MapPane({ books }: { books: Book[] }) {
       // (Not isStyleLoaded: that's false whenever a source is loading tiles, e.g. throughout a camera flight.)
       if (!map || !boxRef.current || !map.getLayer('veil')) return;
       const c = readColours(boxRef.current);
-      colours.current = c;
       map.setPaintProperty('sea', 'background-color', c.water);
       map.setPaintProperty('land', 'fill-color', c.land);
       map.setPaintProperty('coast', 'line-color', c.shore);
@@ -437,7 +458,20 @@ export default function MapPane({ books }: { books: Book[] }) {
       settled = window.setTimeout(() => applyColours.current(), (Number.isNaN(n) ? 900 : dur.endsWith('ms') ? n : n * 1000) + 60);
     });
     mo.observe(document.body, { attributes: true, attributeFilter: ['data-light', 'data-tint'] });
-    return () => { cancelled = true; window.clearTimeout(settled); mo.disconnect(); ro?.disconnect(); popup.current?.hide(); mapRef.current?.remove(); mapRef.current = null; };
+    return () => {
+      cancelled = true;
+      window.clearTimeout(settled);
+      cancelAnimationFrame(labelFrame);
+      declutterSoon.current = () => {};
+      mo.disconnect();
+      ro?.disconnect();
+      popup.current?.hide();
+      traveller.current?.destroy();
+      traveller.current = null;
+      mapRef.current?.remove();
+      mapRef.current = null;
+      sent.current = { plan: null, trail: '', arrows: '' };
+    };
   }, []);
 
   useEffect(() => { traveller.current?.setKind(travellerKind); }, [travellerKind, ready]);
@@ -498,9 +532,17 @@ export default function MapPane({ books }: { books: Book[] }) {
     const q = (age: number) => (quiet && age === 0 ? 1 : 0);
 
     let arrowShown = !reveal;
-    drawRoute.current = () => {
+    // The legs and arrows are sent only when they change (the effect runs on every row the reading line passes).
+    const trailKey = [...pts.map(stopId), quiet].join('|');
+    if (sent.current.plan !== plan || sent.current.trail !== trailKey) {
       src('trail')?.setData({ type: 'FeatureCollection', features: legs.map((line, k) => ({ type: 'Feature', properties: { age: legs.length - 1 - k, q: q(legs.length - 1 - k) }, geometry: { type: 'LineString', coordinates: line } })) });
-      const recentLegs = legs.slice(-3).map((line, k, all) => ({ age: all.length - 1 - k, mid: halfway(line) }));
+      sent.current = { plan, trail: trailKey, arrows: '' };
+    }
+    const recentLegs = legs.slice(-3).map((line, k, all) => ({ age: all.length - 1 - k, mid: halfway(line) }));
+    drawRoute.current = () => {
+      const arrowsKey = `${trailKey}|${arrowShown}`;
+      if (sent.current.arrows === arrowsKey) return;
+      sent.current.arrows = arrowsKey;
       src('arrows')?.setData({ type: 'FeatureCollection', features: recentLegs.flatMap(({ age, mid }) => (mid && (arrowShown || age > 0) ? [{ type: 'Feature' as const, properties: { age, q: q(age), bearing: mid.bearing }, geometry: { type: 'Point' as const, coordinates: mid.at } }] : [])) });
     };
     drawRoute.current();
@@ -557,7 +599,8 @@ export default function MapPane({ books }: { books: Book[] }) {
       }
     }
     light?.setOutline(shore && 'key' in focus ? focus.key : null, shore ?? []);
-    light?.setPools(focus.kind === 'differ' ? focus.places.map((p) => ({ ll: p.place.candidates[0].lonlat, km: SPLIT_KM })) : null);
+    // (A scene he isn't in gets no light, wherever it's set.)
+    light?.setPools(focus.kind === 'differ' && focus.present ? focus.places.map((p) => ({ ll: p.place.candidates[0].lonlat, km: SPLIT_KM })) : null);
 
     // Places: visited (on the route so far, or named where the accounts differ), current, and label priority.
     const visited = new Set(pts.map((p) => p.key));
@@ -565,9 +608,9 @@ export default function MapPane({ books }: { books: Book[] }) {
     const recent = new Set(pts.slice(-5).map((p) => p.key));
     const currentKeys = new Set(focus.kind === 'differ' ? focus.places.map((p) => p.key) : 'key' in focus ? [focus.key] : []);
     // Places the text on screen names keep their labels, even close in to their neighbours (scripts/build-mentions.mjs).
-    const row = ROWS[current], namedKeys = new Set(books.filter((b) => row.refs[b]).flatMap((b) => row.named[b] ?? []));
+    const shownRow = ROWS[current], namedKeys = new Set(books.filter((b) => shownRow.refs[b]).flatMap((b) => shownRow.named[b] ?? []));
     // A mountain the text names (the Mount of Olives) is what the scene is about: its label comes before other names.
-    const given = row.peaks, mountainKeys = new Set(given?.named ? Object.keys(places).filter((k) => given.ids.includes(places[k].wiki?.id ?? '')) : []);
+    const mountainKeys = new Set(givenNamed ? given!.ids.flatMap((id) => placesByWiki.get(id) ?? []) : []);
     for (const [k, el] of markers.current.places) {
       el.classList.toggle('visited', visited.has(k));
       el.classList.toggle('current', currentKeys.has(k));
@@ -640,6 +683,13 @@ export default function MapPane({ books }: { books: Book[] }) {
       add('map-scene', ll, '<i></i><span>scene</span>');
       const rest = restAt && haversineKm(restAt.to, ll) <= 150 ? [restAt.to] : [];
       fly(() => { flyTo(ll, zoomFor(focus.key, focus.place), false, rest); tr.setOff(); });
+    } else if (focus.kind === 'differ' && !focus.present) {
+      // A scene he isn't in, set at different places by the accounts: an open diamond at each, never a light; his
+      // marker rests where the text last placed him.
+      focus.places.forEach((p) => add('map-scene', p.place.candidates[0].lonlat, `<i></i><span>${p.books.map((b) => BOOK_ABBR[b]).join(', ')}</span>`));
+      const lls = focus.places.map((p) => p.place.candidates[0].lonlat);
+      const rest = restAt && haversineKm(restAt.to, lls[0]) <= 150 ? [restAt.to] : [];
+      fly(() => { fitTo([...lls, ...rest], 90, 10, false); tr.setOff(); });
     } else if (focus.kind === 'differ') {
       // The accounts name different places: a dimmer light at each, labelled with its gospels. Its glow, like his,
       // goes under every other marker and label.
@@ -661,7 +711,7 @@ export default function MapPane({ books }: { books: Book[] }) {
     }
     declutterSoon.current(true);
     return () => window.clearTimeout(t);
-  }, [focus, steps, routeSteps, plan, split, current, places, ready, wander, textPeaks, heading, resting]);
+  }, [focus, steps, routeSteps, plan, split, current, places, placesByWiki, ready, wander, textPeaks, heading, resting]);
 
   // Mountain sections: the named peaks near the place or area shown, with their contours (or, turned on by hand
   // elsewhere, every named mountain, marked only).
@@ -676,7 +726,7 @@ export default function MapPane({ books }: { books: Book[] }) {
       el.className = 'map-peak';
       // A peak that is also one of the places (the Mount of Olives) is named by the place's own label, so its triangle
       // stands without a second one; a mountain the text names comes before other labels.
-      const isPlace = !!places && Object.values(places).some((pl) => pl.wiki?.id === p.id);
+      const isPlace = placesByWiki.has(p.id);
       el.innerHTML = isPlace ? '<i></i>' : `<i></i><span>${esc(p.name)}<small> ≈ ${p.elev} m</small></span>`;
       markers.current.peaks.push(new Marker({ element: el, anchor: 'left', offset: [-6, 0] }).setLngLat(p.lonlat).addTo(map));
       if (!isPlace) labels.current.peaks.push({ el, ll: p.lonlat, anchor: 'left', dx: -6, priority: givenNamed ? 0.5 : 2, flips: true });
@@ -687,8 +737,14 @@ export default function MapPane({ books }: { books: Book[] }) {
     if (!ids.length) { landLight.current?.setMountain(null, [], []); return; }
     let live = true;
     Promise.all(ids.map((id) => {
-      if (!contours.current.has(id)) contours.current.set(id, fetch(new URL(`data/terrain/${id}.json`, document.baseURI)).then((r) => r.json()));
-      return contours.current.get(id)!;
+      let set = contours.current.get(id);
+      if (!set) {
+        // A failed load isn't kept, so the next mountain section tries again.
+        set = fetch(new URL(`data/terrain/${id}.json`, document.baseURI)).then((r) => { if (!r.ok) throw new Error(`${id}: ${r.status}`); return r.json() as Promise<FC>; });
+        set.catch(() => contours.current.delete(id));
+        contours.current.set(id, set);
+      }
+      return set;
     })).then((sets) => {
       if (!live) return;
       // The candidate peaks light up in white, joined to his light; inside their windows their own contours take
@@ -698,7 +754,7 @@ export default function MapPane({ books }: { books: Book[] }) {
       landLight.current?.setMountain(fc, peaks.filter((p) => ids.includes(p.cluster)).map(win), textPeaks.map(win));
     }).catch(() => { /* contours are a nicety; the peaks still show */ });
     return () => { live = false; };
-  }, [nearPeaks, textPeaks, peaks, places, givenNamed, ready]);
+  }, [nearPeaks, textPeaks, peaks, placesByWiki, givenNamed, ready]);
 
   // Light on the land (Settings): with it on, an area is shown by the light itself rather than a shaded circle (the
   // circle stays, unseen, for hovering). From his death until the angel at the tomb the light goes out.
@@ -720,10 +776,15 @@ export default function MapPane({ books }: { books: Book[] }) {
     const shown = markers.current.modern, L = labels.current.modern;
     const clear = () => { shown.forEach((m) => m.remove()); shown.clear(); L.clear(); };
     if (!modern) { clear(); declutterSoon.current(true); return; }
-    modernData.current ??= fetch(new URL('data/geo/modern.json', document.baseURI)).then((r) => r.json()).then((j) => j.places);
+    // A failed load isn't kept, so the next pan or toggle tries again.
+    const load = () => (modernData.current ??= fetch(new URL('data/geo/modern.json', document.baseURI))
+      .then((r) => { if (!r.ok) throw new Error(`modern.json: ${r.status}`); return r.json(); })
+      .then((j) => j.places)
+      .catch((e) => { modernData.current = null; throw e; }));
     let live = true;
     const update = async () => {
-      const all = await modernData.current!;
+      let all: [string, number, number, number][];
+      try { all = await load(); } catch { return; /* the overlay is a nicety */ }
       if (!live) return;
       const z = map.getZoom(), b = map.getBounds().toArray(), pad = 0.3;
       const want = new Set<string>();
@@ -772,7 +833,7 @@ export default function MapPane({ books }: { books: Book[] }) {
             {focus.place.name} <em>· Jesus isn’t in this scene{resting ? `; his marker waits at ${resting.name}, where the text last placed him` : '; the line shows only his movements'}</em>
           </p>
         )}
-        {focus.kind === 'differ' && <p className="map-place-name">{focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')} <em>· the accounts name different places{focus.present ? '; his marker waits between them' : ''}</em></p>}
+        {focus.kind === 'differ' && <p className="map-place-name">{focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')} <em>· the accounts name different places{focus.present ? '; his marker waits between them' : `; Jesus isn’t in this scene${resting ? `; his marker waits at ${resting.name}, where the text last placed him` : ''}`}</em></p>}
         {focus.kind === 'likely' && (
           <p className="map-place-name muted">
             Place not named. {focus.before && focus.after
@@ -782,7 +843,8 @@ export default function MapPane({ books }: { books: Book[] }) {
               : `Likely near ${name(focus.before ?? focus.after)}, the ${focus.before ? 'last' : 'next'} place named.`}
           </p>
         )}
-        {focus.kind === 'none' && (
+        {failed && <p className="map-place-name muted">The map’s data couldn’t be loaded. Reload the page to try again.</p>}
+        {focus.kind === 'none' && !failed && (
           <p className="map-place-name muted">
             {row.jesus ? 'No place is named here.' : `No place is named, and Jesus isn’t in this scene${resting ? `; his marker waits at ${resting.name}, where the text last placed him.` : '.'}`}
           </p>
@@ -828,7 +890,8 @@ function photoHtml(p: PlaceData): string {
   const caption = ph.caption.charAt(0).toUpperCase() + ph.caption.slice(1);
   const by = creditName(ph.author);
   const title = [by ? `Photo: ${by}` : 'Photo', ph.licence, 'Wikimedia Commons'].filter(Boolean).join(' · ');
-  return `<figure class="pp-photo"><img src="${esc(new URL(ph.src, document.baseURI).href)}" alt="${esc(caption)}" decoding="async"><figcaption>${esc(caption)}. <a href="${esc(ph.page)}" target="_blank" rel="noopener" title="${esc(title)}">${esc(by ?? 'Photo')}</a></figcaption></figure>`;
+  const credit = webUrl(ph.page) ? `<a href="${esc(ph.page)}" target="_blank" rel="noopener" title="${esc(title)}">${esc(by ?? 'Photo')}</a>` : `<span title="${esc(title)}">${esc(by ?? 'Photo')}</span>`;
+  return `<figure class="pp-photo"><img src="${esc(new URL(ph.src, document.baseURI).href)}" alt="${esc(caption)}" decoding="async"><figcaption>${esc(caption)}. ${credit}</figcaption></figure>`;
 }
 /** Just the photographer's name from a Commons author line ("Bill Rice from Flat Rock, MI, …" → "Bill Rice"); the link has the rest. */
 function creditName(author: string | null): string | null {

@@ -4,7 +4,7 @@ import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVe
 import { Splitter } from './Splitter';
 import { Synopsis } from './Synopsis';
 import { ScaleSwitch, Timeline } from './Timeline';
-import { layout, nav, playhead, scene, useUI, type Appearance, type NotesShown, type TextSize, type Traveller } from './state';
+import { COMPACT_QUERY, layout, nav, playhead, scene, showRow, useUI, type Appearance, type NotesShown, type TextSize, type Traveller } from './state';
 
 const MapPane = lazy(() => import('./MapPane'));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
@@ -20,25 +20,11 @@ function useMedia(query: string) {
   return match;
 }
 
-/** After the reader has re-rendered for a newly shown gospel, move to a row. */
-const goToRow = (i: number) => requestAnimationFrame(() => requestAnimationFrame(() => nav.toRow?.(i)));
-/** Make sure a row's passage is on screen: on a phone switch to a gospel that has it, otherwise add one if none open has it. */
-function ensureShown(i: number, compact: boolean, book?: Book) {
-  const ui = useUI.getState();
-  const row = ROWS[i];
-  const target = book ?? BOOKS.find((b) => row.refs[b])!;
-  if (compact) {
-    if (ui.visible.length && (!row.refs[ui.single] || book)) ui.setSingle(target);
-  } else if (ui.visible.length) {
-    if (!ui.visible.some((b) => row.refs[b]) || (book && !ui.visible.includes(book))) ui.toggleBook(target);
-  }
-}
-
 export default function Reader() {
   const [texts, setTexts] = useState<Texts | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => { loadTexts().then(setTexts).catch((e: Error) => setError(e.message)); }, []);
-  const compact = useMedia('(max-width: 760px)');
+  const compact = useMedia(COMPACT_QUERY);
   const map = useUI((s) => s.map);
   const timeline = useUI((s) => s.timeline);
   const visible = useUI((s) => s.visible);
@@ -75,11 +61,6 @@ export default function Reader() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [compact]);
-
-  useEffect(() => {
-    nav.showRow = (i) => { ensureShown(i, compact); goToRow(i); };
-    return () => { nav.showRow = null; };
   }, [compact]);
 
   // With only the map on screen there's no text to scroll: the timeline sets the row directly.
@@ -215,7 +196,9 @@ function search(q: string): Hit[] {
   const hits: Hit[] = [];
   for (const r of ROWS) {
     if (!`${r.sectionTitle} ${r.subTitle ?? ''}`.toLowerCase().includes(t)) continue;
-    hits.push({ i: r.i, label: rowTitle(r), sub: `§${r.n} · ${BOOKS.filter((b) => r.refs[b]).map((b) => BOOK_ABBR[b]).join(' ')}`, book: null });
+    const books = BOOKS.filter((b) => r.refs[b]).map((b) => BOOK_ABBR[b]);
+    // A row no gospel has (only 1 Cor) names its own passage; going there shows the next row the gospels have.
+    hits.push({ i: r.i, label: rowTitle(r), sub: `§${r.n} · ${(books.length ? books : r.other).join(' ')}`, book: null });
     if (hits.length === 8) break;
   }
   return hits;
@@ -229,11 +212,11 @@ function GoTo({ compact, onDone }: { compact: boolean; onDone: () => void }) {
   const hits = useMemo(() => search(q), [q]);
   useEffect(() => { if (compact) inputRef.current?.focus(); }, [compact]);
   const pick = (h: Hit) => {
-    ensureShown(h.i, compact, h.book ?? undefined);
-    goToRow(h.i);
+    showRow(h.i, h.book ?? undefined);
     setQ(''); setOpen(false); onDone();
     inputRef.current?.blur();
   };
+  const listed = open && hits.length > 0;
   return (
     <div className="goto">
       <input
@@ -243,8 +226,11 @@ function GoTo({ compact, onDone }: { compact: boolean; onDone: () => void }) {
         value={q}
         placeholder={compact ? 'Mk 6:30 or “storm”' : 'Go to: Mk 6:30, John 3, “storm”   ( / )'}
         aria-label="Go to a passage or an event"
-        aria-expanded={open && hits.length > 0}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={listed}
         aria-controls="goto-list"
+        aria-activedescendant={listed && hits[active] ? `goto-opt-${active}` : undefined}
         autoComplete="off"
         onChange={(e) => { setQ(e.target.value); setOpen(true); setActive(0); }}
         onFocus={() => setOpen(true)}
@@ -256,16 +242,16 @@ function GoTo({ compact, onDone }: { compact: boolean; onDone: () => void }) {
           else if (e.key === 'Escape') { setQ(''); setOpen(false); onDone(); inputRef.current?.blur(); }
         }}
       />
-      {open && hits.length > 0 && (
-        <ul className="goto-list" id="goto-list" role="listbox">
+      {listed && (
+        <ul className="goto-list" id="goto-list" role="listbox" aria-label="Passages and events">
           {hits.map((h, k) => (
-            <li key={`${h.i}-${h.label}`} role="option" aria-selected={k === active} onMouseDown={(e) => { e.preventDefault(); pick(h); }} onMouseEnter={() => setActive(k)}>
+            <li key={`${h.i}-${h.label}`} id={`goto-opt-${k}`} role="option" aria-selected={k === active} onMouseDown={(e) => { e.preventDefault(); pick(h); }} onMouseEnter={() => setActive(k)}>
               <span className="g-label">{h.label}</span><span className="g-sub">{h.sub}</span>
             </li>
           ))}
         </ul>
       )}
-      {open && q.trim().length >= 2 && hits.length === 0 && <p className="goto-none">No passage or event matches “{q.trim()}”.</p>}
+      {open && q.trim().length >= 2 && hits.length === 0 && <p className="goto-none" role="status">No passage or event matches “{q.trim()}”.</p>}
     </div>
   );
 }

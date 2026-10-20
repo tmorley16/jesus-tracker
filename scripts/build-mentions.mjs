@@ -61,6 +61,7 @@ for (const s of harmony.sections) for (const r of s.rows) {
     count += keys.size;
   }
 }
-await writeFile('src/data/mentions.json', JSON.stringify(mentions, null, 0));
+// One row per line, so a change shows as a change to that row.
+const lines = Object.entries(mentions).map(([id, m]) => `${JSON.stringify(id)}:${JSON.stringify(m)}`);
+await writeFile('src/data/mentions.json', `{\n${lines.join(',\n')}\n}\n`);
 console.log(`${Object.keys(mentions).length} of ${rows} rows name a place (${count} by book) → src/data/mentions.json`);
-for (const id of ['s97', 's128b', 's139', 's152', 's66', 's85']) console.log(' ', id, JSON.stringify(mentions[id] ?? {}));

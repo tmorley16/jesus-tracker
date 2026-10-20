@@ -17,6 +17,35 @@ interface Geometry { h: number; partsH: number; feastY: number; lanesTop: number
 const DESKTOP: Geometry = { h: 104, partsH: 18, feastY: 20, lanesTop: 24, laneH: 10, laneGap: 3, titlesY: 88, lightY: 95, miniY: 100, font: 11 };
 const COMPACT: Geometry = { h: 72, partsH: 15, feastY: 16, lanesTop: 19, laneH: 7, laneGap: 2, titlesY: 63, lightY: 66, miniY: 69, font: 10 };
 
+interface Colours { raised: string; sunk: string; paper: string; ink: string; soft: string; faint: string; line: string; glow: string; glowInk: string; gospel: Record<Book, string>; uiFont: string; monoFont: string }
+function readColours(el: Element): Colours {
+  const cs = getComputedStyle(el);
+  const v = (name: string) => cs.getPropertyValue(name).trim();
+  return {
+    raised: v('--paper-raised'), sunk: v('--paper-sunk'), paper: v('--paper'), ink: v('--ink'), soft: v('--ink-soft'), faint: v('--ink-faint'),
+    line: v('--line'), glow: v('--glow'), glowInk: v('--glow-ink'),
+    gospel: { MAT: v('--gospel-mat'), MRK: v('--gospel-mrk'), LUK: v('--gospel-luk'), JHN: v('--gospel-jhn') },
+    uiFont: v('--font-ui') || 'system-ui', monoFont: v('--font-mono') || 'monospace',
+  };
+}
+/** The page's light colours ease in over --light-duration (the minifier writes it as `.9s`), in ms. */
+function lightDuration(): number {
+  const dur = getComputedStyle(document.body).getPropertyValue('--light-duration').trim(), n = parseFloat(dur);
+  return Number.isNaN(n) ? 900 : dur.endsWith('ms') ? n : n * 1000;
+}
+type LightPiece = { from: number; to: number; colour: string };
+/** Each row's light strip for the given gospels, as pieces 0–1 through the row (from the verse counts). */
+function lightPieces(shown: Book[]): (LightPiece[] | null)[] {
+  return ROWS.map((row) => {
+    const breaks = lightBreaks(row, shown), out: LightPiece[] = [];
+    breaks.forEach((b, k) => {
+      const state = deadAt(row, shown, b) ? 'dead' : lightAt(row, shown, b);
+      if (state !== 'unstated') out.push({ from: b, to: breaks[k + 1] ?? 1, colour: TINT[state] });
+    });
+    return out.length ? out : null;
+  });
+}
+
 function rowAt(u: number): number {
   const { starts, ends } = layout.getState();
   return rowAtU(u, starts, ends);
@@ -55,6 +84,9 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
   const appearanceRef = useRef(appearance);
   appearanceRef.current = appearance;
   const raf = useRef(0);
+  // Colours are read from the page only while the light is changing (and on a change of appearance), not every frame.
+  const colours = useRef<Colours | null>(null);
+  const light = useRef<{ shown: Book[]; pieces: (LightPiece[] | null)[] } | null>(null);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current, wrap = wrapRef.current;
@@ -65,16 +97,15 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
     if (!ctx || !w) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, g.h);
-    const cs = getComputedStyle(wrap);
-    const v = (name: string) => cs.getPropertyValue(name).trim();
-    const col = { raised: v('--paper-raised'), sunk: v('--paper-sunk'), paper: v('--paper'), ink: v('--ink'), soft: v('--ink-soft'), faint: v('--ink-faint'), line: v('--line'), glow: v('--glow'), glowInk: v('--glow-ink') };
-    const gospel: Record<Book, string> = { MAT: v('--gospel-mat'), MRK: v('--gospel-mrk'), LUK: v('--gospel-luk'), JHN: v('--gospel-jhn') };
-    const uiFont = v('--font-ui') || 'system-ui', monoFont = v('--font-mono') || 'monospace';
+    const col = colours.current ??= readColours(wrap);
+    const { gospel, uiFont, monoFont } = col;
     const onBar = appearanceRef.current === 'dark' ? col.paper : '#FFFFFF';
     const { starts, ends, years } = layout.getState();
     if (!starts.length) return;
     const X = (u: number) => (u - o) * k * w;
     const shownSet = new Set(shownRef.current);
+    let font = '';
+    const setFont = (f: string) => { if (f !== font) { ctx.font = f; font = f; } };
 
     // Part bands.
     ctx.textBaseline = 'alphabetic';
@@ -85,7 +116,7 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
       ctx.fillRect(x0, 0, x1 - x0, g.partsH);
       ctx.fillStyle = col.line;
       ctx.fillRect(Math.round(x0), 0, 1, g.h);
-      ctx.font = `600 ${g.font}px ${uiFont}`;
+      setFont(`600 ${g.font}px ${uiFont}`);
       const left = Math.max(x0, 0) + 5, room = Math.min(x1, w) - left - 4;
       const label = ellipsize(ctx, p.title, room);
       if (label) { ctx.fillStyle = col.soft; ctx.fillText(label, left, g.partsH - 5); }
@@ -117,7 +148,7 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
         if (!compact && shownSet.has(b) && width > 24) {
           const [c, vv] = ranges[0];
           const label = width > 62 ? `${c}:${vv}` : `${c}`;
-          ctx.font = `600 ${g.laneH - 1}px ${monoFont}`;
+          setFont(`600 ${g.laneH - 1}px ${monoFont}`);
           if (ctx.measureText(label).width < width - 5) { ctx.fillStyle = onBar; ctx.fillText(label, x0 + 3, y + g.laneH - 1.5); }
         }
       });
@@ -128,7 +159,7 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
         ctx.closePath(); ctx.fill();
       }
       if (g.titlesY !== null && !years && width > 72) {
-        ctx.font = `${g.font}px ${uiFont}`;
+        setFont(`${g.font}px ${uiFont}`);
         const t = ellipsize(ctx, `§${row.n} ${rowTitle(row)}`, width - 8);
         if (t) { ctx.fillStyle = col.soft; ctx.fillText(t, x0 + 4, g.titlesY); }
       }
@@ -148,7 +179,7 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
         ctx.restore();
       }
       const inBreak = (u: number) => years.breaks.some(([a, b]) => u > a + 1e-9 && u < b - 1e-9);
-      ctx.font = `${g.font}px ${monoFont}`;
+      setFont(`${g.font}px ${monoFont}`);
       ctx.fillStyle = col.soft;
       let lastX = -Infinity;
       for (let y = Math.ceil(years.first); y <= Math.floor(years.last); y++) {
@@ -163,22 +194,21 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
 
     // Light strip — only in the dynamic colour mode.
     if (appearanceRef.current === 'dynamic') {
+      // A row whose light changes part-way is drawn in pieces, from the verse counts (worked out once per set of gospels).
+      if (light.current?.shown !== shownRef.current) light.current = { shown: shownRef.current, pieces: lightPieces(shownRef.current) };
+      const pieces = light.current.pieces;
+      ctx.globalAlpha = 0.85;
       for (let i = 0; i < ROWS.length; i++) {
-        const s = starts[i], e = ends[i];
-        if (e <= s) continue;
+        const s = starts[i], e = ends[i], ps = pieces[i];
+        if (!ps || e <= s) continue;
         if (X(e) < 0 || X(s) > w) continue;
-        // A row whose light changes part-way is drawn in pieces, from the verse counts.
-        const row = ROWS[i], shown = shownRef.current, breaks = lightBreaks(row, shown);
-        breaks.forEach((b, k) => {
-          const state = deadAt(row, shown, b) ? 'dead' : lightAt(row, shown, b);
-          if (state === 'unstated') return;
-          const x0 = X(s + b * (e - s)), x1 = X(s + (breaks[k + 1] ?? 1) * (e - s));
-          ctx.fillStyle = TINT[state];
-          ctx.globalAlpha = 0.85;
+        for (const p of ps) {
+          const x0 = X(s + p.from * (e - s)), x1 = X(s + p.to * (e - s));
+          ctx.fillStyle = p.colour;
           ctx.fillRect(x0, g.lightY, Math.max(1, x1 - x0), 3);
-          ctx.globalAlpha = 1;
-        });
+        }
       }
+      ctx.globalAlpha = 1;
     }
 
     // The stories set at the place whose popup is open on the map: a pin above each, a line down through the lanes
@@ -290,16 +320,23 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
     return () => { unPlay(); unLayout(); unMarks(); };
   }, [requestDraw]);
 
-  // Colours change with the light: redraw for the length of the transition.
+  // Colours change with the light: read them and redraw each frame for the length of the transition (--light-duration),
+  // then keep the settled colours until the light changes again.
   useEffect(() => {
-    let frames = 0, id = 0;
-    const tick = () => { draw(); if (++frames < 70) id = requestAnimationFrame(tick); };
-    const start = () => { cancelAnimationFrame(id); frames = 0; tick(); };
+    let until = 0, id = 0;
+    const tick = () => {
+      colours.current = null;
+      draw();
+      id = performance.now() < until ? requestAnimationFrame(tick) : 0;
+    };
+    const start = () => { cancelAnimationFrame(id); until = performance.now() + lightDuration() + 60; tick(); };
     const mo = new MutationObserver(start);
     mo.observe(document.body, { attributes: true, attributeFilter: ['data-light', 'data-tint'] });
     start();
     return () => { mo.disconnect(); cancelAnimationFrame(id); };
-  }, [draw, shown, appearance]);
+  }, [draw, appearance]);
+  // A different set of gospels changes the lanes' emphasis and the light strip.
+  useEffect(() => { requestDraw(); }, [shown, requestDraw]);
 
   // Wheel zooms around the cursor; sideways scroll (or Shift) pans. Needs a non-passive listener.
   useEffect(() => {

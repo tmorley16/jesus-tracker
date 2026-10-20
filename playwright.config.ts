@@ -13,5 +13,6 @@ export default defineConfig({
     { name: 'desktop', use: { viewport: { width: 1440, height: 900 } } },
     { name: 'phone', use: { ...devices['Pixel 7'], ...edge } },
   ],
-  webServer: { command: 'npm run preview -- --port 4321', url: 'http://localhost:4321', reuseExistingServer: true, timeout: 60_000 },
+  // The artifact smoke test (ARTIFACT=1) runs against scripts/serve-artifact.mjs instead.
+  webServer: process.env.ARTIFACT ? undefined : { command: 'npm run preview -- --port 4321', url: 'http://localhost:4321', reuseExistingServer: true, timeout: 60_000 },
 });

@@ -12,7 +12,9 @@ const TYPES = { '.js': 'text/javascript', '.css': 'text/css', '.json': 'applicat
 const SKELETON = (page) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body>${page}</body></html>`;
 
 createServer(async (req, res) => {
-  const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  let path;
+  try { path = decodeURIComponent(new URL(req.url, 'http://x').pathname); }
+  catch { res.writeHead(400).end(); return; } // a malformed escape, e.g. /review/%E0
   if (!path.startsWith(BASE)) { res.writeHead(404).end(); return; }
   const rel = normalize(path.slice(BASE.length) || 'index.html');
   if (rel.startsWith('..')) { res.writeHead(400).end(); return; }
@@ -25,4 +27,4 @@ createServer(async (req, res) => {
   } catch {
     res.writeHead(404).end();
   }
-}).listen(PORT, () => console.log(`http://localhost:${PORT}${BASE}`));
+}).listen(PORT, '127.0.0.1', () => console.log(`http://localhost:${PORT}${BASE}`));

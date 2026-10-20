@@ -44,7 +44,7 @@ export interface Move {
 }
 
 /** A move under way: where it set off from (once the camera does), its progress, and the camera it keeps pace with. */
-type Journey = Move & { from: LonLat | null; p: number; cam: { to: LonLat; d0: number; done: boolean } | null; t0: number | null };
+type Journey = Move & { from: LonLat | null; p: number; cam: { to: LonLat; d0: number; done: boolean } | null; t0: number | null; way?: Way };
 
 interface Drift {
   /** How far (km) it drifts; null while the drift dies away. */
@@ -137,6 +137,17 @@ export class TravellerMarker {
     this.place(ll);
   }
 
+  /** Stop for good (the map is going): cancel the animation loops, drop the callbacks and take both markers off. */
+  destroy() {
+    cancelAnimationFrame(this.frame);
+    cancelAnimationFrame(this.driftFrame);
+    this.move = null;
+    this.drift = null;
+    this.onDraw = null;
+    this.marker.remove();
+    this.glow.remove();
+  }
+
   /** Whether a move to `ll` is under way. */
   travellingTo(ll: LonLat | undefined): boolean {
     return !!this.move && !!ll && mdist(this.move.to, ll) < 1e-9;
@@ -187,7 +198,7 @@ export class TravellerMarker {
     } else p = ease(Math.min(1, (now - m.t0!) / 700));
     p = Math.max(m.p, Math.min(1, p));
     m.p = p;
-    this.place(m.path ? along(m.path, p) : [m.from[0] + (m.to[0] - m.from[0]) * p, m.from[1] + (m.to[1] - m.from[1]) * p]);
+    this.place(m.way ? along(m.way, p) : [m.from[0] + (m.to[0] - m.from[0]) * p, m.from[1] + (m.to[1] - m.from[1]) * p]);
     m.onProgress?.(p);
     if (p < 1) this.frame = requestAnimationFrame(this.step);
     else { this.move = null; this.setDrift(m.wanderKm); m.onArrive?.(); }
@@ -199,6 +210,7 @@ export class TravellerMarker {
     this.setDrift(null);
     m.from = this.pos!;
     if (m.path && (m.path.length < 2 || mdist(m.path[0], m.from) > 1e-9 || mdist(m.path[m.path.length - 1], m.to) > 1e-9)) m.path = undefined;
+    if (m.path) m.way = wayOf(m.path);
     return m.from;
   }
 
@@ -273,9 +285,15 @@ export class TravellerMarker {
   }
 }
 
+/** A line with its segments' lengths, worked out once per journey rather than every frame. */
+interface Way { line: LonLat[]; ds: number[]; total: number }
+function wayOf(line: LonLat[]): Way {
+  const ds = line.slice(1).map((q, k) => mdist(line[k], q));
+  return { line, ds, total: ds.reduce((s, d) => s + d, 0) };
+}
+
 /** The point a share `p` (0–1) of the way along a line. */
-function along(line: LonLat[], p: number): LonLat {
-  const ds = line.slice(1).map((q, k) => mdist(line[k], q)), total = ds.reduce((s, d) => s + d, 0);
+function along({ line, ds, total }: Way, p: number): LonLat {
   let left = p * total;
   for (let k = 0; k < ds.length; k++) {
     if (left <= ds[k] && ds[k] > 0) { const t = left / ds[k]; return [line[k][0] + (line[k + 1][0] - line[k][0]) * t, line[k][1] + (line[k + 1][1] - line[k][1]) * t]; }

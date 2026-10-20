@@ -15,6 +15,6 @@ test('the exported review build loads text and map from a sub-path', async ({ pa
   // The map starts open.
   await expect(page.locator('.maplibregl-canvas')).toBeVisible({ timeout: 30_000 });
   await page.waitForTimeout(2500);
-  await page.screenshot({ path: `test-results/shots/${test.info().project.name}-artifact.png` });
+  await page.screenshot({ path: `${test.info().project.outputDir}/shots/${test.info().project.name}-artifact.png` });
   expect(failures).toEqual([]);
 });

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const shot = (page: Page, name: string) => page.screenshot({ path: `test-results/shots/${test.info().project.name}-${name}.png` });
+const shot = (page: Page, name: string) => page.screenshot({ path: `${test.info().project.outputDir}/shots/${test.info().project.name}-${name}.png` });
 const isPhone = () => test.info().project.name === 'phone';
 
 async function open(page: Page, settings: Record<string, unknown> = {}) {

@@ -4,12 +4,14 @@
 // rebuild works offline once everything has been fetched.
 
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 
 const DIR = 'data/raw/commons';
 const CACHE = `${DIR}/files.json`;
 const WIDTH = 500;
 const UA = { 'User-Agent': 'JesusTracker/0.1 (data build script)' };
+const get = (url) => fetch(url, { headers: UA, signal: AbortSignal.timeout(60_000) });
 const strip = (s) => (s ?? '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 
 /** "File:X.jpg", "X.jpg" or a commons.wikimedia.org/wiki/File:… URL → "X.jpg". */
@@ -22,12 +24,12 @@ export function fileName(ref) {
 export async function files(names) {
   let cache = {};
   try { cache = JSON.parse(await readFile(CACHE, 'utf8')); } catch { /* first run */ }
-  const missing = [...new Set(names)].filter((n) => !cache[n]);
+  const missing = [...new Set(names)].filter((n) => !cache[n] || !existsSync(cache[n].thumb)); // re-fetch a lost thumbnail
   await mkdir(`${DIR}/thumbs`, { recursive: true });
   for (let i = 0; i < missing.length; i += 25) {
     const batch = missing.slice(i, i + 25);
     const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(batch.map((n) => `File:${n}`).join('|'))}&prop=imageinfo&iiprop=url|extmetadata&iiurlwidth=${WIDTH}&format=json&formatversion=2&redirects=1`;
-    const res = await fetch(url, { headers: UA });
+    const res = await get(url);
     if (!res.ok) throw new Error(`Commons answered ${res.status}`);
     const j = await res.json();
     const alias = new Map([...(j.query.normalized ?? []), ...(j.query.redirects ?? [])].map((r) => [r.from, r.to]));
@@ -39,7 +41,7 @@ export async function files(names) {
       if (!info) throw new Error(`Commons has no file "${name}"`);
       const m = info.extmetadata ?? {};
       const thumb = `${DIR}/thumbs/${createHash('sha1').update(name).digest('hex').slice(0, 16)}.jpg`;
-      const img = await fetch(info.thumburl ?? info.url, { headers: UA });
+      const img = await get(info.thumburl ?? info.url);
       if (!img.ok) throw new Error(`Commons thumbnail for "${name}" answered ${img.status}`);
       await writeFile(thumb, Buffer.from(await img.arrayBuffer()));
       cache[name] = {
@@ -50,7 +52,7 @@ export async function files(names) {
         thumb,
       };
     }
+    await writeFile(CACHE, JSON.stringify(cache, null, 1)); // after each batch, so a failure later keeps what was fetched
   }
-  if (missing.length) await writeFile(CACHE, JSON.stringify(cache, null, 1));
   return cache;
 }

@@ -8,7 +8,7 @@
 //
 //   node scripts/build-places.mjs   →  public/data/places.json, public/data/photos/{key}.jpg
 
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { fileName, files } from './lib/commons.mjs';
 import { entities } from './lib/wikidata.mjs';
 
@@ -57,13 +57,18 @@ for (const [key, def] of Object.entries(meta.places)) {
 }
 
 const photos = await files(Object.values(photoRefs).map(([name]) => name));
-await rm('public/data/photos', { recursive: true, force: true });
-await mkdir('public/data/photos', { recursive: true });
+// Copy into a fresh folder and swap it in only once every photo is there, so a
+// failure part-way leaves the previous photos in place.
+const PHOTOS = 'public/data/photos', NEXT = `${PHOTOS}.next`;
+await rm(NEXT, { recursive: true, force: true });
+await mkdir(NEXT, { recursive: true });
 for (const [key, [name, caption]] of Object.entries(photoRefs)) {
   const { thumb, ...credit } = photos[name];
-  await copyFile(thumb, `public/data/photos/${key}.jpg`);
+  await copyFile(thumb, `${NEXT}/${key}.jpg`);
   places[key].photo = { src: `data/photos/${key}.jpg`, caption, ...credit };
 }
+await rm(PHOTOS, { recursive: true, force: true });
+await rename(NEXT, PHOTOS);
 
 await writeFile('public/data/places.json', JSON.stringify({
   attribution: 'Place identifications and scores: OpenBible.info Bible Geocoding Data, CC BY 4.0. Region positions are approximate label positions. Wikipedia articles via Wikidata (CC0). Photos from Wikimedia Commons, each with its author and licence.',

@@ -35,6 +35,17 @@ const merc = (ll: LonLat): XY => { const m = MercatorCoordinate.fromLngLat(ll); 
 const kmToMerc = (km: number, lat: number) => km * 1000 * MercatorCoordinate.fromLngLat([0, lat]).meterInMercatorCoordinateUnits();
 const ease = (t: number) => t * t * (3 - 2 * t);
 const band = (z: number, a: number, b: number) => ease(Math.max(0, Math.min(1, (z - a) / (b - a))));
+/** At most `max` of a list, saying so when some are left out (the shader has room for only so many). */
+function capped<T>(list: T[], max: number, what: string) {
+  if (list.length > max) console.warn(`land light: ${list.length} ${what}, only the first ${max} are lit`);
+  return list.slice(0, max);
+}
+/** Fill a preallocated uniform array with vectors of `size`, zeroing the rest. */
+function pack(dst: Float32Array, vs: ArrayLike<number>[], size: number) {
+  dst.fill(0);
+  for (let i = 0; i < vs.length && (i + 1) * size <= dst.length; i++) dst.set(vs[i], i * size);
+  return dst;
+}
 
 /** A value easing towards its target over a set time. */
 class Tween {
@@ -57,7 +68,7 @@ function decode(data: ContourData) {
 }
 
 /** Shared by both shaders: how lit a point of the land is, for the set of lines being drawn (u_set: 0 the region's, 1 a
- *  mountain's, 2 a detail zone's). */
+ *  mountain's, 2 a detail zone's, 3 the outline of the water he's at). */
 const LIGHT = `
 uniform vec2 u_centre;
 uniform float u_radius;
@@ -144,7 +155,8 @@ float classAt(float z, float slope) {
   int kind = int(z + 0.5);
   float k = u_kind[kind] * WEIGHT[kind];
   if (slope <= 0.0) return k;
-  // Where a class's lines would sit under ~3 px apart they're left out rather than blurring together.
+  // Where a class's lines would sit under about 3 px apart (fading out from 4.2 px, gone by 2.2) they're left out
+  // rather than blurring together.
   return k * smoothstep(2.2, 4.2, INTERVAL[kind] / slope / u_mpp);
 }
 void main() {
@@ -213,10 +225,20 @@ export class LandLight implements CustomLayerInterface {
   private mountainSrc: { fc: FeatureCollection | null; windows: MountainWindow[]; peaks: MountainWindow[] } = { fc: null, windows: [], peaks: [] };
   private m = new Tween(0);
   // Pools of light about the places where the accounts differ (p), and the outline of the water he's at (o).
+  // Their sources are kept so that they can be placed again if the origin moves (the region loading after them).
   private pools: [number, number, number][] = [];
+  private poolSrc: MountainWindow[] = [];
   private p = new Tween(0);
-  private outline: (Lines & { key: string }) | null = null;
+  private outline: (Lines & { key: string; rings: LonLat[][] }) | null = null;
   private o = new Tween(0);
+  // Preallocated per-frame uniform data.
+  private mat = new Float32Array(16);
+  private kinds = new Float32Array(5);
+  private peaksU = new Float32Array(MAX_PEAKS * 3);
+  private windowsU = new Float32Array(MAX_WINDOWS * 3);
+  private zonesU = new Float32Array(MAX_ZONES * 4);
+  private poolsU = new Float32Array(MAX_POOLS * 3);
+  private loadedZones: Zone[] = [];
   // The light: where his marker is drawn, the area it covers (blended in by e), its strength (s).
   private marker: XY | null = null;
   private area: { c: XY; r: number } | null = null;
@@ -262,10 +284,25 @@ export class LandLight implements CustomLayerInterface {
     while (cell <= cols * rows) starts[cell++] = v;
     this.region = { verts, buf: null, cols, rows, gx0, gy0, starts };
     this.loadZone = loadZone;
-    this.zones = (data.zones ?? []).slice(0, MAX_ZONES).map((z) => { const [x, y] = merc(z.ll); return { id: z.id, c: [x - gx0, y - gy0], r: kmToMerc(z.km, z.ll[1]), lines: null, loading: false, fade: new Tween(0) }; });
-    // The mountain's lines were placed against the old origin.
-    this.setMountain(this.mountainSrc.fc, this.mountainSrc.windows, this.mountainSrc.peaks);
+    this.zones = capped(data.zones ?? [], MAX_ZONES, 'detail zones').map((z) => { const [x, y, r] = this.rel(z); return { id: z.id, c: [x, y], r, lines: null, loading: false, fade: new Tween(0) }; });
+    // The mountain's lines, the pools and the outline were placed against the old origin.
+    if (this.mountainSrc.fc) this.setMountain(this.mountainSrc.fc, this.mountainSrc.windows, this.mountainSrc.peaks);
+    this.pools = this.poolSrc.map((w) => this.rel(w));
+    if (this.outline) {
+      if (this.outline.buf) this.gl?.deleteBuffer(this.outline.buf);
+      this.outline = this.outlineLines(this.outline.key, this.outline.rings);
+    }
     this.map?.triggerRepaint();
+  }
+
+  /** A circle (centre and radius in km) relative to the origin, in mercator units. */
+  private rel(w: MountainWindow): [number, number, number] {
+    const [x, y] = merc(w.ll);
+    return [x - this.origin[0], y - this.origin[1], kmToMerc(w.km, w.ll[1])];
+  }
+
+  private outlineLines(key: string, rings: LonLat[][]) {
+    return { ...this.lineSet(rings.map((r) => ({ kind: 0, pts: r.map((ll) => [...merc(ll), -1] as [number, number, number]) }))), key, rings };
   }
 
   /** A whole line set, relative to the origin (no culling: a zone's, or a mountain's). */
@@ -280,10 +317,8 @@ export class LandLight implements CustomLayerInterface {
   setMountain(fc: FeatureCollection | null, windows: MountainWindow[], peaks: MountainWindow[]) {
     this.mountainSrc = { fc, windows, peaks };
     if (!fc) { this.m.set(0, 800); this.map?.triggerRepaint(); return; }
-    const [ox, oy] = this.origin;
-    const rel = (w: MountainWindow): [number, number, number] => { const [x, y] = merc(w.ll); return [x - ox, y - oy, kmToMerc(w.km, w.ll[1])]; };
-    this.windows = windows.slice(0, MAX_WINDOWS).map(rel);
-    this.peaks = peaks.slice(0, MAX_PEAKS).map(rel);
+    this.windows = capped(windows, MAX_WINDOWS, 'mountain windows').map((w) => this.rel(w));
+    this.peaks = capped(peaks, MAX_PEAKS, 'peaks').map((w) => this.rel(w));
     if (this.mountain?.buf) this.gl?.deleteBuffer(this.mountain.buf);
     // Each line's band, index flag and class spacing packed as band + 4 × index + 10 × spacing; its slope at each point.
     const lines = fc.features.filter((f) => f.geometry.type === 'LineString').map((f) => {
@@ -301,8 +336,11 @@ export class LandLight implements CustomLayerInterface {
   /** Where his marker is drawn (null: not placed). */
   follow(ll: LonLat | null) {
     this.marker = ll ? merc(ll) : null;
+    const now = performance.now();
+    // Nothing to draw again while the layer is off or his light is out.
+    if (!this.enabled || (this.s.target === 0 && this.s.done(now))) return;
     // Only a light that is (partly) about the marker needs drawing again.
-    if (this.e.target < 1 || !this.e.done(performance.now())) this.map?.triggerRepaint();
+    if (this.e.target < 1 || !this.e.done(now)) this.map?.triggerRepaint();
   }
 
   /** A pool of light about him: at a named place, or travelling; fainter (`strength` under 1) while he rests. */
@@ -337,8 +375,8 @@ export class LandLight implements CustomLayerInterface {
    *  km; null fades them out. */
   setPools(list: MountainWindow[] | null) {
     if (!list?.length) { this.p.set(0, 700); this.map?.triggerRepaint(); return; }
-    const [ox, oy] = this.origin;
-    this.pools = list.slice(0, MAX_POOLS).map((w) => { const [x, y] = merc(w.ll); return [x - ox, y - oy, kmToMerc(w.km, w.ll[1])]; });
+    this.poolSrc = capped(list, MAX_POOLS, 'pools');
+    this.pools = this.poolSrc.map((w) => this.rel(w));
     this.p.set(1, 1000);
     this.map?.triggerRepaint();
   }
@@ -348,7 +386,7 @@ export class LandLight implements CustomLayerInterface {
     if (!key) { this.o.set(0, 700); this.map?.triggerRepaint(); return; }
     if (this.outline?.key !== key) {
       if (this.outline?.buf) this.gl?.deleteBuffer(this.outline.buf);
-      this.outline = { ...this.lineSet(rings.map((r) => ({ kind: 0, pts: r.map((ll) => [...merc(ll), -1] as [number, number, number]) }))), key };
+      this.outline = this.outlineLines(key, rings);
     }
     this.o.set(1, 900);
     this.map?.triggerRepaint();
@@ -395,9 +433,15 @@ export class LandLight implements CustomLayerInterface {
   }
 
   onRemove(_map: MlMap, gl: WebGL2RenderingContext) {
-    for (const b of [this.quad, this.region?.buf, this.mountain?.buf, this.outline?.buf, ...this.zones.map((z) => z.lines?.buf)]) if (b) gl.deleteBuffer(b);
+    // The vertices stay; their buffers are made again on the next draw if the layer is added back.
+    for (const l of [this.region, this.mountain, this.outline, ...this.zones.map((z) => z.lines)]) if (l?.buf) { gl.deleteBuffer(l.buf); l.buf = null; }
+    if (this.quad) gl.deleteBuffer(this.quad);
     if (this.vao) gl.deleteVertexArray(this.vao);
     if (this.prog) gl.deleteProgram(this.prog);
+    this.quad = this.vao = this.prog = null;
+    this.loc = {};
+    this.map = null;
+    this.gl = null;
   }
 
   private areaNow(now: number) {
@@ -418,7 +462,7 @@ export class LandLight implements CustomLayerInterface {
       if (this.mountain.buf) gl.deleteBuffer(this.mountain.buf);
       this.mountain = null; this.windows = []; this.peaks = [];
     }
-    if (this.p.target === 0 && this.p.done(now)) this.pools = [];
+    if (this.p.target === 0 && this.p.done(now) && this.pools.length) { this.pools = []; this.poolSrc = []; }
     if (this.o.target === 0 && this.o.done(now) && this.outline) {
       if (this.outline.buf) gl.deleteBuffer(this.outline.buf);
       this.outline = null;
@@ -441,11 +485,14 @@ export class LandLight implements CustomLayerInterface {
     for (const z of this.zones) {
       if (z.lines || z.loading || !this.loadZone || Math.hypot(lc[0] - z.c[0], lc[1] - z.c[1]) > z.r + kmToMerc(30, lat)) continue;
       z.loading = true;
-      this.loadZone(z.id).then((d) => { z.lines = this.lineSet(decode(d)); z.fade.set(1, 700); map.triggerRepaint(); }).catch(() => { /* the region's lines stay */ });
+      // (Placed against the origin when they arrive; the layer may have been removed meanwhile.)
+      this.loadZone(z.id).then((d) => { z.lines = this.lineSet(decode(d)); z.fade.set(1, 700); this.map?.triggerRepaint(); }).catch(() => { /* the region's lines stay */ });
     }
-    const zones = this.zones.filter((z) => z.lines);
+    const zones = this.loadedZones;
+    zones.length = 0;
+    for (const z of this.zones) if (z.lines) zones.push(z);
 
-    const M = opts.defaultProjectionData.mainMatrix as ArrayLike<number>, mat = new Float32Array(16);
+    const M = opts.defaultProjectionData.mainMatrix as ArrayLike<number>, mat = this.mat;
     for (let i = 0; i < 16; i++) mat[i] = M[i];
     for (let i = 0; i < 4; i++) mat[12 + i] = M[i] * ox + M[4 + i] * oy + M[12 + i];
     gl.useProgram(this.prog);
@@ -461,18 +508,22 @@ export class LandLight implements CustomLayerInterface {
     gl.uniform1f(this.loc.u_strength, (0.85 - 0.15 * e) * s);
     // Classes (200, 100, 50, 25, 12.5 m) come in as the map zooms in, the 100 m ones only past the broad views of a
     // region (which read best with the 200 m lines alone); the slope then decides where each shows.
-    gl.uniform1fv(this.loc.u_kind, [0.4 + 0.6 * band(zoom, 7, 8.5), band(zoom, 9.4, 10), band(zoom, 9.6, 10.2), band(zoom, 9.8, 10.4), band(zoom, 10.2, 10.8)]);
+    const kinds = this.kinds;
+    kinds[0] = 0.4 + 0.6 * band(zoom, 7, 8.5); kinds[1] = band(zoom, 9.4, 10); kinds[2] = band(zoom, 9.6, 10.2); kinds[3] = band(zoom, 9.8, 10.4); kinds[4] = band(zoom, 10.2, 10.8);
+    gl.uniform1fv(this.loc.u_kind, kinds);
     gl.uniform1f(this.loc.u_mpp, (40075016.686 * Math.cos((lat * Math.PI) / 180)) / (512 * 2 ** zoom));
-    const flat = (vs: number[][], n: number, size: number) => { const out = new Float32Array(n * size); vs.slice(0, n).forEach((v, i) => out.set(v, i * size)); return out; };
-    gl.uniform3fv(this.loc.u_peaks, flat(this.peaks, MAX_PEAKS, 3));
+    gl.uniform3fv(this.loc.u_peaks, pack(this.peaksU, this.peaks, 3));
     gl.uniform1i(this.loc.u_peakCount, this.peaks.length);
     gl.uniform1f(this.loc.u_link, r * 0.6);
     gl.uniform1f(this.loc.u_mountain, mt);
-    gl.uniform3fv(this.loc.u_windows, flat(this.windows, MAX_WINDOWS, 3));
+    gl.uniform3fv(this.loc.u_windows, pack(this.windowsU, this.windows, 3));
     gl.uniform1i(this.loc.u_windowCount, this.windows.length);
-    gl.uniform4fv(this.loc.u_zones, flat(zones.map((z) => [z.c[0], z.c[1], z.r, z.fade.at(now)]), MAX_ZONES, 4));
+    const zu = this.zonesU;
+    zu.fill(0);
+    zones.forEach((z, i) => { zu[i * 4] = z.c[0]; zu[i * 4 + 1] = z.c[1]; zu[i * 4 + 2] = z.r; zu[i * 4 + 3] = z.fade.at(now); });
+    gl.uniform4fv(this.loc.u_zones, zu);
     gl.uniform1i(this.loc.u_zoneCount, zones.length);
-    gl.uniform3fv(this.loc.u_pools, flat(this.pools, MAX_POOLS, 3));
+    gl.uniform3fv(this.loc.u_pools, pack(this.poolsU, this.pools, 3));
     gl.uniform1i(this.loc.u_poolCount, this.pools.length);
     gl.uniform1f(this.loc.u_poolStrength, 0.75 * pv);
     gl.uniform1f(this.loc.u_outline, 0.9 * ov);
@@ -518,9 +569,11 @@ export class LandLight implements CustomLayerInterface {
     const ca = Math.max(0, Math.floor(bx0 / CELL)), cb = Math.min(R.cols - 1, Math.floor(bx1 / CELL));
     const ra = Math.max(0, Math.floor(by0 / CELL)), rb = Math.min(R.rows - 1, Math.floor(by1 / CELL));
     if (bx0 <= bx1 && ca <= cb) for (let row = ra; row <= rb; row++) draw(R, R.starts[row * R.cols + ca], R.starts[row * R.cols + cb + 1]);
-    // Detail zones.
+    // Detail zones: those that meet the box the light reaches.
     gl.uniform1i(this.loc.u_set, 2);
     for (const z of zones) {
+      const dx = Math.max(bx0 - z.c[0], 0, z.c[0] - bx1), dy = Math.max(by0 - z.c[1], 0, z.c[1] - by1);
+      if (bx0 > bx1 || dx * dx + dy * dy > z.r * z.r) continue;
       gl.uniform4f(this.loc.u_zone, z.c[0], z.c[1], z.r, z.fade.at(now));
       draw(z.lines!, 0, z.lines!.verts.length / FLOATS);
     }

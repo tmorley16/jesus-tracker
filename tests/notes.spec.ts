@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const shot = (page: Page, name: string) => page.screenshot({ path: `test-results/shots/${test.info().project.name}-${name}.png` });
+const shot = (page: Page, name: string) => page.screenshot({ path: `${test.info().project.outputDir}/shots/${test.info().project.name}-${name}.png` });
 const isPhone = () => test.info().project.name === 'phone';
 
 async function open(page: Page, settings: Record<string, unknown> = {}) {
@@ -76,7 +76,7 @@ test('a manuscript note is marked with a letter in the gospel colour', async ({ 
   await shot(page, 'notes-02-letters');
 });
 
-test('notes can be limited to the manuscripts, or hidden', async ({ page }) => {
+test('notes can be limited to the manuscripts', async ({ page }) => {
   await open(page, { notes: 'textual' });
   await goTo(page, 'Mt 1:18');
   await expect(page.locator('.fn').first()).toBeAttached();

@@ -28,17 +28,19 @@ const overlaps = (a: Box, b: Box) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] &
 export function declutter(map: MlMap, labels: Iterable<Label>, remeasure = false) {
   const items = [...labels];
   if (remeasure) for (const l of items) { l.w = undefined; l.h = undefined; }
-  // Measured as set, with the text to the right of the dot.
-  for (const l of items) if (l.w === undefined) {
-    const flipped = l.el.classList.contains('flip');
-    if (flipped) l.el.classList.remove('flip');
-    l.w = l.el.offsetWidth; l.h = l.el.offsetHeight;
-    if (flipped) l.el.classList.add('flip');
-  }
+  // Measured as set, with the text to the right of the dot: every class change first, then every read, then the
+  // classes back, so the page lays out once rather than once a label.
+  const unmeasured = items.filter((l) => l.w === undefined);
+  const flipped = unmeasured.filter((l) => l.el.classList.contains('flip'));
+  for (const l of flipped) l.el.classList.remove('flip');
+  for (const l of unmeasured) { l.w = l.el.offsetWidth; l.h = l.el.offsetHeight; }
+  for (const l of flipped) l.el.classList.add('flip');
   const { clientWidth: W, clientHeight: H } = map.getContainer();
   // Moved to the other side of its point, the label's box is its mirror image.
+  const at = new Map<Label, { x: number; y: number }>();
   const boxOf = (l: Label, flip: boolean): Box => {
-    const p = map.project(l.ll);
+    let p = at.get(l);
+    if (!p) at.set(l, (p = map.project(l.ll)));
     const left = flip ? p.x - l.dx - l.w! : p.x + l.dx - (l.anchor === 'left' ? 0 : l.anchor === 'right' ? l.w! : l.w! / 2), top = p.y - l.h! / 2;
     return [left - PAD, top - PAD / 2, left + l.w! + PAD, top + l.h! + PAD / 2];
   };

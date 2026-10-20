@@ -18,7 +18,11 @@ export interface PlaceData {
 
 let cache: Promise<Record<string, PlaceData>> | null = null;
 export function loadPlaces(): Promise<Record<string, PlaceData>> {
-  cache ??= fetch(new URL('data/places.json', document.baseURI)).then((r) => r.json()).then((j) => j.places);
+  // A failed load isn't kept, so the next call tries again.
+  cache ??= fetch(new URL('data/places.json', document.baseURI))
+    .then((r) => { if (!r.ok) throw new Error(`places.json: ${r.status}`); return r.json(); })
+    .then((j) => j.places)
+    .catch((e) => { cache = null; throw e; });
   return cache;
 }
 

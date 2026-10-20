@@ -13,10 +13,6 @@ const OTHER_NAME: Record<string, string> = { ACT: 'Acts', '1CO': '1 Cor' };
 
 export type Range = [number, number, number, number]; // chapter, verse → chapter, verse
 export type LightState = 'unstated' | 'predawn' | 'dawn' | 'day' | 'midday' | 'evening' | 'night' | 'darkness';
-export const LIGHT_NAME: Record<LightState, string> = {
-  unstated: 'not stated', predawn: 'before dawn', dawn: 'early morning', day: 'daytime',
-  midday: 'midday', evening: 'evening', night: 'night', darkness: 'darkness at midday',
-};
 /** A time of day the text gives. `at` (chapter, verse in this row) is where it takes effect as the reading line passes;
  *  without it the state holds for the whole row. */
 export interface LightInfo { state: LightState; ref: string; words: string; basis: 'stated' | 'implied'; at?: [number, number] }
@@ -38,7 +34,6 @@ export interface Row {
   n: string;
   part: string;
   partTitle: string;
-  partStart: boolean;
   sectionTitle: string;
   subTitle: string | null;
   subIndex: number;
@@ -129,7 +124,6 @@ export const rowTitle = (row: Row) => row.subTitle ?? row.sectionTitle;
 function build(): Row[] {
   const rows: Row[] = [];
   const absent = new Set(M.jesusAbsent.ids);
-  let prevPart = '';
   for (const s of sectionOrder()) {
     const sm = M.sections[s.id];
     const move = MOVES.find(([id]) => id === s.id)?.[1];
@@ -162,7 +156,6 @@ function build(): Row[] {
         n: s.n,
         part: s.part,
         partTitle: M.parts[s.part],
-        partStart: k === 0 && s.part !== prevPart,
         sectionTitle: sm.t,
         subTitle: s.rows.length > 1 ? M.rows[r.id] ?? null : null,
         subIndex: k,
@@ -186,7 +179,6 @@ function build(): Row[] {
         named: (mentions as Record<string, Partial<Record<string, string[]>>>)[r.id] ?? {},
       });
     });
-    prevPart = s.part;
   }
 
   // Dates: anchors sit on a section's first row; rows between anchors are spread evenly.

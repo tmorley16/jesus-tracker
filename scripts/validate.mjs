@@ -81,12 +81,15 @@ for (const [sid, byGospel] of Object.entries(meta.light)) {
     return m;
   };
   const d = meta.death;
-  for (const [book, [ref, words]] of Object.entries(d.at)) {
-    const m = quote(book, ref, words);
-    if (m && (ABBR[m[1]] !== book || !inSection(d.from, book, `${m[2]}:${m[3]}`))) problems.push(`death ${book}: ${ref} isn't in ${d.from}`);
+  if (!d?.at || !Array.isArray(d.untilRef)) problems.push('death: needs `at` (verse per gospel) and `untilRef`');
+  else {
+    for (const [book, [ref, words]] of Object.entries(d.at)) {
+      const m = quote(book, ref, words);
+      if (m && (ABBR[m[1]] !== book || !inSection(d.from, book, `${m[2]}:${m[3]}`))) problems.push(`death ${book}: ${ref} isn't in ${d.from}`);
+    }
+    const m = quote('until', ...d.untilRef);
+    if (m && !inSection(d.until, ABBR[m[1]], `${m[2]}:${m[3]}`)) problems.push(`death until: ${d.untilRef[0]} isn't in ${d.until}`);
   }
-  const m = quote('until', ...d.untilRef);
-  if (m && !inSection(d.until, ABBR[m[1]], `${m[2]}:${m[3]}`)) problems.push(`death until: ${d.untilRef[0]} isn't in ${d.until}`);
 }
 
 const ids = new Set(harmony.sections.map((s) => s.id));

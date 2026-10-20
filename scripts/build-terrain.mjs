@@ -12,7 +12,7 @@
 //
 //   node scripts/build-terrain.mjs   →  public/data/peaks.json, public/data/terrain/*.json (region.json: the light)
 
-import { mkdir, readFile, writeFile, readdir, rm } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, readdir, rm, rename } from 'node:fs/promises';
 import { inflateSync } from 'node:zlib';
 import { entities, wikipediaUrl } from './lib/wikidata.mjs';
 
@@ -22,11 +22,23 @@ const meta = JSON.parse(await readFile('src/data/sections.meta.json', 'utf8'));
 const peakDefs = Object.entries(meta.peaks).filter(([k]) => k !== '_about').map(([id, [r, summit]]) => ({ id, r, summit }));
 const wd = await entities(peakDefs.map((p) => p.id));
 
-// ---- web-mercator pixel maths at zoom Z ----
-const SIZE = 256 * 2 ** Z;
-const toPx = ([lon, lat]) => [((lon + 180) / 360) * SIZE, ((1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2) * SIZE];
-const toLL = ([x, y]) => [(x / SIZE) * 360 - 180, (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / SIZE))) * 180) / Math.PI];
-const metresPerPx = (lat) => (40075016.686 * Math.cos((lat * Math.PI) / 180)) / SIZE;
+// ---- web-mercator pixel maths at a zoom ----
+function mercator(z) {
+  const size = 256 * 2 ** z;
+  return {
+    size,
+    px: ([lon, lat]) => [((lon + 180) / 360) * size, ((1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2) * size],
+    ll: ([x, y]) => [(x / size) * 360 - 180, (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / size))) * 180) / Math.PI],
+    metresPerPx: (lat) => (40075016.686 * Math.cos((lat * Math.PI) / 180)) / size,
+  };
+}
+const { px: toPx, ll: toLL, metresPerPx } = mercator(Z);
+
+// Outputs are written into a scratch folder (and peaks.json and lakes.json held back) until everything has been built,
+// so a failed run (a tile that won't download) leaves the previous outputs in place.
+const BUILD = 'data/raw/terrain-build';
+await rm(BUILD, { recursive: true, force: true });
+await mkdir(BUILD, { recursive: true });
 
 // ---- a minimal PNG decoder (8-bit RGB/RGBA, not interlaced: what Terrarium tiles are) ----
 function decodePng(buf) {
@@ -55,13 +67,26 @@ function decodePng(buf) {
   return { width, height, bpp, data: out };
 }
 
+/** Fetch a file, with a time limit and a few tries. */
+async function download(url, what, tries = 4) {
+  for (let n = 1; ; n++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(30_000) });
+      if (!res.ok) throw new Error(`${what}: HTTP ${res.status}`);
+      return Buffer.from(await res.arrayBuffer());
+    } catch (err) {
+      if (n >= tries) throw err;
+      console.warn(`${what}: ${err.message}; trying again`);
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** n));
+    }
+  }
+}
+
 async function tile(x, y, z = Z) {
   const path = `data/raw/terrain/${z}/${x}/${y}.png`;
   let buf;
   try { buf = await readFile(path); } catch {
-    const res = await fetch(TILE_URL(x, y, z));
-    if (!res.ok) throw new Error(`terrain tile ${z}/${x}/${y}: ${res.status}`);
-    buf = Buffer.from(await res.arrayBuffer());
+    buf = await download(TILE_URL(x, y, z), `terrain tile ${z}/${x}/${y}`);
     await mkdir(`data/raw/terrain/${z}/${x}`, { recursive: true });
     await writeFile(path, buf);
   }
@@ -208,13 +233,13 @@ function blur(m, w, h, sigma) {
 
 /** The slope (rise over run) at a point of a grid at zoom z: central differences 3 pixels wide, on the bilinear surface. */
 function slopeIn(G, z) {
-  const size = 256 * 2 ** z;
+  const { ll, metresPerPx: mpp } = mercator(z);
   const at = (x, y) => {
     const xi = Math.max(0, Math.min(G.w - 2, Math.floor(x))), yi = Math.max(0, Math.min(G.h - 2, Math.floor(y)));
     const fx = Math.max(0, Math.min(1, x - xi)), fy = Math.max(0, Math.min(1, y - yi)), g = G.g, w = G.w;
     return (g[yi * w + xi] * (1 - fx) + g[yi * w + xi + 1] * fx) * (1 - fy) + (g[(yi + 1) * w + xi] * (1 - fx) + g[(yi + 1) * w + xi + 1] * fx) * fy;
   };
-  const metres = (y) => (40075016.686 * Math.cos(Math.atan(Math.sinh(Math.PI * (1 - (2 * (y + G.y0)) / size))))) / size;
+  const metres = (y) => mpp(ll([0, y + G.y0])[1]);
   return (x, y) => Math.hypot(at(x + 1.5, y) - at(x - 1.5, y), at(x, y + 1.5) - at(x, y - 1.5)) / (3 * metres(y));
 }
 /** A slope as a small code the map reads back as 0.2 % × 2^(q/3). */
@@ -233,8 +258,6 @@ for (let i = 0; i < peaks.length; i++) for (let j = i + 1; j < peaks.length; j++
 const clusters = new Map();
 peaks.forEach((p, i) => (clusters.get(find(i)) ?? clusters.set(find(i), []).get(find(i))).push(p));
 
-await rm('public/data/terrain', { recursive: true, force: true });
-await mkdir('public/data/terrain', { recursive: true });
 const out = [];
 let totalKb = 0;
 for (const members of clusters.values()) {
@@ -288,15 +311,15 @@ for (const members of clusters.values()) {
     }
   }
   const json = JSON.stringify({ type: 'FeatureCollection', features });
-  await writeFile(`public/data/terrain/${cid}.json`, json);
+  await writeFile(`${BUILD}/${cid}.json`, json);
   totalKb += json.length / 1024;
   for (const p of members) out.push({ id: p.id, name: p.name, wiki: p.wiki ? { title: p.wiki, url: wikipediaUrl(p.wiki) } : null, lonlat: p.lonlat, elev: p.elev, r: p.r, cluster: cid, interval });
   console.log(`${cid}: ${members.map((p) => `${p.name} ${p.elev} m`).join(', ')} — ${interval} m contours from ${Math.round(lo)} to ${Math.round(hi)} m, ${features.length} lines, ${(json.length / 1024).toFixed(0)} KB`);
 }
-await writeFile('public/data/peaks.json', JSON.stringify({
+const peaksJson = JSON.stringify({
   attribution: 'Peaks: Wikidata (CC0). Elevations and contours: AWS Terrain Tiles (SRTM and GMTED2010 courtesy of the U.S. Geological Survey; ETOPO1, U.S. National Oceanic and Atmospheric Administration).',
   peaks: out,
-}));
+});
 console.log(`${out.length} peaks → public/data/peaks.json; contours ${totalKb.toFixed(0)} KB in ${clusters.size} files → public/data/terrain/`);
 
 // ---- the light on the land: contours over the region Jesus travels, which the map draws in white around him ----
@@ -315,15 +338,13 @@ const classOf = (level) => { const l2 = Math.round(level * 2); return l2 % 400 =
 
 /** Contour lines over a box (or within `circle` km of a point) at zoom z, every `step` m from `from`, encoded. */
 async function traceLight({ z, box, circle, step, from, unit, tol, keep = () => true }) {
-  const size = 256 * 2 ** z;
-  const px = ([lon, lat]) => [((lon + 180) / 360) * size, ((1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2) * size];
-  const ll = ([x, y]) => [(x / size) * 360 - 180, (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / size))) * 180) / Math.PI];
+  const { size, px, ll, metresPerPx: mpp } = mercator(z);
   const [ax, ay] = px([box[0], box[3]]), [bx, by] = px([box[2], box[1]]);
   const G = await grid(Math.floor(ax), Math.floor(ay), Math.ceil(bx), Math.ceil(by), z);
   // Within a circle: only the cells inside it.
   let skip = () => false;
   if (circle) {
-    const [cx, cy] = px(circle.ll), r = (circle.km * 1000) / ((40075016.686 * Math.cos((circle.ll[1] * Math.PI) / 180)) / size);
+    const [cx, cy] = px(circle.ll), r = (circle.km * 1000) / mpp(circle.ll[1]);
     skip = (x, y) => Math.hypot(x + G.x0 - cx, y + G.y0 - cy) > r;
   }
   const slope = slopeIn(G, z);
@@ -340,8 +361,14 @@ async function traceLight({ z, box, circle, step, from, unit, tol, keep = () => 
       const probes = [pts[0], pts[Math.floor(pts.length / 2)], pts[pts.length - 1]].map(([x, y]) => ll([x + G.x0, y + G.y0]));
       if (probes.filter(onLand).length < 2 || !keep(cls, probes[1])) continue;
       const q = pts.map(([x, y]) => [Math.round(((x + G.x0) / size) * unit), Math.round(((y + G.y0) / size) * unit), slopeCode(slope(x, y))]);
+      // A point that rounds onto the last one written is left out; deltas run from the last point written, where the
+      // decoder's running sums are.
       const enc = [cls, ...q[0]];
-      for (let i = 1; i < q.length; i++) { const dx = q[i][0] - q[i - 1][0], dy = q[i][1] - q[i - 1][1]; if (dx || dy) enc.push(dx, dy, q[i][2] - q[i - 1][2]); }
+      let last = q[0];
+      for (let i = 1; i < q.length; i++) {
+        const dx = q[i][0] - last[0], dy = q[i][1] - last[1];
+        if (dx || dy) { enc.push(dx, dy, q[i][2] - last[2]); last = q[i]; }
+      }
       if (enc.length < 7) continue;
       out.push(enc);
       points += (enc.length - 1) / 3;
@@ -367,7 +394,7 @@ for (const D of [{ id: 'jerusalem', place: 'jerusalem', km: 9 }, { id: 'capernau
   const c = llOf(D.place), dLat = D.km / 111.2, dLon = dLat / Math.cos((c[1] * Math.PI) / 180);
   const { lines, points } = await traceLight({ z: 12, box: [c[0] - dLon, c[1] - dLat, c[0] + dLon, c[1] + dLat], circle: { ll: c, km: D.km }, step: 12.5, from: -425, unit: DETAIL_UNIT, tol: 0.5 });
   const json = JSON.stringify({ attribution: ATTRIBUTION, unit: DETAIL_UNIT, ll: c, km: D.km, lines });
-  await writeFile(`public/data/terrain/detail-${D.id}.json`, json);
+  await writeFile(`${BUILD}/detail-${D.id}.json`, json);
   zones.push({ id: D.id, ll: c, km: D.km });
   console.log(`light on the land, detail about ${D.place}: ${lines.length} lines, ${points} points (12.5 m levels, zoom 12) → detail-${D.id}.json (${(json.length / 1024).toFixed(0)} KB)`);
 }
@@ -377,10 +404,9 @@ for (const D of [{ id: 'jerusalem', place: 'jerusalem', km: 9 }, { id: 'capernau
 // opened and closed with a ~100 m disc (dropping inlets and spits narrower than ~200 m), blurred by ~80 m and traced
 // at the middle: one clean line of about 225 points. It replaces the coarser Natural Earth outline in
 // public/data/geo/lakes.json (written by build-geo.mjs, which runs first).
+let lakesJson;
 {
-  const centre = llOf('sea-of-galilee'), z = 12, size = 256 * 2 ** z;
-  const px = ([lon, lat]) => [((lon + 180) / 360) * size, ((1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2) * size];
-  const ll = ([x, y]) => [(x / size) * 360 - 180, (Math.atan(Math.sinh(Math.PI * (1 - (2 * y) / size))) * 180) / Math.PI];
+  const centre = llOf('sea-of-galilee'), z = 12, { px, ll } = mercator(z);
   const [ax, ay] = px([35.45, 32.95]), [bx, by] = px([35.72, 32.65]);
   const G = await grid(Math.floor(ax), Math.floor(ay), Math.ceil(bx), Math.ceil(by), z);
   // The water's level: the middle of the values about the lake's centre (all the same, where it's water).
@@ -401,8 +427,7 @@ for (const D of [{ id: 'jerusalem', place: 'jerusalem', km: 9 }, { id: 'capernau
   }
   const R = 3, opened = morph(morph(lake, w, h, R, false), w, h, R, true), closed = morph(morph(opened, w, h, R, true), w, h, R, false);
   const rings = isolines({ w, h, g: blur(closed, w, h, 2.5) }, 0.5, () => false).map((line) => line.map(([x, y]) => [x + G.x0, y + G.y0]));
-  const inside = (p, ring) => { let ins = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi > p[1]) !== (yj > p[1]) && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) ins = !ins; } return ins; };
-  const shore = rings.filter((r) => r.length > 100 && inside([cx, cy], r)).sort((a, b) => b.length - a.length)[0];
+  const shore = rings.filter((r) => r.length > 100 && inRing([cx, cy], r)).sort((a, b) => b.length - a.length)[0];
   if (!shore) throw new Error('no shoreline found for the Sea of Galilee');
   const ring = simplify(shore, 0.4).map(ll).map(([lon, lat]) => [Math.round(lon * 1e5) / 1e5, Math.round(lat * 1e5) / 1e5]);
   if (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1]) ring.push(ring[0]);
@@ -410,11 +435,16 @@ for (const D of [{ id: 'jerusalem', place: 'jerusalem', km: 9 }, { id: 'capernau
   const f = lakes.features.find((f) => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).some((p) => inRing(centre, p[0])));
   if (!f) throw new Error('the Sea of Galilee is not in lakes.json');
   f.geometry = { type: 'Polygon', coordinates: [ring] };
-  await writeFile('public/data/geo/lakes.json', JSON.stringify(lakes));
+  lakesJson = JSON.stringify(lakes);
   console.log(`Sea of Galilee: shore traced at ${(water + 1).toFixed(1)} m (water ${water.toFixed(1)} m), ${ring.length} points → public/data/geo/lakes.json`);
 }
 const lightJson = JSON.stringify({ attribution: ATTRIBUTION, unit: UNIT, zones, lines: lightLines });
-await writeFile('public/data/terrain/region.json', lightJson);
+await writeFile(`${BUILD}/region.json`, lightJson);
 console.log(`light on the land → public/data/terrain/region.json (${(lightJson.length / 1024).toFixed(0)} KB)`);
+// Everything built: swap the new terrain folder in and write the files held back.
+await rm('public/data/terrain', { recursive: true, force: true });
+await rename(BUILD, 'public/data/terrain');
+await writeFile('public/data/peaks.json', peaksJson);
+await writeFile('public/data/geo/lakes.json', lakesJson);
 const cached = await readdir(`data/raw/terrain/${Z}`).catch(() => []);
 console.log(`terrain tiles cached in data/raw/terrain/${Z} (${cached.length} columns)`);

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "An explorer for the life and ministry of Jesus: the four gospel accounts aligned on a map and timeline, with cited history and archaeology.",
+  "description": "A reader for the life and ministry of Jesus: the full BSB text of the four gospels side by side, aligned by event, with a timeline scrubber and a map of the places they name.",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
