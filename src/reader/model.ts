@@ -3,6 +3,7 @@
 import harmony from '../data/harmony.json';
 import meta from '../data/sections.meta.json';
 import mentions from '../data/mentions.json';
+import parallels from '../data/parallels.json';
 
 export type Book = 'MAT' | 'MRK' | 'LUK' | 'JHN';
 export const BOOKS: Book[] = ['MAT', 'MRK', 'LUK', 'JHN'];
@@ -16,7 +17,10 @@ export const LIGHT_NAME: Record<LightState, string> = {
   unstated: 'not stated', predawn: 'before dawn', dawn: 'early morning', day: 'daytime',
   midday: 'midday', evening: 'evening', night: 'night', darkness: 'darkness at midday',
 };
-export interface LightInfo { state: LightState; ref: string; words: string; basis: 'stated' | 'implied' }
+/** A time of day the text gives. `at` (chapter, verse in this row) is where it takes effect as the reading line passes;
+ *  without it the state holds for the whole row. */
+export interface LightInfo { state: LightState; ref: string; words: string; basis: 'stated' | 'implied'; at?: [number, number] }
+type LightEntry = [LightState, string, string, 'stated' | 'implied', string?];
 export type PlaceRef = string | Partial<Record<Book, string>> | null;
 export type Reckoning = 'ad30' | 'ad33';
 export const RECKONING_NAME: Record<Reckoning, string> = { ad30: 'AD 30 reckoning', ad33: 'AD 33 reckoning' };
@@ -47,7 +51,8 @@ export interface Row {
   from: Partial<Record<Book, string>>;
   /** Where the text has Jesus making for, per gospel, before he gets there (shown as a heading). */
   toward: Partial<Record<Book, { key: string; ref: string; words: string }>>;
-  light: Partial<Record<Book, LightInfo>>;
+  /** Per gospel, in the order they take effect. */
+  light: Partial<Record<Book, LightInfo[]>>;
   feast: { name: string; ref: string; words: string } | null;
   /** Whether Jesus is in the scene (the map's route line follows only him). */
   jesus: boolean;
@@ -57,6 +62,8 @@ export interface Row {
   date: Record<Reckoning, number>;
   /** Where this passage sits out of the gospel's own order, a note saying so. */
   outOfOrder: Partial<Record<Book, string>>;
+  /** Where the reader places this section somewhere other than Robertson does (meta `moves`), the note saying why. */
+  moved: string | null;
   /** Verses ("c:v") that already appeared in an earlier section, with that section's number. */
   repeats: Partial<Record<Book, Record<string, string>>>;
   /** Where the text places Jesus on or near a mountain: the words, by book (Acts included). */
@@ -77,16 +84,29 @@ interface MetaFile {
   sections: Record<string, { t: string; p?: PlaceRef; pb?: string; from?: Partial<Record<Book, [string, string, string]>>; toward?: Partial<Record<Book, [string, string, string]>> }>;
   rows: Record<string, string>;
   feasts: Record<string, [string, string, string]>;
-  light: Record<string, Record<string, [LightState, string, string, 'stated' | 'implied']>>;
+  light: Record<string, Record<string, LightEntry | LightEntry[]>>;
+  death: { from: string; at: Record<string, [string, string]>; until: string; untilRef: [string, string] };
   jesusAbsent: { ids: string[] };
   mapStart: { id: string };
+  birth: { id: string };
   areas: Record<string, number | string>;
   mountains: Record<string, Record<string, string> | string>;
   mountainPeaks?: Record<string, { named?: string[]; candidates?: string[] } | string>;
+  moves?: Record<string, { after: string; note: string } | string>;
   dates: { anchors: [string, number, number, string][] };
 }
 const H = harmony as unknown as HarmonyFile;
 const M = meta as unknown as MetaFile;
+const MOVES = Object.entries(M.moves ?? {}).filter((e): e is [string, { after: string; note: string }] => typeof e[1] === 'object');
+/** Robertson's sections in reading order: each moved section follows the one given, in that section's part. */
+function sectionOrder(): HarmonyFile['sections'] {
+  const out = H.sections.filter((s) => !MOVES.some(([id]) => id === s.id));
+  for (const [id, { after }] of MOVES) {
+    const s = H.sections.find((x) => x.id === id), k = out.findIndex((x) => x.id === after);
+    if (s && k >= 0) out.splice(k + 1, 0, { ...s, part: out[k].part });
+  }
+  return out;
+}
 function mountainPeaks(id: string): Row['peaks'] {
   const v = M.mountainPeaks?.[id];
   if (!v || typeof v !== 'object') return null;
@@ -110,10 +130,9 @@ function build(): Row[] {
   const rows: Row[] = [];
   const absent = new Set(M.jesusAbsent.ids);
   let prevPart = '';
-  for (const s of H.sections) {
+  for (const s of sectionOrder()) {
     const sm = M.sections[s.id];
-    const light: Row['light'] = {};
-    for (const [b, [state, ref, words, basis]] of Object.entries(M.light[s.id] ?? {})) light[b as Book] = { state, ref, words, basis };
+    const move = MOVES.find(([id]) => id === s.id)?.[1];
     const f = M.feasts[s.id];
     s.rows.forEach((r, k) => {
       const refs: Row['refs'] = {};
@@ -121,6 +140,20 @@ function build(): Row[] {
       for (const [b, ranges] of Object.entries(r.refs)) {
         if ((BOOKS as string[]).includes(b)) refs[b as Book] = ranges;
         else other.push(`${OTHER_NAME[b] ?? b} ${fmtRanges(ranges)}`);
+      }
+      // An entry whose onset falls in an earlier sub-row holds for this whole row; one in a later sub-row isn't here yet.
+      const light: Row['light'] = {};
+      for (const [b, v] of Object.entries(M.light[s.id] ?? {})) {
+        const ranges = refs[b as Book];
+        if (!ranges) continue;
+        const list: LightInfo[] = [];
+        for (const [state, ref, words, basis, at] of (Array.isArray(v[0]) ? v : [v]) as LightEntry[]) {
+          if (!at) { list.push({ state, ref, words, basis }); continue; }
+          const [c, vs] = at.split(':').map(Number);
+          if (inRanges(ranges, c, vs)) list.push({ state, ref, words, basis, at: [c, vs] });
+          else if (c * 1000 + vs < ranges[0][0] * 1000 + ranges[0][1]) list.push({ state, ref, words, basis });
+        }
+        if (list.length) light[b as Book] = list;
       }
       rows.push({
         i: rows.length,
@@ -146,6 +179,7 @@ function build(): Row[] {
         counts: Object.fromEntries(Object.entries(r.counts).filter(([b]) => (BOOKS as string[]).includes(b))),
         date: { ad30: 0, ad33: 0 },
         outOfOrder: {},
+        moved: move?.note ?? null,
         repeats: {},
         mountain: typeof M.mountains[s.id] === 'object' ? (M.mountains[s.id] as Record<string, string>) : null,
         peaks: mountainPeaks(s.id),
@@ -196,6 +230,16 @@ function build(): Row[] {
         if (firstNew !== null && firstNew < maxPos && maxRange && !row.outOfOrder[b]) {
           row.outOfOrder[b] = `In ${BOOK_NAME[b]}’s own order this comes before ${fmtRanges([maxRange])}.`;
         }
+        // A moved section doesn't carry the walk forward, so the rows it was moved past keep their place;
+        // where it jumps ahead, it says which passage it follows in this gospel.
+        if (row.moved) {
+          if (firstNew !== null && firstNew > maxPos && !row.outOfOrder[b]) {
+            const before = rows.flatMap((r) => (r === row ? [] : r.refs[b] ?? [])).filter((x) => x[2] * 1000 + x[3] < firstNew)
+              .sort((x, y) => (y[2] * 1000 + y[3]) - (x[2] * 1000 + x[3]))[0];
+            if (before && before[2] * 1000 + before[3] > maxPos) row.outOfOrder[b] = `In ${BOOK_NAME[b]}’s own order this comes later, after ${fmtRanges([before])}.`;
+          }
+          continue;
+        }
         const end = rg[2] * 1000 + rg[3];
         if (end > maxPos) { maxPos = end; maxRange = rg; }
       }
@@ -207,6 +251,8 @@ function build(): Row[] {
 export const ROWS: Row[] = build();
 /** The first row the map shows Jesus in (Mary visits Elizabeth); before it, no marker and no route. */
 export const MAP_START = Math.max(0, ROWS.findIndex((r) => r.sectionId === M.mapStart.id));
+/** The row in which Jesus is born: from here on his resting marker keeps a little of its glow. */
+export const BIRTH = Math.max(0, ROWS.findIndex((r) => r.sectionId === M.birth.id));
 /** Radius (km) of places drawn as areas: regions, and Egypt. */
 export const AREAS: Record<string, number> = Object.fromEntries(Object.entries(M.areas).filter(([, v]) => typeof v === 'number')) as Record<string, number>;
 /** Distinct places a row names for the given gospels, with the gospels naming each. */
@@ -237,17 +283,73 @@ export function mountainFor(row: Row, books: Book[]): { book: string; words: str
 }
 export const PARTS = H.parts.map((p) => ({ id: p.id, title: M.parts[p.id], first: ROWS.findIndex((r) => r.part === p.id), last: ROWS.map((r) => r.part).lastIndexOf(p.id) }));
 
-/** The light at a row for the given gospels: the most common stated or agreed state. */
-export function lightFor(row: Row, books: Book[]): LightState {
-  const counts = new Map<LightState, number>();
+function inRanges(ranges: Range[], c: number, v: number) {
+  const p = c * 1000 + v;
+  return ranges.some(([c1, v1, c2, v2]) => c1 * 1000 + v1 <= p && p <= c2 * 1000 + v2);
+}
+/** Where a verse sits in a row (0–1), counting verses: used where the reader isn't on screen to measure it. */
+export function versePos(row: Row, book: Book, c: number, v: number): number {
+  const ranges = row.refs[book];
+  if (!ranges) return 1;
+  const total = row.counts[book] ?? 1;
+  const lens = ranges.map(([c1, v1, c2, v2]) => (c1 === c2 ? v2 - v1 + 1 : 0));
+  const cross = lens.filter((l) => !l).length;
+  // A range across chapters gets whatever the counted ranges leave over.
+  const rest = cross ? Math.max(1, (total - lens.reduce((a, l) => a + l, 0)) / cross) : 0;
+  let before = 0;
+  for (let k = 0; k < ranges.length; k++) {
+    const [c1, v1, c2, v2] = ranges[k], len = lens[k] || rest;
+    if (inRanges([ranges[k]], c, v)) return (before + (c === c1 ? v - v1 : len - 1 - (c === c2 ? v2 - v : 0))) / total;
+    before += len;
+  }
+  return 1;
+}
+/** Where a verse sits in a row (0–1); the first verse of a gospel's passage counts as the row's start. */
+export type VersePos = (book: Book, c: number, v: number) => number;
+const firstVerse = (row: Row, b: Book, c: number, v: number) => row.refs[b]?.[0][0] === c && row.refs[b]?.[0][1] === v;
+
+/** The light at the reading line (f, 0–1 through the row) for the given gospels. Each gospel gives the last state it
+ *  has reached; the one that took effect latest wins (time moves on), then the most common, then gospel order. */
+export function lightAt(row: Row, books: Book[], f = 0, pos: VersePos = (b, c, v) => versePos(row, b, c, v)): LightState {
+  const found = new Map<LightState, { at: number; n: number }>();
   for (const b of books) {
     if (!row.refs[b]) continue;
-    const l = row.light[b];
-    if (l) counts.set(l.state, (counts.get(l.state) ?? 0) + 1);
+    let cur: { state: LightState; at: number } | null = null;
+    for (const l of row.light[b] ?? []) {
+      const at = !l.at || firstVerse(row, b, ...l.at) ? 0 : pos(b, ...l.at);
+      if (at <= f) cur = { state: l.state, at };
+    }
+    if (!cur) continue;
+    const e = found.get(cur.state);
+    found.set(cur.state, { at: Math.max(cur.at, e?.at ?? 0), n: (e?.n ?? 0) + 1 });
   }
-  let best: LightState = 'unstated', n = 0;
-  for (const [s, c] of counts) if (c > n) { best = s; n = c; }
+  let best: LightState = 'unstated', bestAt = -1, n = 0;
+  for (const [s, e] of found) if (e.at > bestAt || (e.at === bestAt && e.n > n)) { best = s; bestAt = e.at; n = e.n; }
   return best;
+}
+/** Where in a row the light may change, from the verse counts: for drawing the timeline's light strip. */
+export function lightBreaks(row: Row, books: Book[]): number[] {
+  const out = new Set<number>([0]);
+  for (const b of books) for (const l of row.light[b] ?? []) if (l.at && !firstVerse(row, b, ...l.at)) out.add(versePos(row, b, ...l.at));
+  if (row.i === DEATH.row) for (const b of books) { const d = DEATH.at[b]; if (d && row.refs[b]) out.add(versePos(row, b, ...d)); }
+  return [...out].sort((a, b) => a - b);
+}
+
+/** From Jesus' death (the verse in each gospel) until the angel at the tomb (meta `death`). */
+export const DEATH = (() => {
+  const at: Partial<Record<Book, [number, number]>> = {};
+  for (const [b, [ref]] of Object.entries(M.death.at)) {
+    const m = ref.match(/(\d+):(\d+)$/)!;
+    at[b as Book] = [Number(m[1]), Number(m[2])];
+  }
+  const row = ROWS.findIndex((r) => r.sectionId === M.death.from && BOOKS.some((b) => at[b] && r.refs[b] && inRanges(r.refs[b]!, ...at[b]!)));
+  return { at, row, until: ROWS.findIndex((r) => r.sectionId === M.death.until) };
+})();
+/** Whether Jesus has died and not yet risen at the reading line. */
+export function deadAt(row: Row, books: Book[], f = 0, pos: VersePos = (b, c, v) => versePos(row, b, c, v)): boolean {
+  if (row.i > DEATH.row && row.i < DEATH.until) return true;
+  if (row.i !== DEATH.row) return false;
+  return books.some((b) => DEATH.at[b] && row.refs[b] && pos(b, ...DEATH.at[b]!) <= f);
 }
 
 export function placeKey(row: Row, book: Book | null): string | null {
@@ -321,6 +423,29 @@ export function versesOf(text: BookText, ranges: Range[]): Verse[][] {
 export function rowForVerse(book: Book, c: number, v: number): number {
   const pos = c * 1000 + v;
   return ROWS.findIndex((r) => r.refs[book]?.some(([c1, v1, c2, v2]) => pos >= c1 * 1000 + v1 && pos <= c2 * 1000 + v2));
+}
+
+/** A passage that synopses print beside this one, where the harmony places the two on different occasions. */
+export interface Parallel { book: Book; c: number; v: number; ref: string; row: number }
+/** "MAT 18:21-22" → book and range. */
+function parsePassage(s: string): { book: Book; range: Range } | null {
+  const m = s.match(/^(MAT|MRK|LUK|JHN) (\d+):(\d+)(?:-(?:(\d+):)?(\d+))?$/);
+  if (!m) return null;
+  const c = Number(m[2]), v = Number(m[3]);
+  return { book: m[1] as Book, range: [c, v, m[4] ? Number(m[4]) : c, m[5] ? Number(m[5]) : v] };
+}
+/** Links by "BOOK c:v" of the verse each passage starts at (src/data/parallels.json). */
+export const PARALLELS: Map<string, Parallel[]> = new Map();
+for (const set of (parallels as { sets: string[][] }).sets) {
+  const [hub, ...rest] = set.map(parsePassage);
+  if (!hub || rest.some((p) => !p)) continue;
+  const link = (from: { book: Book; range: Range }, to: { book: Book; range: Range }) => {
+    const row = rowForVerse(to.book, to.range[0], to.range[1]);
+    if (row < 0 || row === rowForVerse(from.book, from.range[0], from.range[1])) return;
+    const key = `${from.book} ${from.range[0]}:${from.range[1]}`;
+    PARALLELS.set(key, [...(PARALLELS.get(key) ?? []), { book: to.book, c: to.range[0], v: to.range[1], ref: fmtRef(to.book, [to.range]), row }]);
+  };
+  for (const p of rest as { book: Book; range: Range }[]) { link(hub, p); link(p, hub); }
 }
 
 // Passages whose manuscript history the BSB marks with a note.

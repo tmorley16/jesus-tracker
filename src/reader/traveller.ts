@@ -1,18 +1,20 @@
 // Jesus on the map: one marker that travels rather than jumps. A move waits until the
 // camera sets off, then keeps pace with it (its progress is the camera's progress
 // towards its target), so the marker and the view arrive together. A move starts from
-// wherever the marker is drawn, drift included, so fast scrubbing never queues
-// animations and nothing snaps back to a centre first.
+// where the marker is, so fast scrubbing never queues animations and nothing snaps back
+// first; it follows the route's line where it's given one (the newest leg, rounded turns
+// and all), and otherwise goes straight.
 //
-// In an area (a region, or the likely area where no place is named) the marker drifts
-// about the centre: the drift grows from nothing on arrival, so it carries straight on
-// from the journey, and it keeps going until the next journey sets off from wherever
-// the drift has taken it.
+// In an area (a region, the likely area where no place is named, or the area between the
+// places the accounts differ on) the marker drifts a little about where it waits
+// (route.ts): the drift grows from nothing on arrival, so it carries straight on from the
+// journey, and when the next journey sets off it dies away as the marker goes, so the
+// marker joins the line, which always leaves from where he waits, never from the drift.
 //
 // His light is a second marker under everything else on the map (first after the canvas),
 // so the glow never muddies a label or another marker; it moves and drifts with the point.
-// Where the marker is drawn, drift included, is reported (onDraw), so the route's newest leg
-// stays joined to it and the light on the land follows it.
+// Where the marker is drawn, drift included, is reported (onDraw), so the light on the land
+// follows it.
 import { Marker, MercatorCoordinate, type Map as MlMap } from 'maplibre-gl';
 import type { LonLat } from './geo';
 import type { Traveller as Kind } from './state';
@@ -31,7 +33,9 @@ const ICONS: Record<Kind, string> = {
 
 export interface Move {
   to: LonLat;
-  /** Radius (km) of the area to drift within once there; null at a named place. */
+  /** The way to go, from where the marker is to `to` (the route's line); straight there if not given. */
+  path?: LonLat[];
+  /** How far (km) to drift about `to` once there (in an area); null at a named place. */
   wanderKm: number | null;
   /** Called with 0–1 as the marker travels (1 on arrival). */
   onProgress?: (p: number) => void;
@@ -43,7 +47,7 @@ export interface Move {
 type Journey = Move & { from: LonLat | null; p: number; cam: { to: LonLat; d0: number; done: boolean } | null; t0: number | null };
 
 interface Drift {
-  /** The area's radius (km); null while the drift dies away. */
+  /** How far (km) it drifts; null while the drift dies away. */
   km: number | null;
   t0: number;
   last: number;
@@ -66,10 +70,8 @@ export class TravellerMarker {
   private frame = 0;
   private drift: Drift | null = null;
   private driftFrame = 0;
-  /** Told where the marker is drawn whenever that changes (travelling or drifting), so the route and the light keep up. */
+  /** Told where the marker is drawn whenever that changes (travelling or drifting), so the light keeps up. */
   onDraw: ((ll: LonLat) => void) | null = null;
-  /** Told where a journey sets off from: wherever the drift had taken the marker. */
-  onDepart: ((from: LonLat) => void) | null = null;
 
   constructor(private map: MlMap) {
     this.el = document.createElement('div');
@@ -91,8 +93,12 @@ export class TravellerMarker {
     this.glowEl.classList.toggle(cls, on);
   }
 
-  /** Resting: Jesus isn't in the scene, so the marker waits, dimmed and labelled, where he was last placed. */
-  setResting(on: boolean) { this.toggle('resting', on); }
+  /** Resting: Jesus isn't in the scene, so the marker waits, dimmed and labelled, where he was last placed; once he is
+   *  born (`born`) it keeps a little of its glow. */
+  setResting(on: boolean, born = false) {
+    this.toggle('resting', on);
+    this.toggle('born', on && born);
+  }
 
   /** Set off now, at its own pace, for a move the camera isn't following (the camera is on another scene). */
   setOff() {
@@ -115,8 +121,8 @@ export class TravellerMarker {
 
   show(on: boolean) {
     this.toggle('off', !on);
-    // Hidden mid-drift: keep the spot it was last seen, for the next journey to start from.
-    if (!on) this.settle();
+    // Hidden mid-drift: back to its point, for the next journey to start from.
+    if (!on) this.endDrift();
   }
 
   /** Whether the marker is out of sight: not placed yet, or hidden. */
@@ -128,7 +134,6 @@ export class TravellerMarker {
     cancelAnimationFrame(this.frame);
     this.move = null;
     this.endDrift();
-    if (this.pos) this.onDepart?.(this.pos);
     this.place(ll);
   }
 
@@ -144,8 +149,8 @@ export class TravellerMarker {
     cancelAnimationFrame(this.frame);
     const here = !!this.pos && mdist(this.pos, m.to) < 1e-9;
     if (!this.pos || here || reducedMotion()) {
-      // A jump (reduced motion, or the first placing) still leaves from where the marker was.
-      if (!here) { this.settle(); if (this.pos) this.onDepart?.(this.pos); this.place(m.to); }
+      // A jump (reduced motion, or the first placing).
+      if (!here) { this.endDrift(); this.place(m.to); }
       this.move = null;
       m.onProgress?.(1);
       this.setDrift(m.wanderKm);
@@ -182,18 +187,18 @@ export class TravellerMarker {
     } else p = ease(Math.min(1, (now - m.t0!) / 700));
     p = Math.max(m.p, Math.min(1, p));
     m.p = p;
-    this.place([m.from[0] + (m.to[0] - m.from[0]) * p, m.from[1] + (m.to[1] - m.from[1]) * p]);
+    this.place(m.path ? along(m.path, p) : [m.from[0] + (m.to[0] - m.from[0]) * p, m.from[1] + (m.to[1] - m.from[1]) * p]);
     m.onProgress?.(p);
     if (p < 1) this.frame = requestAnimationFrame(this.step);
     else { this.move = null; this.setDrift(m.wanderKm); m.onArrive?.(); }
   };
 
-  /** Set off: from wherever the drift has taken the marker (it settles there). */
+  /** Set off from the marker's point; any drift dies away as it goes. A way given that doesn't start there isn't taken. */
   private depart(m: Journey): LonLat {
     if (m.from) return m.from;
-    this.settle();
+    this.setDrift(null);
     m.from = this.pos!;
-    this.onDepart?.(m.from);
+    if (m.path && (m.path.length < 2 || mdist(m.path[0], m.from) > 1e-9 || mdist(m.path[m.path.length - 1], m.to) > 1e-9)) m.path = undefined;
     return m.from;
   }
 
@@ -207,7 +212,7 @@ export class TravellerMarker {
       // The glow goes under every other marker and label.
       this.map.getCanvasContainer().insertBefore(this.glowEl, this.map.getCanvas().nextSibling);
     }
-    this.onDraw?.(ll);
+    this.onDraw?.(this.drawn() ?? ll);
   }
 
   /** Where the marker is drawn: its point, moved by any drift. */
@@ -250,17 +255,6 @@ export class TravellerMarker {
     this.driftFrame = requestAnimationFrame(this.driftStep);
   };
 
-  /** Stop drifting, moving the marker's point to where the drift has drawn it, so nothing jumps. */
-  private settle() {
-    const d = this.drift;
-    if (!d) return;
-    this.endDrift();
-    if (this.pos && Math.hypot(d.dx, d.dy) > 0.05) {
-      const p = this.map.project(this.pos), ll = this.map.unproject([p.x + d.dx, p.y + d.dy]);
-      this.place([ll.lng, ll.lat]);
-    }
-  }
-
   private endDrift() {
     cancelAnimationFrame(this.driftFrame);
     const was = this.drift;
@@ -270,10 +264,22 @@ export class TravellerMarker {
     if (was && this.pos) this.onDraw?.(this.pos);
   }
 
-  /** Drift amplitude in pixels: a fifth of the area's radius at this zoom, kept small so it still reads as the centre. */
+  /** Drift amplitude in pixels: `km` at this zoom, at most a few pixels more than the marker itself (so it stays well
+   *  inside the area, and in sight of the place it's near), and never quite still. */
   private amplitude(km: number) {
     const lat = this.pos?.[1] ?? 32;
     const mpp = (40075016.686 * Math.cos((lat * Math.PI) / 180)) / (512 * 2 ** this.map.getZoom());
-    return Math.max(4, Math.min(32, (km * 1000) / mpp / 5));
+    return Math.max(3, Math.min(14, (km * 1000) / mpp));
   }
+}
+
+/** The point a share `p` (0–1) of the way along a line. */
+function along(line: LonLat[], p: number): LonLat {
+  const ds = line.slice(1).map((q, k) => mdist(line[k], q)), total = ds.reduce((s, d) => s + d, 0);
+  let left = p * total;
+  for (let k = 0; k < ds.length; k++) {
+    if (left <= ds[k] && ds[k] > 0) { const t = left / ds[k]; return [line[k][0] + (line[k + 1][0] - line[k][0]) * t, line[k][1] + (line[k + 1][1] - line[k][1]) * t]; }
+    left -= ds[k];
+  }
+  return line[line.length - 1];
 }

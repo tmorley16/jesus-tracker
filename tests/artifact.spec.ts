@@ -12,7 +12,7 @@ test('the exported review build loads text and map from a sub-path', async ({ pa
   page.on('pageerror', (e) => failures.push(e.message));
   await page.goto('/review/');
   await expect(page.locator('.passage').first()).not.toHaveClass(/loading/, { timeout: 20_000 });
-  await page.getByRole('button', { name: /map/i }).first().click();
+  // The map starts open.
   await expect(page.locator('.maplibregl-canvas')).toBeVisible({ timeout: 30_000 });
   await page.waitForTimeout(2500);
   await page.screenshot({ path: `test-results/shots/${test.info().project.name}-artifact.png` });

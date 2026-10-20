@@ -305,10 +305,10 @@ export class LandLight implements CustomLayerInterface {
     if (this.e.target < 1 || !this.e.done(performance.now())) this.map?.triggerRepaint();
   }
 
-  /** A pool of light about him: at a named place, or travelling. */
-  point() {
+  /** A pool of light about him: at a named place, or travelling; fainter (`strength` under 1) while he rests. */
+  point(strength = 1) {
     this.e.set(0, 900);
-    this.s.set(1, 600);
+    this.s.set(strength, 600);
     this.map?.triggerRepaint();
   }
 

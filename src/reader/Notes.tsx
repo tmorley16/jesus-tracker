@@ -56,6 +56,18 @@ function NoteBody({ note, onGo }: { note: Note; onGo: (loc: string) => void }) {
   );
 }
 
+/** Scroll to the row with a verse, opening that gospel first if it's hidden (on a phone, reading it in place of the one shown). */
+export function showVerse(book: Book, c: number, v: number) {
+  const i = rowForVerse(book, c, v);
+  if (i < 0) return;
+  const ui = useUI.getState();
+  const compact = window.matchMedia('(max-width: 760px)').matches; // as Reader decides
+  if (compact ? ui.single !== book || !ui.visible.includes(book) : !ui.visible.includes(book)) {
+    if (compact || ui.visible.length === 1) ui.setSingle(book); else ui.toggleBook(book);
+    requestAnimationFrame(() => requestAnimationFrame(() => nav.toRow?.(i))); // after the new column is measured
+  } else nav.toRow?.(i);
+}
+
 interface Open { id: string; anchor: HTMLElement; pinned: boolean }
 
 /** One note at a time, placed by its mark inside the scrolling reader so it moves with the text. */
@@ -164,15 +176,9 @@ export function NotePopover({ host }: { host: RefObject<HTMLDivElement | null> }
 
   const go = useCallback((loc: string) => {
     const p = parseLoc(loc);
-    if (!p) return;
-    const i = rowForVerse(p.book, p.c, p.v);
-    if (i < 0) return;
+    if (!p || rowForVerse(p.book, p.c, p.v) < 0) return;
     close();
-    const ui = useUI.getState();
-    if (!ui.visible.includes(p.book)) {
-      if (ui.visible.length === 1) ui.setSingle(p.book); else ui.toggleBook(p.book);
-      requestAnimationFrame(() => requestAnimationFrame(() => nav.toRow?.(i))); // after the new column is measured
-    } else nav.toRow?.(i);
+    showVerse(p.book, p.c, p.v);
   }, [close]);
 
   const found = open ? lookup(open.id) : null;

@@ -180,6 +180,32 @@ function simplify(pts, tol) {
   return pts.filter((_, i) => keep[i]);
 }
 
+/** Binary morphology with a disc of radius r cells: grow (dilate) or shrink (erode) the cells set to 1. */
+function morph(m, w, h, r, grow) {
+  const offs = [];
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (dx * dx + dy * dy <= r * r + r) offs.push(dy * w + dx, dx, dy);
+  const out = new Uint8Array(m.length);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    let v = grow ? 0 : 1;
+    for (let k = 0; k < offs.length; k += 3) {
+      const xx = x + offs[k + 1], yy = y + offs[k + 2], s = xx >= 0 && yy >= 0 && xx < w && yy < h && m[y * w + x + offs[k]];
+      if (grow ? s : !s) { v = grow ? 1 : 0; break; }
+    }
+    out[y * w + x] = v;
+  }
+  return out;
+}
+
+/** A separable Gaussian blur (sigma in cells) of a grid of values, edges clamped. */
+function blur(m, w, h, sigma) {
+  const k = Math.ceil(3 * sigma), wt = [];
+  for (let i = -k; i <= k; i++) wt.push(Math.exp(-(i * i) / (2 * sigma * sigma)));
+  const sum = wt.reduce((s, x) => s + x, 0), a = new Float32Array(m.length), b = new Float32Array(m.length);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0; for (let i = -k; i <= k; i++) s += m[y * w + Math.min(w - 1, Math.max(0, x + i))] * wt[i + k]; a[y * w + x] = s / sum; }
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let s = 0; for (let i = -k; i <= k; i++) s += a[Math.min(h - 1, Math.max(0, y + i)) * w + x] * wt[i + k]; b[y * w + x] = s / sum; }
+  return b;
+}
+
 /** The slope (rise over run) at a point of a grid at zoom z: central differences 3 pixels wide, on the bilinear surface. */
 function slopeIn(G, z) {
   const size = 256 * 2 ** z;
@@ -346,8 +372,11 @@ for (const D of [{ id: 'jerusalem', place: 'jerusalem', km: 9 }, { id: 'capernau
   console.log(`light on the land, detail about ${D.place}: ${lines.length} lines, ${points} points (12.5 m levels, zoom 12) → detail-${D.id}.json (${(json.length / 1024).toFixed(0)} KB)`);
 }
 // The Sea of Galilee's shore, traced from the same tiles (zoom 12) so it lines up with the contours: the water surface
-// is flat in the terrain data, so the line just above it is the shore. It replaces the coarser Natural Earth outline
-// in public/data/geo/lakes.json (written by build-geo.mjs, which runs first).
+// is flat in the terrain data, so the cells within 1 m of it, joined to the lake's centre, are the lake. That line
+// wanders cell by cell through the marshy deltas and up stream mouths, which lit up as a blotchy band, so the lake is
+// opened and closed with a ~100 m disc (dropping inlets and spits narrower than ~200 m), blurred by ~80 m and traced
+// at the middle: one clean line of about 225 points. It replaces the coarser Natural Earth outline in
+// public/data/geo/lakes.json (written by build-geo.mjs, which runs first).
 {
   const centre = llOf('sea-of-galilee'), z = 12, size = 256 * 2 ** z;
   const px = ([lon, lat]) => [((lon + 180) / 360) * size, ((1 - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)) / Math.PI) / 2) * size];
@@ -359,11 +388,23 @@ for (const D of [{ id: 'jerusalem', place: 'jerusalem', km: 9 }, { id: 'capernau
   for (let dy = -20; dy <= 20; dy++) for (let dx = -20; dx <= 20; dx++) near.push(G.g[(Math.round(cy) - G.y0 + dy) * G.w + Math.round(cx) - G.x0 + dx]);
   near.sort((a, b) => a - b);
   const water = near[near.length >> 1];
-  const rings = isolines(G, water + 1, () => false).map((line) => line.map(([x, y]) => [x + G.x0, y + G.y0]));
+  const { w, h } = G, lake = new Uint8Array(w * h), todo = [(Math.round(cy) - G.y0) * w + Math.round(cx) - G.x0];
+  while (todo.length) {
+    const i = todo.pop();
+    if (lake[i] || G.g[i] > water + 1) continue;
+    lake[i] = 1;
+    const x = i % w, y = (i - x) / w;
+    if (x > 0) todo.push(i - 1);
+    if (x < w - 1) todo.push(i + 1);
+    if (y > 0) todo.push(i - w);
+    if (y < h - 1) todo.push(i + w);
+  }
+  const R = 3, opened = morph(morph(lake, w, h, R, false), w, h, R, true), closed = morph(morph(opened, w, h, R, true), w, h, R, false);
+  const rings = isolines({ w, h, g: blur(closed, w, h, 2.5) }, 0.5, () => false).map((line) => line.map(([x, y]) => [x + G.x0, y + G.y0]));
   const inside = (p, ring) => { let ins = false; for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) { const [xi, yi] = ring[i], [xj, yj] = ring[j]; if ((yi > p[1]) !== (yj > p[1]) && p[0] < ((xj - xi) * (p[1] - yi)) / (yj - yi) + xi) ins = !ins; } return ins; };
   const shore = rings.filter((r) => r.length > 100 && inside([cx, cy], r)).sort((a, b) => b.length - a.length)[0];
   if (!shore) throw new Error('no shoreline found for the Sea of Galilee');
-  const ring = simplify(smooth(shore), 0.4).map(ll).map(([lon, lat]) => [Math.round(lon * 1e5) / 1e5, Math.round(lat * 1e5) / 1e5]);
+  const ring = simplify(shore, 0.4).map(ll).map(([lon, lat]) => [Math.round(lon * 1e5) / 1e5, Math.round(lat * 1e5) / 1e5]);
   if (ring[0][0] !== ring[ring.length - 1][0] || ring[0][1] !== ring[ring.length - 1][1]) ring.push(ring[0]);
   const lakes = JSON.parse(await readFile('public/data/geo/lakes.json', 'utf8'));
   const f = lakes.features.find((f) => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).some((p) => inRing(centre, p[0])));

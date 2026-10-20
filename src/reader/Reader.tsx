@@ -1,10 +1,10 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { computeLayout, rowAtU } from './layoutModel';
-import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, lightFor, loadTexts, rowForVerse, rowTitle, type Book, type Reckoning, type Texts } from './model';
+import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVerse, rowTitle, versePos, type Book, type Reckoning, type Row, type Texts, type VersePos } from './model';
 import { Splitter } from './Splitter';
 import { Synopsis } from './Synopsis';
 import { Timeline } from './Timeline';
-import { layout, nav, playhead, useUI, type Appearance, type NotesShown, type Spacing, type TextSize, type Traveller } from './state';
+import { layout, nav, playhead, scene, useUI, type Appearance, type NotesShown, type Spacing, type TextSize, type Traveller } from './state';
 
 const MapPane = lazy(() => import('./MapPane'));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
@@ -40,6 +40,7 @@ export default function Reader() {
   useEffect(() => { loadTexts().then(setTexts).catch((e: Error) => setError(e.message)); }, []);
   const compact = useMedia('(max-width: 760px)');
   const map = useUI((s) => s.map);
+  const timeline = useUI((s) => s.timeline);
   const visible = useUI((s) => s.visible);
   const single = useUI((s) => s.single);
   const mapShare = useUI((s) => s.mapShare);
@@ -68,6 +69,7 @@ export default function Reader() {
       const ui = useUI.getState();
       if (e.key === '/') { e.preventDefault(); document.getElementById('goto')?.focus(); return; }
       if (e.key.toLowerCase() === 'm') { ui.toggleMap(); return; }
+      if (e.key.toLowerCase() === 't') { ui.toggleTimeline(); return; }
       const n = Number(e.key);
       if (n >= 1 && n <= 4) { if (compact) ui.setSingle(BOOKS[n - 1]); else ui.toggleBook(BOOKS[n - 1]); }
     };
@@ -97,7 +99,7 @@ export default function Reader() {
   return (
     <div className="jt" data-size={textSize} data-compact={compact ? '' : undefined}>
       <Toolbar compact={compact} gospels={gospels} />
-      <Timeline shown={mapBooks} compact={compact} />
+      {timeline && <Timeline shown={mapBooks} compact={compact} />}
       <div className="panes" ref={panesRef} data-layout={split} style={{ '--map-share': String(share) } as CSSProperties}>
         {gospels.length > 0 && <Synopsis texts={texts} shown={gospels} single={gospels.length === 1} />}
         {split === 'split' && <Splitter panesRef={panesRef} share={share} vertical={compact} />}
@@ -114,20 +116,43 @@ export default function Reader() {
   );
 }
 
-/** Dynamic colour: the page tint follows the time of day the visible accounts give. */
+/** Where a verse sits in its row on screen (0–1 of the row's height), or by verse count where the reader isn't shown. */
+function versePosOnScreen(row: Row): VersePos {
+  const sec = document.getElementById(`row-${row.id}`);
+  return (b, c, v) => {
+    const el = sec?.querySelector<HTMLElement>(`.cell[data-book="${b}"] [data-cv="${c}:${v}"]`);
+    if (!sec || !el || !sec.offsetHeight) return versePos(row, b, c, v);
+    return (el.getBoundingClientRect().top - sec.getBoundingClientRect().top) / sec.offsetHeight;
+  };
+}
+
+/** Dynamic colour: the page tint follows the time of day the visible accounts give, as the reading line passes the
+ *  verses that give it; from Jesus' death until the angel at the tomb it turns cold, and his light on the map goes out. */
 function TintSync({ shown }: { shown: Book[] }) {
-  const current = useUI((s) => s.current);
   const appearance = useUI((s) => s.appearance);
   useEffect(() => {
-    if (appearance !== 'dynamic') return;
-    const state = lightFor(ROWS[current], shown);
-    if (state === 'unstated') delete document.body.dataset.tint; else document.body.dataset.tint = state;
-  }, [current, shown, appearance]);
+    const apply = () => {
+      const { row: i, f } = playhead.getState();
+      const row = ROWS[i];
+      if (!row) return;
+      const pos = versePosOnScreen(row);
+      const dead = deadAt(row, shown, f, pos);
+      if (dead !== scene.getState().dead) scene.setState({ dead });
+      if (dead) document.body.dataset.dead = ''; else delete document.body.dataset.dead;
+      if (appearance !== 'dynamic') return;
+      const state = dead ? 'dead' : lightAt(row, shown, f, pos);
+      if (state === 'unstated') delete document.body.dataset.tint;
+      else if (document.body.dataset.tint !== state) document.body.dataset.tint = state;
+    };
+    apply();
+    return playhead.subscribe((s, prev) => { if (s.row !== prev.row || s.f !== prev.f) apply(); });
+  }, [shown, appearance]);
   return null;
 }
 
 function Toolbar({ compact, gospels }: { compact: boolean; gospels: Book[] }) {
   const map = useUI((s) => s.map);
+  const timeline = useUI((s) => s.timeline);
   const ui = useUI.getState();
   const [searching, setSearching] = useState(false);
   const pick = (b: Book) => {
@@ -155,6 +180,10 @@ function Toolbar({ compact, gospels }: { compact: boolean; gospels: Book[] }) {
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>
           </button>
         )}
+        <button type="button" className="icon timeline-btn" aria-pressed={timeline} aria-label="Timeline" onClick={ui.toggleTimeline} title="Show or hide the timeline (T)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 9v6M21 9v6" /><rect x="10" y="7" width="4" height="10" rx="1.5" /></svg>
+          {!compact && 'Timeline'}
+        </button>
         <button type="button" className="icon settings-btn" aria-label="Settings" aria-haspopup="dialog" onClick={() => ui.setSettingsOpen(!useUI.getState().settingsOpen)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" /></svg>
         </button>

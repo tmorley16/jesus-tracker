@@ -5,11 +5,14 @@ import { AttributionControl, LngLat, Map as MlMap, Marker, Popup, ScaleControl, 
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { FeatureCollection } from 'geojson';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { bearingDeg, bounds, circleRing, haversineKm, lerp, midpoint, type LonLat } from './geo';
+import { bearingDeg, bounds, circleRing, dryLand, haversineKm, inRing, lerp, type LonLat } from './geo';
 import { declutter, type Label } from './mapLabels';
-import { AREAS, BOOK_ABBR, MAP_START, ROWS, mountainFor, placesFor, rowTitle, storiesAt, type Book } from './model';
+import { AREAS, BIRTH, BOOK_ABBR, MAP_START, ROWS, mountainFor, rowTitle, storiesAt, type Book } from './model';
 import { loadPlaces, type PlaceData } from './places';
-import { nav, placeMarks, useUI } from './state';
+import { focusAreas, focusFor, headingFor, journey, restingFor, routeStops, routeTo, splits, travelTarget, type Focus } from './journey';
+import { between, driftKm, halfway, legsFor, planRoute, shareTo, stopId, type Ground, type Step } from './route';
+import { nav, placeMarks, scene, useUI } from './state';
+import { useStore } from 'zustand';
 import { LandLight } from './landLight';
 import { TravellerMarker } from './traveller';
 
@@ -32,15 +35,8 @@ const PEAK_REACH = 20;
 // Where the accounts name different places (the region of the Gadarenes, of the Gerasenes), the light covers this far
 // about each, in km.
 const SPLIT_KM = 12;
-/** Whether a point is inside a ring (even-odd). */
-function inRing([x, y]: LonLat, ring: number[][]) {
-  let inside = false;
-  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
-    const [xi, yi] = ring[i], [xj, yj] = ring[j];
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
-  }
-  return inside;
-}
+// From his birth, while he rests in a scene he isn't in, a little of his light on the land stays (a share of its strength).
+const RESTING_LIGHT = 0.35;
 const ABBR: Record<string, string> = { ...BOOK_ABBR, ACT: 'Acts' };
 // How often each place is named, for deciding which labels win when they crowd.
 const MENTIONS = new Map<string, number>();
@@ -90,8 +86,8 @@ function placeLinks(key: string, p: PlaceData): Link[] {
   const links: Link[] = [];
   if (p.wiki) links.push({ label: p.wiki.title === p.name ? 'Wikipedia' : `Wikipedia: ${p.wiki.title}`, href: wikiUrl(p.wiki.title) });
   if (p.openbible) links.push({ label: 'OpenBible.info', href: p.openbible.url });
-  if (p.kind !== 'region') links.push({ label: 'Google Maps', href: googleUrl(ll) });
-  links.push({ label: 'OpenStreetMap', href: osmUrl(ll, z) });
+  // Google Maps where it has a point to show; OpenStreetMap, framed to the area, for regions.
+  links.push(p.kind === 'region' ? { label: 'OpenStreetMap', href: osmUrl(ll, z) } : { label: 'Google Maps', href: googleUrl(ll) });
   return links;
 }
 const linksHtml = (links: Link[]) => `<p class="pp-links">${links.map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join('')}</p>`;
@@ -108,134 +104,6 @@ const peakCorners = (peaks: Peak[]): LonLat[] => peaks.flatMap(({ lonlat: [x, y]
   const dy = r / 111.3, dx = dy / Math.cos((y * Math.PI) / 180);
   return [[x - dx, y - dy], [x + dx, y + dy]] as LonLat[];
 });
-
-interface Step { row: number; key: string; ll: LonLat }
-const stopId = (s: Step) => `${s.row}:${s.key}`;
-/**
- * Where Jesus is, in reading order from the map's start: rows where he's in the scene and the shown gospels agree on
- * one named place (a region at the centre of its area). Where the text has him set out from elsewhere (Nazareth,
- * Lk 2:4), that place is a stop first.
- */
-function journey(books: Book[], places: Record<string, PlaceData>): Step[] {
-  const steps: Step[] = [];
-  for (const r of ROWS) {
-    if (r.i < MAP_START || !r.jesus || !books.some((b) => r.refs[b])) continue;
-    const named = placesFor(r, books);
-    if (named.length !== 1) continue;
-    const key = named[0].key, p = places[key];
-    if (!p) continue;
-    const from = books.map((b) => (r.refs[b] ? r.from[b] : undefined)).find((k) => k && places[k]);
-    if (from && from !== key && steps[steps.length - 1]?.key !== from) steps.push({ row: r.i, key: from, ll: places[from].candidates[0].lonlat });
-    steps.push({ row: r.i, key, ll: p.candidates[0].lonlat });
-  }
-  return steps;
-}
-/**
- * The stops the route draws: the named places, and where no place is named, the likely area's centre (worked out from
- * the named places alone), so the line always joins Jesus' marker to where it was.
- */
-function routeStops(books: Book[], places: Record<string, PlaceData>, steps: Step[]): Step[] {
-  const out: Step[] = [];
-  const push = (s: Step) => { const last = out[out.length - 1]; if (!last || haversineKm(last.ll, s.ll) > 0.5 || last.key !== s.key && !s.key.startsWith('~')) out.push(s); };
-  let j = 0;
-  for (let i = MAP_START; i < ROWS.length; i++) {
-    while (j < steps.length && steps[j].row <= i) push(steps[j++]);
-    const f = focusFor(i, books, places, steps);
-    if (f.kind === 'likely') push({ row: i, key: `~${i}`, ll: f.center });
-  }
-  return out;
-}
-/** The route so far: the places Jesus has been, in order, up to row `i` (repeats of the same place merged). */
-function routeTo(steps: Step[], i: number): Step[] {
-  const pts: Step[] = [];
-  for (const s of steps) { if (s.row > i) break; if (!pts.length || pts[pts.length - 1].key !== s.key) pts.push(s); }
-  return pts;
-}
-/** Rows where Jesus is in the scene but the shown gospels name different places (all of them count as visited). */
-function splits(books: Book[]): { row: number; keys: string[] }[] {
-  return ROWS.filter((r) => r.i >= MAP_START && r.jesus && books.some((b) => r.refs[b])).map((r) => ({ row: r.i, keys: placesFor(r, books).map((n) => n.key) })).filter((s) => s.keys.length > 1);
-}
-
-type Focus =
-  | { kind: 'site'; key: string; place: PlaceData; moved: boolean }
-  | { kind: 'region'; key: string; place: PlaceData; radius: number; moved: boolean }
-  | { kind: 'likely'; center: LonLat; radius: number; before: Step | null; after: Step | null }
-  | { kind: 'scene'; key: string; place: PlaceData }
-  | { kind: 'differ'; places: { key: string; books: Book[]; place: PlaceData }[] }
-  | { kind: 'none' };
-
-function focusFor(i: number, books: Book[], places: Record<string, PlaceData>, steps: Step[]): Focus {
-  const row = ROWS[i];
-  const named = placesFor(row, books).filter((n) => places[n.key]);
-  const key = named[0]?.key;
-  // Before the map's start (Mary's visit to Elizabeth) Jesus isn't on the map at all.
-  if (i < MAP_START) return key ? { kind: 'scene', key, place: places[key] } : { kind: 'none' };
-  if (named.length > 1) return { kind: 'differ', places: named.map((n) => ({ ...n, place: places[n.key] })) };
-  if (!row.jesus) return key ? { kind: 'scene', key, place: places[key] } : { kind: 'none' };
-  if (key) {
-    const place = places[key];
-    let k = -1;
-    steps.forEach((s, j) => { if (s.row === i) k = j; }); // the row's own stop comes after any place it sets out from
-    const moved = k > 0 && steps[k - 1].key !== key;
-    if (place.kind === 'region') return { kind: 'region', key, place, radius: AREAS[key] ?? 20, moved };
-    return { kind: 'site', key, place, moved };
-  }
-  // Jesus is in the scene but no place is named: an area between the places named before and after.
-  let before: Step | null = null, after: Step | null = null;
-  for (const s of steps) { if (s.row < i) before = s; else if (s.row > i) { after = s; break; } }
-  let unnamed = 0;
-  for (let r = Math.max(MAP_START, (before?.row ?? -1) + 1); r < (after?.row ?? ROWS.length); r++) {
-    const x = ROWS[r];
-    if (x.jesus && books.some((b) => x.refs[b]) && !placesFor(x, books).length) unnamed++;
-  }
-  const extra = 2.5 * Math.max(0, unnamed - 1);
-  let center: LonLat, radius: number;
-  if (before && after && before.key === after.key) { center = before.ll; radius = 8 + extra; }
-  else if (before && after) { center = midpoint(before.ll, after.ll); radius = Math.max(6, haversineKm(before.ll, after.ll) / 2 + 4) + extra; }
-  else if (before || after) { center = (before ?? after)!.ll; radius = 15; }
-  else return { kind: 'none' };
-  return { kind: 'likely', center, radius: Math.min(45, radius), before, after };
-}
-/** Where Jesus' marker goes for a focus, and the area (km) it may drift within. */
-function travelTarget(f: Focus): { to: LonLat; areaKm: number | null } | null {
-  if (f.kind === 'site') return { to: f.place.candidates[0].lonlat, areaKm: null };
-  if (f.kind === 'region') return { to: f.place.candidates[0].lonlat, areaKm: f.radius };
-  if (f.kind === 'likely') return { to: f.center, areaKm: f.radius };
-  return null;
-}
-/** Where the text has Jesus making for (not yet reached), with the words of each gospel on screen that say so. */
-interface Heading { key: string; place: PlaceData; quotes: { book: string; ref: string; words: string }[] }
-function headingFor(i: number, books: Book[], places: Record<string, PlaceData>): Heading | null {
-  const row = ROWS[i];
-  if (i < MAP_START || !row.jesus) return null;
-  const quotes = books.filter((b) => row.refs[b] && row.toward[b] && places[row.toward[b]!.key]).map((b) => ({ book: b as string, ...row.toward[b]! }));
-  return quotes.length ? { key: quotes[0].key, place: places[quotes[0].key], quotes } : null;
-}
-
-/** Where Jesus was last placed, for scenes he isn't in: the marker rests there. */
-interface Rest { to: LonLat; areaKm: number | null; name: string }
-function restingFor(i: number, books: Book[], places: Record<string, PlaceData>, steps: Step[]): Rest | null {
-  if (i < MAP_START || ROWS[i].jesus) return null;
-  for (let j = i - 1; j >= MAP_START; j--) {
-    const r = ROWS[j];
-    if (!r.jesus || !books.some((b) => r.refs[b])) continue;
-    const f = focusFor(j, books, places, steps);
-    if (f.kind === 'differ') return null; // the accounts disagree on where he was
-    const t = travelTarget(f);
-    if (t && (f.kind === 'site' || f.kind === 'region')) return { ...t, name: f.place.name };
-    if (t && f.kind === 'likely') return { ...t, name: `an area near ${places[(f.before ?? f.after)!.key].name}` };
-  }
-  return null;
-}
-
-/** The points and radii (km) a focus covers, for finding nearby peaks. */
-function focusAreas(f: Focus): { c: LonLat; r: number }[] {
-  if (f.kind === 'site' || f.kind === 'scene') return [{ c: f.place.candidates[0].lonlat, r: 0 }];
-  if (f.kind === 'region') return [{ c: f.place.candidates[0].lonlat, r: f.radius }];
-  if (f.kind === 'likely') return [{ c: f.center, r: f.radius }];
-  if (f.kind === 'differ') return f.places.map((p) => ({ c: p.place.candidates[0].lonlat, r: 0 }));
-  return [];
-}
 
 interface PopupContent { ll: LonLat; html: string; /** The place shown, whose stories the timeline marks. */ place?: string }
 /** A popup's content: `full` for a click or tap (a place's photo and stories), otherwise the short hover version. */
@@ -256,11 +124,27 @@ function makePopup(map: MlMap) {
     if (!popup.isOpen()) popup.addTo(map);
     pin(pinIt);
     const el = popup.getElement();
-    const y = map.project(c.ll).y, room = Math.max(y, map.getContainer().clientHeight - y) - 34;
+    const h = map.getContainer().clientHeight, y = map.project(c.ll).y;
+    let room = Math.max(y, h - y) - 34;
+    // A pinned card short of room (a phone's map): move the place towards the far edge so the card fits.
+    const want = Math.min(h - 60, 330);
+    if (pinIt && room < want) {
+      const above = y >= h - y, shift = Math.min(want - room, above ? h - 26 - y : y - 26);
+      if (shift > 0) { map.panBy([0, above ? -shift : shift], { animate: false }); room += shift; }
+    }
     const body = el.querySelector<HTMLElement>('.maplibregl-popup-content');
     if (body) {
       body.style.maxHeight = `${Math.max(120, room)}px`;
-      body.style.setProperty('--pp-photo-max', `${Math.round(Math.max(64, room * 0.36))}px`); // leave room for the name and stories
+      body.style.setProperty('--pp-photo-max', `${Math.round(Math.max(56, room * 0.45))}px`);
+      // If the name, the shortest story list and the links at the foot still don't fit, the photo gives way.
+      const img = body.querySelector<HTMLElement>('.pp-photo img');
+      for (let k = 0; img && k < 3; k++) {
+        const over = body.scrollHeight - body.clientHeight;
+        if (over <= 0) break;
+        // On a short map the photo goes altogether before the links or the name would be cut off.
+        if (img.offsetHeight <= 56) { img.closest<HTMLElement>('.pp-photo')!.style.display = 'none'; break; }
+        body.style.setProperty('--pp-photo-max', `${Math.round(Math.max(56, img.offsetHeight - over - 2))}px`);
+      }
     }
     popup.setLngLat(c.ll); // re-anchor for the capped height
     el.onpointerenter = () => clearTimeout(hideT);
@@ -268,7 +152,6 @@ function makePopup(map: MlMap) {
     el.onclick = (e) => {
       e.stopPropagation();
       const t = e.target as Element;
-      if (t.closest('.pp-close')) { hide(); return; }
       const story = t.closest<HTMLElement>('[data-row]');
       if (!story) return;
       e.preventDefault();
@@ -322,16 +205,12 @@ export default function MapPane({ books }: { books: Book[] }) {
   const modernData = useRef<Promise<[string, number, number, number][]> | null>(null);
   const applyColours = useRef<() => void>(() => {});
   const landLight = useRef<LandLight | null>(null);
-  // Joining the route to the marker: where the marker is drawn, the stop it's at (which follows it as it drifts), the
-  // point it set off from at each stop it has left, and whether it has arrived where the reading is.
-  const drawn = useRef<LonLat | null>(null);
-  const liveStop = useRef<{ id: string; ll: LonLat; km: number } | null>(null);
-  const shifts = useRef(new Map<string, LonLat>());
-  const arrived = useRef(false);
   const drawRoute = useRef<() => void>(() => {});
   // The lakes' shapes, so the shore of the water he's at can light up.
   const lakeShapes = useRef<FC | null>(null);
   const [places, setPlaces] = useState<Record<string, PlaceData> | null>(null);
+  // Dry land (from the map's land and lakes), so the route's points in areas keep off the water.
+  const [ground, setGround] = useState<Ground | null>(null);
   const [peaks, setPeaks] = useState<Peak[]>([]);
   const [ready, setReady] = useState(false);
   const current = useUI((s) => s.current);
@@ -342,6 +221,11 @@ export default function MapPane({ books }: { books: Book[] }) {
   const booksKey = books.join(',');
   const steps = useMemo(() => (places ? journey(books, places) : []), [booksKey, places]); // eslint-disable-line react-hooks/exhaustive-deps
   const routeSteps = useMemo(() => (places ? routeStops(books, places, steps) : []), [steps, places]); // eslint-disable-line react-hooks/exhaustive-deps
+  const plan = useMemo(() => planRoute(routeSteps, ground ?? undefined), [routeSteps, ground]);
+  // For tests (?debug): the route's stops, where the marker waits in each area, the planned line and each stop on it.
+  useEffect(() => {
+    if (new URLSearchParams(location.search).has('debug')) (window as unknown as { __jtRoute: unknown }).__jtRoute = { steps: routeSteps, rest: Object.fromEntries(plan.rest), line: plan.line, at: Object.fromEntries(plan.at) };
+  }, [routeSteps, plan]);
   const split = useMemo(() => splits(books), [booksKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const focus = useMemo<Focus>(() => (places ? focusFor(current, books, places, steps) : { kind: 'none' }), [current, steps, places]); // eslint-disable-line react-hooks/exhaustive-deps
   const mountain = useMemo(() => mountainFor(ROWS[current], books), [current, booksKey]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -350,15 +234,26 @@ export default function MapPane({ books }: { books: Book[] }) {
   // The mountain: the one the text names, or the candidates given where it doesn't name one, or else the named peaks
   // near the place or area shown.
   const given = ROWS[current].peaks, givenNamed = !!given?.named;
+  // Mountains (the toggle beside Modern places): on by itself where the text places Jesus on or near a mountain. The
+  // reader can turn them off there, or on anywhere else (every named mountain, marked but not lit), until such a
+  // stretch of the text begins or ends.
+  const autoMountains = mountain.length > 0;
+  const [mountainsChoice, setMountainsChoice] = useState<boolean | null>(null);
+  const [autoWas, setAutoWas] = useState(autoMountains);
+  if (autoWas !== autoMountains) { setAutoWas(autoMountains); setMountainsChoice(null); }
+  const mountainsOn = mountainsChoice ?? autoMountains;
   const peaksNow = useMemo(() => {
-    if (!mountain.length) return [];
+    if (!mountainsOn) return [];
+    if (!mountain.length) return peaks;
     if (given) return peaks.filter((p) => given.ids.includes(p.id));
     const areas = focusAreas(focus);
     return peaks.filter((p) => areas.some((a) => haversineKm(a.c, p.lonlat) <= a.r + PEAK_REACH));
-  }, [mountain, focus, peaks, given]);
+  }, [mountainsOn, mountain, focus, peaks, given]);
   // The same peaks from one section to the next (through the Sermon on the Mount) stay put rather than being redrawn.
   const peakIds = peaksNow.map((p) => p.id).join(',');
   const nearPeaks = useMemo(() => peaksNow, [peakIds]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The peaks the text calls for: lit, joined to his light, and framed with the place shown.
+  const textPeaks = useMemo(() => (autoMountains ? nearPeaks : []), [autoMountains, nearPeaks]);
   focusRef.current = focus;
 
   useEffect(() => {
@@ -489,30 +384,8 @@ export default function MapPane({ books }: { books: Book[] }) {
 
       traveller.current = new TravellerMarker(map);
       traveller.current.setKind(useUI.getState().traveller);
-      // The route stays joined to the marker as it drifts (redrawn at most every 40 ms), and a stop it leaves keeps the
-      // point it set off from. The light on the land follows it.
-      let routeFrame = 0, routeLast = 0;
-      const drawRouteSoon = () => {
-        if (routeFrame) return;
-        routeFrame = requestAnimationFrame((now) => {
-          routeFrame = 0;
-          if (now - routeLast < 40) { drawRouteSoon(); return; }
-          routeLast = now;
-          drawRoute.current();
-        });
-      };
-      traveller.current.onDraw = (ll) => {
-        drawn.current = ll;
-        landLight.current?.follow(ll);
-        if (liveStop.current || arrived.current) drawRouteSoon();
-      };
-      traveller.current.onDepart = (from) => {
-        const s = liveStop.current;
-        if (s && haversineKm(from, s.ll) <= s.km / 4 + 0.5) shifts.current.set(s.id, from);
-        liveStop.current = null;
-        arrived.current = false;
-        drawRouteSoon();
-      };
+      // The light on the land follows the marker, drift and all (the route doesn't: it's the line as planned).
+      traveller.current.onDraw = (ll) => landLight.current?.follow(ll);
       map.on('load', () => {
         if (cancelled) return;
         map.addImage('jt-arrow', arrowImage(), { pixelRatio: 2, sdf: true });
@@ -535,6 +408,7 @@ export default function MapPane({ books }: { books: Book[] }) {
         setReady(true);
       });
       setPlaces(pl);
+      setGround(() => dryLand(land, lakes));
       setPeaks(pk.peaks);
     })();
     // Re-read the colours (the page's light or its tint) and repaint.
@@ -575,14 +449,26 @@ export default function MapPane({ books }: { books: Book[] }) {
     if (!map || !tr || !places || !ready) return;
     const src = (id: string) => map.getSource(id) as GeoJSONSource | undefined;
 
-    // The line: Jesus' named places so far, one feature per leg, newest leg age 0.
+    // The line: Jesus' places so far, one feature per leg, newest leg age 0 (route.ts).
     const pts = routeTo(routeSteps, current);
-    const legs = pts.slice(1).map((s, k) => [pts[k].ll, s.ll] as [LonLat, LonLat]);
     const prevKeys = routeKeys.current;
     routeKeys.current = pts.map((p) => p.key);
     const forward = pts.length > prevKeys.length && prevKeys.every((k, i) => pts[i].key === k);
-    const target = travelTarget(focus);
-    const newest = legs[legs.length - 1];
+    // In an area his marker waits where the line passes through it (route.ts), not at the area's centre; the light
+    // still covers the whole area. Likewise where he rests, in a scene he isn't in.
+    const last = pts[pts.length - 1];
+    const restOf = (s: Step) => plan.rest.get(stopId(s)) ?? s.ll;
+    const onTheWay = <T extends { to: LonLat; areaKm: number | null }>(t: T | null) =>
+      t && (t.areaKm && last?.km && haversineKm(last.ll, t.to) < 0.5 ? { ...t, to: restOf(last), centre: t.to } : { ...t, centre: t.to });
+    const target = onTheWay(travelTarget(focus));
+    const restAt = onTheWay(resting);
+    // The legs, all of them the line as planned (route.ts), the newest from the last named place he left to where he is
+    // now. He sets off from the stop before this one, along the way between them, after any stretch through an area he
+    // was already in.
+    const legs = legsFor(pts, plan), newest = legs[legs.length - 1];
+    const prev = pts[pts.length - 2];
+    const end = last && restOf(last), dep = prev && restOf(prev);
+    const way = newest && prev ? between(plan, prev, last) : null;
     // The text has him heading somewhere he hasn't reached: that's the motion to show, so the newest leg (how he got
     // here) goes quiet, grey like the rest of the route.
     const ahead = target && heading && haversineKm(target.to, heading.place.candidates[0].lonlat) > 3 ? heading : null;
@@ -591,56 +477,43 @@ export default function MapPane({ books }: { books: Book[] }) {
     // The heading: a dashed line from where he is, part of the way (up to 30 km) towards the place, named at its tip.
     const dest = ahead?.place.candidates[0].lonlat, toDest = dest && target ? haversineKm(target.to, dest) : 0;
     const tip = dest && target && toDest ? lerp(target.to, dest, Math.min(0.5 * toDest, 30) / toDest) : null;
-    // Out of sight while the route moved on (or appearing for the first time): set off from the newest leg's start,
+    // Out of sight while the route moved on (or appearing for the first time): set off from where the newest leg leaves,
     // unless it was last seen where it's going (back in the same place, or within the same area).
     const seen = tr.position, near = target ? Math.max(0.5, (target.areaKm ?? 0) / 2) : 0;
-    if (target && newest && tr.hidden && haversineKm(newest[1], target.to) < 0.5 && !(seen && haversineKm(seen, target.to) <= near)) tr.startAt(newest[0]);
+    if (target && end && dep && tr.hidden && haversineKm(end, target.to) < 0.5 && !(seen && haversineKm(seen, target.to) <= near)) tr.startAt(dep);
     const from = tr.position;
-    // Grow the newest leg as Jesus travels it, when the marker is setting off from its start
+    // Grow the newest leg as Jesus travels it, when the marker is setting off from where it leaves
     // (or is still on its way along it when the reading line moves on within the same place).
     const legKey = newest ? newest.join('|') : '';
     const continuing = !!legKey && revealing.current === legKey && tr.travellingTo(target?.to);
-    const reveal = !quiet && (continuing || !!(forward && target && newest && from && haversineKm(newest[1], target.to) < 0.5 && haversineKm(newest[0], from) < 2));
+    const reveal = !quiet && (continuing || !!(forward && target && end && dep && from && haversineKm(end, target.to) < 0.5 && haversineKm(dep, from) < 0.1));
     revealing.current = reveal ? legKey : '';
     const setHead = (h: number) => {
       head.current = h;
       map.setPaintProperty('trail', 'line-gradient', trailGradient(h));
     };
-    setHead(reveal ? (continuing ? head.current : 0) : 1);
+    // Any stretch of the newest leg before he sets off (through an area he was already in) is drawn already.
+    const h0 = newest && way ? shareTo(newest, newest.length - way.length) : 0;
+    setHead(reveal ? (continuing ? head.current : h0) : 1);
     const q = (age: number) => (quiet && age === 0 ? 1 : 0);
 
-    // Where the legs are drawn: each stop at its place, except that the stop the marker is at follows it as it drifts,
-    // and a stop it has left keeps the point it set off from, so the line stays joined to him. Likewise the heading
-    // sets off from where he is drawn once he's there.
-    const last = pts[pts.length - 1], goal = target?.to ?? resting?.to ?? null;
-    const goalStop = last && goal && haversineKm(goal, last.ll) < 0.5 ? { id: stopId(last), ll: last.ll, km: (target ?? resting)?.areaKm ?? 0 } : null;
-    const at = (s: Step): LonLat => {
-      const id = stopId(s);
-      if (liveStop.current?.id === id && drawn.current) return drawn.current;
-      return shifts.current.get(id) ?? s.ll;
-    };
     let arrowShown = !reveal;
     drawRoute.current = () => {
-      const shown = pts.slice(1).map((s, k) => [at(pts[k]), at(s)] as [LonLat, LonLat]);
-      src('trail')?.setData({ type: 'FeatureCollection', features: shown.map(([a, b], k) => ({ type: 'Feature', properties: { age: shown.length - 1 - k, q: q(shown.length - 1 - k) }, geometry: { type: 'LineString', coordinates: [a, b] } })) });
-      const recentLegs = shown.slice(-3);
-      src('arrows')?.setData({ type: 'FeatureCollection', features: recentLegs.map(([a, b], k) => ({ age: recentLegs.length - 1 - k, a, b })).filter((x) => arrowShown || x.age > 0).map(({ age, a, b }) => ({ type: 'Feature', properties: { age, q: q(age), bearing: bearingDeg(a, b) }, geometry: { type: 'Point', coordinates: lerp(a, b, 0.5) } })) });
-      src('heading')?.setData(tip && target ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [(arrived.current && drawn.current) || target.to, tip] } }] } : EMPTY);
+      src('trail')?.setData({ type: 'FeatureCollection', features: legs.map((line, k) => ({ type: 'Feature', properties: { age: legs.length - 1 - k, q: q(legs.length - 1 - k) }, geometry: { type: 'LineString', coordinates: line } })) });
+      const recentLegs = legs.slice(-3).map((line, k, all) => ({ age: all.length - 1 - k, mid: halfway(line) }));
+      src('arrows')?.setData({ type: 'FeatureCollection', features: recentLegs.flatMap(({ age, mid }) => (mid && (arrowShown || age > 0) ? [{ type: 'Feature' as const, properties: { age, q: q(age), bearing: mid.bearing }, geometry: { type: 'Point' as const, coordinates: mid.at } }] : [])) });
     };
-    arrived.current = !!goal && !!tr.position && haversineKm(tr.position, goal) < 1e-3 && !tr.travellingTo(goal);
     drawRoute.current();
-    // Arrived: the stop he's at (if the route ends there) follows his marker from now on.
-    const arrive = () => {
-      liveStop.current = goalStop;
-      arrived.current = true;
-      drawRoute.current();
-    };
+    // The heading sets off from where he waits.
+    src('heading')?.setData(tip && target ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [target.to, tip] } }] } : EMPTY);
     const ring = focus.kind === 'likely' ? circleRing(focus.center, focus.radius) : focus.kind === 'region' ? circleRing(focus.place.candidates[0].lonlat, focus.radius) : null;
     src('area')?.setData(ring ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } }] } : EMPTY);
 
-    // Jesus' marker: travels to the place (or the centre of the area) as the camera does; in a scene he isn't in,
-    // it rests, dimmed, where he was last placed (travelling back there if the reader has scrolled back).
-    // His light on the land goes with him, and on arriving in an area grows to cover it; it's out while he rests.
+    // Jesus' marker: travels to the place (or where the route visits the area) as the camera does, along the line as the
+    // newest leg grows behind it; in a scene he isn't in, it rests, dimmed, where he was last placed (travelling back
+    // there if the reader has scrolled back). His light on the land goes with him, and on arriving in an area grows to
+    // cover it (where the accounts differ, each place has its own pool instead). While he rests it's out, until he is
+    // born; from then on a little of it stays, as does a little of his glow.
     const light = landLight.current;
     if (target) {
       tr.setResting(false);
@@ -648,22 +521,25 @@ export default function MapPane({ books }: { books: Book[] }) {
       light?.point();
       tr.go({
         to: target.to,
-        wanderKm: wander ? target.areaKm : null,
+        path: reveal && way ? way : undefined,
+        wanderKm: wander && target.areaKm ? driftKm(target.areaKm) : null,
         onProgress: reveal ? (p) => {
-          setHead(p);
-          if (!arrowShown && p >= 0.5) { arrowShown = true; drawRoute.current(); }
+          const h = h0 + (1 - h0) * p;
+          setHead(h);
+          if (!arrowShown && h >= 0.5) { arrowShown = true; drawRoute.current(); }
           if (p >= 1) revealing.current = '';
         } : undefined,
         onArrive: () => {
-          arrive();
-          if (target.areaKm) light?.cover(target.to, target.areaKm);
+          if (target.areaKm && focus.kind !== 'differ') light?.cover(target.centre, target.areaKm);
         },
       });
-    } else if (resting) {
+    } else if (restAt) {
+      const born = current >= BIRTH;
       tr.show(true);
-      tr.setResting(true);
-      light?.off();
-      tr.go({ to: resting.to, wanderKm: wander ? resting.areaKm : null, onArrive: arrive });
+      tr.setResting(true, born);
+      if (born) light?.point(RESTING_LIGHT);
+      else light?.off();
+      tr.go({ to: restAt.to, wanderKm: wander && restAt.areaKm ? driftKm(restAt.areaKm) : null });
     } else {
       tr.setResting(false);
       tr.show(false);
@@ -728,7 +604,7 @@ export default function MapPane({ books }: { books: Book[] }) {
     // In mountain sections the view takes in the nearby peaks and their contours as well
     // (at a named place, only the peaks close by, so the place itself stays readable),
     // and any heading's tip, or where Jesus is resting during a scene he isn't in.
-    const corners = peakCorners(nearPeaks);
+    const corners = peakCorners(textPeaks);
     // The card covers the top of the map, so whatever is framed sits below it.
     const pad = (p: number) => {
       const card = boxRef.current?.parentElement?.querySelector<HTMLElement>('.map-card');
@@ -737,7 +613,7 @@ export default function MapPane({ books }: { books: Book[] }) {
     };
     const flyTo = (ll: LonLat, zoom: number, travel: boolean, extra: LonLat[] = []) => {
       let center = ll;
-      const peaksNear = peakCorners(nearPeaks.filter((p) => haversineKm(p.lonlat, ll) <= 8));
+      const peaksNear = peakCorners(textPeaks.filter((p) => haversineKm(p.lonlat, ll) <= 8));
       if (peaksNear.length || extra.length) {
         const cam = map.cameraForBounds(bounds([ll, ...peaksNear, ...extra]) as LngLatBoundsLike, { padding: pad(70), maxZoom: 12.4 });
         if (cam?.center && cam.zoom !== undefined) { const c = LngLat.convert(cam.center); center = [c.lng, c.lat]; zoom = Math.min(peaksNear.length ? zoom + 2 : zoom, cam.zoom); }
@@ -762,7 +638,7 @@ export default function MapPane({ books }: { books: Book[] }) {
       const ll = focus.place.candidates[0].lonlat;
       // The scene, marked as a scene (not Jesus): an open diamond.
       add('map-scene', ll, '<i></i><span>scene</span>');
-      const rest = resting && haversineKm(resting.to, ll) <= 150 ? [resting.to] : [];
+      const rest = restAt && haversineKm(restAt.to, ll) <= 150 ? [restAt.to] : [];
       fly(() => { flyTo(ll, zoomFor(focus.key, focus.place), false, rest); tr.setOff(); });
     } else if (focus.kind === 'differ') {
       // The accounts name different places: a dimmer light at each, labelled with its gospels. Its glow, like his,
@@ -773,10 +649,11 @@ export default function MapPane({ books }: { books: Book[] }) {
         map.getCanvasContainer().insertBefore(markers.current.focus[markers.current.focus.length - 1].getElement(), map.getCanvas().nextSibling);
         add('map-split', ll, `<i></i><span>${p.books.map((b) => BOOK_ABBR[b]).join(', ')}</span>`);
       });
-      fly(() => fitTo(focus.places.map((p) => p.place.candidates[0].lonlat), 90, 10, false));
+      // ...and Jesus' marker waits in the area between them.
+      fly(() => fitTo([...focus.places.map((p) => p.place.candidates[0].lonlat), ...(target ? [target.to] : [])], 90, 10, !!target));
     } else if (ring && target) {
       fly(() => fitTo([...ring, ...tipPts], 50, 10.5, true));
-    } else if (resting) {
+    } else if (restAt) {
       fly(() => tr.setOff());
     } else if (current < MAP_START) {
       // Back at the start, before Jesus is on the map: the whole standard view.
@@ -784,9 +661,10 @@ export default function MapPane({ books }: { books: Book[] }) {
     }
     declutterSoon.current(true);
     return () => window.clearTimeout(t);
-  }, [focus, steps, routeSteps, split, current, places, ready, wander, nearPeaks, heading, resting]);
+  }, [focus, steps, routeSteps, plan, split, current, places, ready, wander, textPeaks, heading, resting]);
 
-  // Mountain sections: the named peaks near the place or area shown, with their contours.
+  // Mountain sections: the named peaks near the place or area shown, with their contours (or, turned on by hand
+  // elsewhere, every named mountain, marked only).
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -805,7 +683,7 @@ export default function MapPane({ books }: { books: Book[] }) {
       popup.current?.attach(el, () => ({ ll: p.lonlat, html: peakPopup(p) }));
     }
     declutterSoon.current(true);
-    const ids = [...new Set(nearPeaks.map((p) => p.cluster))];
+    const ids = [...new Set(textPeaks.map((p) => p.cluster))];
     if (!ids.length) { landLight.current?.setMountain(null, [], []); return; }
     let live = true;
     Promise.all(ids.map((id) => {
@@ -817,21 +695,22 @@ export default function MapPane({ books }: { books: Book[] }) {
       // over from the region's.
       const fc: FC = { type: 'FeatureCollection', features: sets.flatMap((s) => s.features) };
       const win = (p: Peak) => ({ ll: p.lonlat, km: p.r });
-      landLight.current?.setMountain(fc, peaks.filter((p) => ids.includes(p.cluster)).map(win), nearPeaks.map(win));
+      landLight.current?.setMountain(fc, peaks.filter((p) => ids.includes(p.cluster)).map(win), textPeaks.map(win));
     }).catch(() => { /* contours are a nicety; the peaks still show */ });
     return () => { live = false; };
-  }, [nearPeaks, peaks, places, givenNamed, ready]);
+  }, [nearPeaks, textPeaks, peaks, places, givenNamed, ready]);
 
   // Light on the land (Settings): with it on, an area is shown by the light itself rather than a shaded circle (the
-  // circle stays, unseen, for hovering).
+  // circle stays, unseen, for hovering). From his death until the angel at the tomb the light goes out.
+  const dead = useStore(scene, (s) => s.dead);
   useEffect(() => {
     const map = mapRef.current, light = landLight.current;
     if (!map || !light || !ready) return;
-    light.enabled = landLightOn;
+    light.enabled = landLightOn && !dead;
     map.triggerRepaint();
     map.setPaintProperty('area-fill', 'fill-opacity', landLightOn ? 0 : 0.12);
     map.setPaintProperty('area-edge', 'line-opacity', landLightOn ? 0 : 1);
-  }, [landLightOn, ready]);
+  }, [landLightOn, dead, ready]);
 
   // Modern places: towns and cities of today, and the modern names of the sites, when switched on.
   useEffect(() => {
@@ -881,12 +760,9 @@ export default function MapPane({ books }: { books: Book[] }) {
           <>
             <p className="map-place-name">{focus.place.name}{row.placeImplied && <em> · implied by the context</em>}</p>
             {focus.place.candidates.length > 1 && (
-              <>
-                <ul className="cands">
-                  {focus.place.candidates.map((c, i) => <li key={c.label}>{i === 0 ? 'Shown: ' : ''}{c.label}{c.score !== null && <span> · {c.score} / 1000</span>}</li>)}
-                </ul>
-                <p className="cands-note">Scores are OpenBible.info’s, not percentages: how well the reference works it surveys support each site, the recent ones counting most.</p>
-              </>
+              <ul className="cands">
+                {focus.place.candidates.map((c, i) => <li key={c.label}>{i === 0 ? 'Shown: ' : ''}{c.label}{c.score !== null && <span title="OpenBible.info score out of 1000: how well the reference works support this location"> · {c.score}</span>}</li>)}
+              </ul>
             )}
           </>
         )}
@@ -896,7 +772,7 @@ export default function MapPane({ books }: { books: Book[] }) {
             {focus.place.name} <em>· Jesus isn’t in this scene{resting ? `; his marker waits at ${resting.name}, where the text last placed him` : '; the line shows only his movements'}</em>
           </p>
         )}
-        {focus.kind === 'differ' && <p className="map-place-name">{focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')} <em>· the accounts name different places</em></p>}
+        {focus.kind === 'differ' && <p className="map-place-name">{focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')} <em>· the accounts name different places{focus.present ? '; his marker waits between them' : ''}</em></p>}
         {focus.kind === 'likely' && (
           <p className="map-place-name muted">
             Place not named. {focus.before && focus.after
@@ -919,7 +795,7 @@ export default function MapPane({ books }: { books: Book[] }) {
         {mountain.length > 0 && (
           <p className="map-mountain">
             {[...mountain.reduce((m, q) => m.set(q.words, [...(m.get(q.words) ?? []), ABBR[q.book]]), new Map<string, string[]>())].map(([w, bs]) => `“${w}” (${bs.join(', ')})`).join(' · ')}
-            <em>{!nearPeaks.length ? '' : given?.named ? ` · shown with its contours` : given ? ` · the mountain isn't named; candidates shown: ${nearPeaks.map((p) => p.name).join(' or ')}` : ` · named peaks within ${PEAK_REACH} km are shown with contours`}</em>
+            <em>{!mountainsOn ? ' · mountains hidden' : !nearPeaks.length ? '' : given?.named ? ` · shown with its contours` : given ? ` · the mountain isn't named; candidates shown: ${nearPeaks.map((p) => p.name).join(' or ')}` : ` · named peaks within ${PEAK_REACH} km are shown with contours`}</em>
           </p>
         )}
         {linkPlace && (
@@ -928,9 +804,14 @@ export default function MapPane({ books }: { books: Book[] }) {
           </p>
         )}
       </div>
-      <button type="button" className="map-toggle" aria-pressed={modern} onClick={() => useUI.getState().setModern(!modern)} title="Show today’s towns and the modern names of the sites">
-        Modern places
-      </button>
+      <div className="map-toggles">
+        <button type="button" className="map-toggle" aria-pressed={mountainsOn} onClick={() => setMountainsChoice(!mountainsOn)} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)">
+          Mountains
+        </button>
+        <button type="button" className="map-toggle" aria-pressed={modern} onClick={() => useUI.getState().setModern(!modern)} title="Show today’s towns and the modern names of the sites">
+          Modern places
+        </button>
+      </div>
     </div>
   );
 }
@@ -938,16 +819,22 @@ export default function MapPane({ books }: { books: Book[] }) {
 function placePopup(key: string, p: PlaceData, full: boolean): string {
   const today = modernName(p);
   const sub = p.kind === 'region' ? 'A region' : today ? `Shown at ${today}` : null;
-  const n = storiesAt(key).length;
-  const stories = full ? storiesHtml(key) : n ? `<p class="pp-h">${n === 1 ? 'Story' : `${n} stories`} set here · click for more</p>` : '';
-  return `<button type="button" class="pp-close" aria-label="Close">×</button>${full ? photoHtml(p) : ''}<p class="pp-title">${esc(p.name)}</p>${sub ? `<p class="pp-sub">${esc(sub)}</p>` : ''}${p.wiki?.note ? `<p class="pp-sub">Wikipedia link: ${esc(p.wiki.note)}</p>` : ''}${stories}${linksHtml(placeLinks(key, p))}`;
+  const stories = full ? storiesHtml(key) : storiesAt(key).length ? '<p class="pp-h">Click for the photo and stories</p>' : '';
+  return `${full ? photoHtml(p) : ''}<p class="pp-title">${esc(p.name)}</p>${sub ? `<p class="pp-sub">${esc(sub)}</p>` : ''}${p.wiki?.note ? `<p class="pp-sub">Wikipedia link: ${esc(p.wiki.note)}</p>` : ''}${stories}${linksHtml(placeLinks(key, p))}`;
 }
 function photoHtml(p: PlaceData): string {
   const ph = p.photo;
   if (!ph) return '';
   const caption = ph.caption.charAt(0).toUpperCase() + ph.caption.slice(1);
-  const credit = ['Photo', ph.author, ph.licence].filter(Boolean).join(' · ');
-  return `<figure class="pp-photo"><img src="${esc(new URL(ph.src, document.baseURI).href)}" alt="${esc(caption)}" decoding="async"><figcaption>${esc(caption)}. <a href="${esc(ph.page)}" target="_blank" rel="noopener">${esc(credit)}</a></figcaption></figure>`;
+  const by = creditName(ph.author);
+  const title = [by ? `Photo: ${by}` : 'Photo', ph.licence, 'Wikimedia Commons'].filter(Boolean).join(' · ');
+  return `<figure class="pp-photo"><img src="${esc(new URL(ph.src, document.baseURI).href)}" alt="${esc(caption)}" decoding="async"><figcaption>${esc(caption)}. <a href="${esc(ph.page)}" target="_blank" rel="noopener" title="${esc(title)}">${esc(by ?? 'Photo')}</a></figcaption></figure>`;
+}
+/** Just the photographer's name from a Commons author line ("Bill Rice from Flat Rock, MI, …" → "Bill Rice"); the link has the rest. */
+function creditName(author: string | null): string | null {
+  if (!author || /^https?:/.test(author)) return null;
+  const name = author.replace(/^The original uploader was /i, '').replace(/\s+(from|at|on)\s.*$/i, '').replace(/\s*\(.*$/, '').replace(/,.*$/, '').trim();
+  return name || null;
 }
 /** The stories set at a place, each a link that takes the reader there. */
 function storiesHtml(key: string): string {
@@ -959,11 +846,11 @@ function storiesHtml(key: string): string {
     const notes = [st.books && st.books.map((b) => BOOK_ABBR[b]).join(', '), st.implied && 'implied'].filter(Boolean).join(' · ');
     return `<li><a href="#" data-row="${st.i}"${r.sectionId === section ? ' aria-current="true"' : ''}><span class="pp-n">§${esc(r.n)}</span> ${esc(r.sectionTitle)}${notes ? ` <em>${esc(notes)}</em>` : ''}</a></li>`;
   });
-  return `<p class="pp-h">${stories.length === 1 ? 'Story' : `${stories.length} stories`} set here</p><ol class="pp-stories">${items.join('')}</ol>`;
+  return `<ol class="pp-stories" aria-label="Stories set here">${items.join('')}</ol>`;
 }
 function peakPopup(p: Peak): string {
   const links: Link[] = [];
   if (p.wiki) links.push({ label: 'Wikipedia', href: p.wiki.url });
-  links.push({ label: 'Google Maps', href: googleUrl(p.lonlat) }, { label: 'OpenStreetMap', href: osmUrl(p.lonlat, 14) });
-  return `<button type="button" class="pp-close" aria-label="Close">×</button><p class="pp-title">${esc(p.name)}</p><p class="pp-sub">≈ ${p.elev} m above sea level (terrain data); contours every ${p.interval} m</p>${linksHtml(links)}`;
+  links.push({ label: 'Google Maps', href: googleUrl(p.lonlat) });
+  return `<p class="pp-title">${esc(p.name)}</p><p class="pp-sub">≈ ${p.elev} m above sea level (terrain data); contours every ${p.interval} m</p>${linksHtml(links)}`;
 }

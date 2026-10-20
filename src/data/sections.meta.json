@@ -15,7 +15,7 @@
     "bethany": { "name": "Bethany", "openbible": "Bethany 1" },
     "cana": { "name": "Cana", "openbible": "Cana" },
     "capernaum": { "name": "Capernaum", "openbible": "Capernaum" },
-    "sychar": { "name": "Sychar", "openbible": "Sychar", "photo": ["Askar.jpg","Askar, OpenBible’s leading identification for Sychar"] },
+    "sychar": { "name": "Sychar", "openbible": "Sychar", "photo": ["Askar.jpg","Askar"] },
     "sea-of-galilee": { "name": "Sea of Galilee", "openbible": "Sea of Galilee", "kind": "water" },
     "bethesda": { "name": "Pool of Bethesda", "openbible": "Bethesda" },
     "nain": { "name": "Nain", "openbible": "Nain" },
@@ -28,7 +28,7 @@
     "magadan": { "name": "Magadan (Dalmanutha)", "openbible": "Magadan", "wikidata": "Q4880851", "wikiNote": "OpenBible’s leading identification: the same place as Magdala", "photo": ["Magdala synagogue, 2019 (01).jpg","the excavated synagogue at Magdala"] },
     "caesarea-philippi": { "name": "Caesarea Philippi", "openbible": "Caesarea Philippi" },
     "siloam": { "name": "Pool of Siloam", "openbible": "Siloam" },
-    "ephraim": { "name": "Ephraim", "openbible": "Ephraim 2", "photo": ["2010-08 Taybeh 05.jpg","Taybeh, OpenBible’s leading identification for Ephraim"] },
+    "ephraim": { "name": "Ephraim", "openbible": "Ephraim 2", "photo": ["2010-08 Taybeh 05.jpg","Taybeh"] },
     "jericho": { "name": "Jericho", "openbible": "Jericho 2" },
     "mount-of-olives": { "name": "Mount of Olives", "openbible": "Mount of Olives" },
     "gethsemane": { "name": "Gethsemane", "openbible": "Gethsemane" },
@@ -38,8 +38,8 @@
     "galilee": { "name": "Galilee", "kind": "region", "lonlat": [35.36, 32.84], "wikidata": "Q83241", "photo": ["Lemon Orchard in the Galilee by David Shankbone.jpg","a lemon orchard in Galilee"] },
     "judea": { "name": "Judea", "kind": "region", "lonlat": [35.08, 31.62], "wikidata": "Q104028", "photo": ["Valley of Elah-Med woodland.jpg","the Valley of Elah, in the Judean foothills"] },
     "samaria": { "name": "Samaria", "kind": "region", "lonlat": [35.22, 32.26], "wikidata": "Q1294629", "photo": ["Faqqua 2006.jpg","hills at Faqqua, in the north of Samaria"] },
-    "wilderness": { "name": "The wilderness (Judea)", "kind": "region", "lonlat": [35.36, 31.62], "wikidata": "Q2046004", "photo": ["JudeanDesert.jpg","the Judaean Desert"] },
-    "beyond-jordan": { "name": "Beyond the Jordan", "kind": "region", "lonlat": [35.66, 31.98], "wikidata": "Q1055740", "wikiNote": "Herod’s territory beyond the Jordan, Perea", "photo": ["Wady Shaib Es-Salt, Amman, etc. Jordan Valley from Osha. An infra-red telephoto showing joining of the Jabbok and Jordan rivers. LOC matpc.02739.jpg","the Jordan Valley from Osha, east of the Jordan, early 20th century"] },
+    "wilderness": { "name": "The wilderness (Judea)", "kind": "region", "lonlat": [35.36, 31.77], "wikidata": "Q2046004", "photo": ["JudeanDesert.jpg","the Judaean Desert"] },
+    "beyond-jordan": { "name": "Beyond the Jordan", "kind": "region", "lonlat": [35.70, 32.02], "wikidata": "Q1055740", "wikiNote": "Herod’s territory beyond the Jordan, Perea", "photo": ["Wady Shaib Es-Salt, Amman, etc. Jordan Valley from Osha. An infra-red telephoto showing joining of the Jabbok and Jordan rivers. LOC matpc.02739.jpg","the Jordan Valley from Osha, east of the Jordan, early 20th century"] },
     "samaria-galilee": { "name": "Between Samaria and Galilee", "kind": "region", "lonlat": [35.38, 32.55], "photo": ["JPF-Jezreel Valley and Mount Tabor.JPG","the Jezreel Valley and Mount Tabor, between Samaria and Galilee"] }
   },
   "sections": {
@@ -146,7 +146,7 @@
     "s101": { "t": "The good shepherd", "p": "jerusalem", "pb": "implied" },
     "s102": { "t": "The seventy-two sent out" },
     "s103": { "t": "The good Samaritan" },
-    "s104": { "t": "Martha and Mary" },
+    "s104": { "t": "Martha and Mary", "p": "bethany", "pb": "implied" },
     "s105": { "t": "Teaching about prayer" },
     "s106": { "t": "The Beelzebul accusation (Luke)" },
     "s107": { "t": "Woes to Pharisees and experts in the law" },
@@ -255,13 +255,21 @@
     "_about": "The map shows Jesus from this section on: Mary visits Elizabeth (Lk 1:39–45), the first scene with him present, carried by Mary. Before it there is no marker, no route and no likely area.",
     "id": "s6"
   },
+  "birth": {
+    "_about": "Jesus is born in this section (Lk 2:6–7). From here on, in scenes he isn't in, his resting marker keeps a little of its glow and of his light on the land (until his death; see death).",
+    "id": "s10"
+  },
+  "moves": {
+    "_about": "Sections shown somewhere other than where Robertson places them: the reader puts each one after the section given, and its kicker says so (with this note). `after` must be a section; `words` are quoted from `ref` and checked by validate. The order flags still compare each gospel with its own order.",
+    "s141": { "after": "s128a", "ref": "Jn 12:1", "words": "Six days before the Passover", "note": "Robertson (§141) places this where Matthew and Mark tell it, after the plot “two days” before the Passover (Mk 14:1). Many harmonies place it here instead, by John’s date: “Six days before the Passover, Jesus came to Bethany” and “they hosted a dinner for Jesus there” (Jn 12:1–2)." }
+  },
   "jesusAbsent": {
     "_about": "Sections where Jesus is not in the scene. The map's route line tracks only his own movements, so these get a plain scene marker and no line. Mary's visit and song (s6, s7) count as present: she is carrying him and stays with Elizabeth until Lk 1:56; John's birth (s8) follows her return home.",
     "ids": ["s4", "s5", "s8", "s9", "s20", "s21", "s22", "s23", "s26", "s71", "s140", "s142", "s158", "s169", "s170", "s171", "s172", "s175", "s177"]
   },
   "areas": {
-    "_about": "Radius in km for places shown as areas rather than points.",
-    "galilee": 28, "judea": 35, "samaria": 25, "beyond-jordan": 30, "wilderness": 15, "samaria-galilee": 15, "decapolis": 35, "gennesaret": 6, "egypt": 150
+    "_about": "Radius in km for places shown as areas rather than points. The wilderness is the Judaean Desert between Bethany and Jericho, clear of the Dead Sea; Beyond the Jordan is Perea, east of the river.",
+    "galilee": 28, "judea": 35, "samaria": 25, "beyond-jordan": 18, "wilderness": 10, "samaria-galilee": 15, "decapolis": 35, "gennesaret": 6, "egypt": 150
   },
   "mountains": {
     "_about": "Sections whose text places Jesus on, near or going up a mountain or hill (figurative uses, quotations and parables left out). The words are checked against the BSB. While one is on screen, the map shows the named peaks within 15 km of the place or area shown, with their contours.",
@@ -334,22 +342,22 @@
     "s32": { "JHN": ["night", "Jn 3:2", "He came to Jesus at night", "stated"] },
     "s35": { "JHN": ["midday", "Jn 4:6", "It was about the sixth hour", "stated"] },
     "s38": { "JHN": ["day", "Jn 4:52", "at the seventh hour", "stated"] },
-    "s43": { "MRK": ["evening", "Mk 1:32", "That evening, after sunset", "stated"], "MAT": ["evening", "Mt 8:16", "When evening came", "stated"], "LUK": ["evening", "Lk 4:40", "At sunset", "stated"] },
-    "s44": { "MRK": ["predawn", "Mk 1:35", "Early in the morning, while it was still dark", "stated"], "LUK": ["dawn", "Lk 4:42", "At daybreak", "stated"] },
-    "s53": { "LUK": ["dawn", "Lk 6:13", "When daylight came", "stated"] },
+    "s43": { "MRK": ["evening", "Mk 1:32", "That evening, after sunset", "stated", "1:32"], "MAT": ["evening", "Mt 8:16", "When evening came", "stated", "8:16"], "LUK": ["evening", "Lk 4:40", "At sunset", "stated", "4:40"] },
+    "s44": { "MRK": [["predawn", "Mk 1:35", "Early in the morning, while it was still dark", "stated"], ["dawn", "Mk 1:36", "Simon and his companions went to look for Him (Luke 4:42: “At daybreak”)", "implied", "1:36"], ["day", "Mk 1:39", "So He went throughout Galilee, preaching", "implied", "1:39"]], "LUK": [["dawn", "Lk 4:42", "At daybreak", "stated"], ["day", "Lk 4:44", "He continued to preach in the synagogues", "implied", "4:44"]] },
+    "s53": { "LUK": [["night", "Lk 6:12", "He spent the night in prayer to God", "stated"], ["dawn", "Lk 6:13", "When daylight came", "stated", "6:13"]] },
     "s65": { "MRK": ["evening", "Mk 4:35", "When that evening came", "stated"] },
-    "s72": { "MAT": ["evening", "Mt 14:15", "When evening came", "stated"], "MRK": ["evening", "Mk 6:35", "the hour was already late", "implied"], "LUK": ["evening", "Lk 9:12", "As the day neared its end", "stated"] },
+    "s72": { "MAT": ["evening", "Mt 14:15", "When evening came", "stated", "14:15"], "MRK": ["evening", "Mk 6:35", "the hour was already late", "implied", "6:35"], "LUK": ["evening", "Lk 9:12", "As the day neared its end", "stated", "9:12"] },
     "s73": { "MAT": ["evening", "Mt 14:23", "When evening came, He was there alone", "stated"] },
     "s74": { "MAT": ["predawn", "Mt 14:25", "During the fourth watch of the night", "stated"], "MRK": ["predawn", "Mk 6:48", "About the fourth watch of the night", "stated"], "JHN": ["night", "Jn 6:17", "It was already dark", "stated"] },
     "s97": { "JHN": ["dawn", "Jn 8:2", "Early in the morning", "stated"] },
-    "s128b": { "MRK": ["evening", "Mk 11:11", "since it was already late", "stated"] },
+    "s128b": { "MRK": ["evening", "Mk 11:11", "since it was already late", "stated", "11:11"] },
     "s129": { "MAT": ["dawn", "Mt 21:18", "In the morning", "stated"] },
-    "s131": { "MRK": ["dawn", "Mk 11:20", "As they were walking back in the morning", "stated"] },
+    "s131": { "MRK": [["evening", "Mk 11:19", "when evening came", "stated"], ["dawn", "Mk 11:20", "As they were walking back in the morning", "stated", "11:20"]] },
     "s144": { "MRK": ["evening", "Mk 14:17", "When evening came", "stated"], "MAT": ["evening", "Mt 26:20", "When evening came", "stated"], "LUK": ["evening", "Lk 22:14", "When the hour had come", "implied"] },
-    "s145": { "JHN": ["evening", "Jn 13:2", "The evening meal was underway", "stated"] },
-    "s146": { "JHN": ["night", "Jn 13:30", "Judas went out into the night", "stated"], "MAT": ["evening", "Mt 26:20", "during the evening meal", "implied"], "MRK": ["evening", "Mk 14:18", "while they were reclining and eating", "implied"], "LUK": ["evening", "Lk 22:14", "at the meal", "implied"] },
+    "s145": { "JHN": ["night", "Jn 13:2", "The evening meal was underway (the same meal: “Judas went out into the night”, Jn 13:30)", "implied"] },
+    "s146": { "JHN": ["night", "Jn 13:30", "Judas went out into the night", "stated"], "MAT": ["night", "Mt 26:21", "during the meal (Jn 13:30: “into the night”)", "implied"], "MRK": ["night", "Mk 14:18", "while they were reclining and eating (Jn 13:30: “into the night”)", "implied"], "LUK": ["night", "Lk 22:21", "at the meal (Jn 13:30: “into the night”)", "implied"] },
     "s147": { "MAT": ["night", "Mt 26:34", "this very night", "stated"], "MRK": ["night", "Mk 14:30", "this very night", "stated"], "LUK": ["night", "Lk 22:34", "after the meal", "implied"], "JHN": ["night", "Jn 13:30", "after Judas went out into the night", "implied"] },
-    "s148": { "MAT": ["evening", "Mt 26:26", "while they were eating", "implied"], "MRK": ["evening", "Mk 14:22", "while they were eating", "implied"], "LUK": ["evening", "Lk 22:20", "after supper", "implied"] },
+    "s148": { "MAT": ["night", "Mt 26:26", "while they were eating (Jn 13:30: “into the night”)", "implied"], "MRK": ["night", "Mk 14:22", "while they were eating (Jn 13:30: “into the night”)", "implied"], "LUK": ["night", "Lk 22:20", "after supper (Jn 13:30: “into the night”)", "implied"] },
     "s149": { "JHN": ["night", "Jn 13:30", "after Judas went out into the night", "implied"] },
     "s150": { "JHN": ["night", "Jn 13:30", "after Judas went out into the night", "implied"] },
     "s151": { "JHN": ["night", "Jn 13:30", "after Judas went out into the night", "implied"] },
@@ -366,10 +374,22 @@
     "s166": { "LUK": ["darkness", "Lk 23:45", "The sun was darkened", "stated"] },
     "s167": { "MRK": ["evening", "Mk 15:42", "Now it was already evening", "stated"], "MAT": ["evening", "Mt 27:57", "When it was evening", "stated"], "LUK": ["evening", "Lk 23:54", "the Sabbath was beginning", "implied"], "JHN": ["evening", "Jn 19:31", "It was the day of Preparation", "implied"] },
     "s169": { "MAT": ["dawn", "Mt 28:1", "at dawn on the first day of the week", "stated"] },
+    "s170": { "MAT": ["dawn", "Mt 28:2", "between “at dawn” (Mt 28:1) and the women at the tomb (Mt 28:5)", "implied"] },
     "s171": { "MRK": ["dawn", "Mk 16:2", "just after sunrise", "stated"], "LUK": ["dawn", "Lk 24:1", "very early in the morning", "stated"], "JHN": ["predawn", "Jn 20:1", "while it was still dark", "stated"], "MAT": ["dawn", "Mt 28:1", "at dawn", "implied"] },
+    "s172": { "LUK": ["dawn", "Lk 24:9", "when they returned from the tomb, the same morning (Lk 24:1)", "implied"], "JHN": ["dawn", "Jn 20:2", "she came running, the same morning (Jn 20:1)", "implied"] },
     "s173": { "MRK": ["dawn", "Mk 16:9", "Early on the first day of the week", "stated"] },
-    "s176": { "LUK": ["evening", "Lk 24:29", "it is nearly evening and the day is almost over", "stated"] },
+    "s174": { "MAT": ["dawn", "Mt 28:9", "as the women ran from the tomb, the same morning (Mt 28:1)", "implied"] },
+    "s175": { "MAT": ["dawn", "Mt 28:11", "While the women were on their way", "implied"] },
+    "s176": { "LUK": ["evening", "Lk 24:29", "it is nearly evening and the day is almost over", "stated", "24:29"] },
+    "s177": { "LUK": ["evening", "Lk 24:33", "that very hour (after “nearly evening”, Lk 24:29)", "implied"] },
     "s178": { "JHN": ["evening", "Jn 20:19", "that very evening", "stated"], "LUK": ["evening", "Lk 24:29", "the same evening", "implied"] },
-    "s180": { "JHN": ["dawn", "Jn 21:4", "Early in the morning, Jesus stood on the shore", "stated"] }
+    "s180": { "JHN": [["night", "Jn 21:3", "caught nothing that night", "stated"], ["dawn", "Jn 21:4", "Early in the morning, Jesus stood on the shore", "stated", "21:4"]] }
+  },
+  "death": {
+    "_about": "From Jesus' death (the verse in each gospel) until the angel at the tomb: his light on the map goes out and Dynamic colour turns cold.",
+    "from": "s165",
+    "at": { "MAT": ["Mt 27:50", "He yielded up His spirit"], "MRK": ["Mk 15:37", "breathed His last"], "LUK": ["Lk 23:46", "He breathed His last"], "JHN": ["Jn 19:30", "He yielded up His spirit"] },
+    "until": "s170",
+    "untilRef": ["Mt 28:2", "an angel of the Lord descended from heaven, rolled away the stone"]
   }
 }

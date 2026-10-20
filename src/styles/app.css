@@ -37,6 +37,8 @@ p { margin: 0; }
 }
 .icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .settings-btn { color: var(--ink-soft); }
+.timeline-btn[aria-pressed="false"] { color: var(--ink-soft); border-style: dashed; }
+.timeline-btn[aria-pressed="true"] { background: var(--paper-raised); }
 .gospels .map-chip { --g: var(--ink); }
 .gospels .map-chip svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -167,8 +169,7 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 .map-place-name em { font-style: normal; font-weight: 400; color: var(--ink-soft); }
 .map-place-name.muted { font-weight: 400; color: var(--ink-soft); }
 .cands { margin: 4px 0 0; padding-left: 16px; font-size: 0.8rem; color: var(--ink-soft); }
-.cands span { font-family: var(--font-mono); font-size: 0.75rem; }
-.cands-note { margin: 3px 0 0; font-size: 0.72rem; line-height: 1.35; color: var(--ink-soft); }
+.cands span { font-family: var(--font-mono); font-size: 0.75rem; cursor: help; }
 .map-place { position: relative; display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; font-size: 11.5px; font-weight: 600; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 7px var(--land); }
 /* A place is dark until Jesus has been there, then light. */
 .map-place i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1px transparent; flex: none; transition: background-color 600ms ease, box-shadow 600ms ease; }
@@ -189,18 +190,22 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 .map-box[data-modern="on"] .map-place:not(.label-hidden) .modern-name { display: block; }
 .map-box[data-zoom="far"] .map-place.close:not(.current):not(.named) .modern-name { display: none; }
 
-/* Jesus on the map: a pure white circle (or a white symbol to compare), with no outline. It travels (traveller.ts) and
+/* Jesus on the map: a pure white circle (or a black symbol in the same white glow, to compare), with no outline. It travels (traveller.ts) and
    drifts within an area; the drift is set frame by frame on .wander, so it can start and stop without a jump. Its faint
    glow is a separate marker drawn under every other marker and label, so it never muddies them. MapLibre sets each
    marker's own opacity inline, so showing and hiding fade the .wander inside. */
 .map-traveller { z-index: 1; pointer-events: none; }
 .map-traveller .wander, .map-traveller-glow .wander { position: relative; display: grid; place-items: center; transition: opacity 300ms ease; }
 .map-traveller.off .wander, .map-traveller-glow.off .wander, .map-traveller-glow.resting .wander { opacity: 0; }
+/* From his death until the angel at the tomb, his glow goes out. */
+body[data-dead] .map-traveller-glow .wander { opacity: 0; }
+/* Once he is born, his marker keeps a little of its glow while he rests in scenes he isn't in. */
+body:not([data-dead]) .map-traveller-glow.resting.born .wander { opacity: 0.45; }
 .map-traveller .sym {
   position: relative; display: grid; place-items: center; width: 10px; height: 10px; border-radius: 50%; background: #fff; color: #fff;
   transition: transform 400ms ease, opacity 400ms ease;
 }
-.map-traveller:not([data-kind="light"]) .sym { width: 22px; height: 22px; background: none; }
+.map-traveller:not([data-kind="light"]) .sym { width: 22px; height: 22px; background: none; color: #1a1917; }
 .map-traveller-glow { pointer-events: none; }
 .map-traveller-glow i {
   display: block; width: 72px; height: 72px; border-radius: 50%;
@@ -241,8 +246,9 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 /* Modern places (optional overlay): small squares and plain grey labels, unlike the ancient places. */
 .map-modern { display: flex; align-items: center; gap: 4px; white-space: nowrap; pointer-events: none; font-family: var(--font-ui); font-size: 10.5px; font-weight: 500; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 .map-modern i { width: 5px; height: 5px; background: var(--ink-faint); flex: none; }
+.map-toggles { position: absolute; z-index: 2; left: 10px; bottom: 40px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .map-toggle {
-  position: absolute; z-index: 2; left: 10px; bottom: 40px; height: 28px; padding: 0 10px; border: 1px solid var(--ink-faint); border-radius: 999px;
+  height: 28px; padding: 0 10px; border: 1px solid var(--ink-faint); border-radius: 999px;
   background: color-mix(in oklab, var(--paper-raised) 92%, transparent); color: var(--ink); font: 600 0.75rem var(--font-ui); cursor: pointer;
 }
 .map-toggle[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
@@ -253,33 +259,34 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 .map-popup { z-index: 5; }
 .map-popup .maplibregl-popup-content { padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper-raised); color: var(--ink); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16); font-family: var(--font-ui); }
 .map-popup .maplibregl-popup-tip { border-top-color: var(--paper-raised); border-bottom-color: var(--paper-raised); }
-.pp-title { margin: 0; font-weight: 700; font-size: 0.875rem; }
-.pp-sub { margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-soft); }
-.pp-links { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 6px 0 0; font-size: 0.78rem; }
-/* A place's popup: its photo, full width at the top, then the stories set there (links into the reader). */
-.map-popup .maplibregl-popup-content { position: relative; overflow-y: auto; overscroll-behavior: contain; }
-.pp-close { position: absolute; top: 5px; right: 5px; z-index: 1; display: none; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%; background: var(--paper-raised); color: var(--ink); font: 400 16px/22px var(--font-ui); cursor: pointer; }
-.map-popup.pinned .pp-close { display: block; }
-.map-popup.pinned .pp-title { padding-right: 20px; }
+.pp-title { margin: 0; font-weight: 700; font-size: 0.82rem; }
+.pp-sub { margin: 2px 0 0; font-size: 0.7rem; color: var(--ink-soft); }
+.pp-links { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 6px 0 0; font-size: 0.72rem; }
+.pp-stories + .pp-links { padding-top: 6px; border-top: 1px solid var(--line); }
+/* A place's popup: its photo, full width at the top, then the stories set there (links into the reader), the only part
+   that scrolls, with the links held at the foot. The card's height is capped to the room beside its point (MapPane). */
+.map-popup .maplibregl-popup-content { box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
+.map-popup .maplibregl-popup-content > * { flex: none; }
 .pp-photo { position: relative; margin: -9px -11px 7px; }
-.pp-photo img { display: block; width: 100%; max-height: var(--pp-photo-max, none); aspect-ratio: 3 / 2; object-fit: cover; border-radius: 7px 7px 0 0; background: var(--paper-sunk); }
+.pp-photo img { display: block; width: 100%; max-height: var(--pp-photo-max, none); aspect-ratio: 4 / 3; object-fit: cover; border-radius: 7px 7px 0 0; background: var(--paper-sunk); }
 /* The caption and credit lie over the foot of the photo, on a soft shade so they read on any picture. */
 .pp-photo figcaption {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 11px 5px;
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.62));
-  font-size: 0.66rem; line-height: 1.3; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
+  font-size: 0.62rem; line-height: 1.3; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 .pp-photo figcaption a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.55); text-underline-offset: 2px; overflow-wrap: anywhere; }
-.pp-h { margin: 8px 0 2px; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.03em; color: var(--ink-soft); }
-.pp-stories { max-height: 9.6rem; margin: 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; font-size: 0.8rem; line-height: 1.3; }
+.pp-h { margin: 6px 0 2px; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.03em; color: var(--ink-soft); }
+.map-popup .pp-stories { flex: 0 1 auto; min-height: 1.4rem; }
+.pp-stories { max-height: 14rem; margin: 6px 0 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; font-size: 0.75rem; line-height: 1.3; }
 .pp-stories a { display: block; padding: 2px 0; color: var(--ink); text-decoration: none; }
 .pp-stories a:hover, .pp-stories a:focus-visible { text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 2px; }
 .pp-stories a[aria-current] { font-weight: 700; }
-.pp-stories .pp-n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
-.pp-stories em { font-style: normal; font-size: 0.7rem; color: var(--ink-soft); }
+.pp-stories .pp-n { font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-soft); }
+.pp-stories em { font-style: normal; font-size: 0.66rem; color: var(--ink-soft); }
 @media (max-width: 640px) {
-  .pp-photo img { aspect-ratio: 2 / 1; }
-  .pp-stories { max-height: 5.4rem; }
+  .pp-photo img { aspect-ratio: 16 / 10; }
+  .pp-stories { max-height: none; }
 }
 .map-candidate { display: flex; align-items: center; gap: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font-mono); font-size: 11px; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 .map-candidate i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px dashed var(--ink); flex: none; }
@@ -319,6 +326,10 @@ body[data-light="unstated"][data-tint="midday"] { --paper: #F4EFE3; --paper-rais
 body[data-light="unstated"][data-tint="evening"] { --paper: #EBD8B6; --paper-raised: #F3E6CC; --paper-sunk: #E1CA9F; --line: #D3B784; --map-veil: rgba(196, 102, 28, 0.14); }
 body[data-light="unstated"][data-tint="night"] { --paper: #D3D6DE; --paper-raised: #DEE1E7; --paper-sunk: #C9CDD6; --line: #B3B9C6; --map-veil: rgba(14, 18, 42, 0.3); }
 body[data-light="unstated"][data-tint="darkness"] { --paper: #CFCCC6; --paper-raised: #D8D5CF; --paper-sunk: #CCC9C3; --line: #B0ADA6; --map-veil: rgba(6, 6, 6, 0.42); }
+/* From his death until the angel at the tomb: cold and colourless, whatever the hour. */
+body[data-light="unstated"][data-tint="dead"] { --paper: #D5DADD; --paper-raised: #DFE3E6; --paper-sunk: #C9CFD3; --line: #AEB6BC; --ink-soft: #545B61; --ink-faint: #87909A; --map-veil: rgba(58, 74, 92, 0.32); }
+body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
+.maplibregl-canvas { transition: filter var(--light-duration) ease; }
 
 /* ---- phones ---- */
 .jt[data-compact] .toolbar { gap: 8px; padding-block: 6px; }
@@ -341,5 +352,10 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .jt[data-compact] .map-title { font-size: 0.95rem; margin-top: 0; }
 .jt[data-compact] .cands { display: flex; flex-wrap: wrap; gap: 0 12px; padding-left: 0; list-style: none; font-size: 0.75rem; }
 
-.jt[data-compact] .map-toggle { bottom: 36px; }
+.jt[data-compact] .map-toggles { bottom: 36px; }
 .jt[data-compact] .map-mountain em { display: none; }
+
+/* A section placed somewhere other than Robertson's order, and links to similar passages the harmony places elsewhere. */
+.row-note { margin: 8px 18px 0; padding: 2px 0 2px 9px; border-left: 2px solid var(--ink-faint); font-size: 0.8rem; color: var(--ink-soft); line-height: 1.4; }
+.par { margin: 0 0.4em 0 0.1em; padding: 0 5px; border: 1px solid var(--g); border-radius: 999px; background: none; font-family: var(--font-mono); font-size: 0.66em; font-weight: 700; line-height: 1.5; color: var(--ink-soft); vertical-align: 0.12em; white-space: nowrap; cursor: pointer; }
+.par:hover, .par:focus-visible { color: var(--ink); background: color-mix(in srgb, var(--g) 12%, transparent); }

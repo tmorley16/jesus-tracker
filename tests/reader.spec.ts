@@ -25,6 +25,12 @@ async function goTo(page: Page, query: string) {
     still = now === last ? still + 1 : 0;
     last = now;
   }
+  // The map's flight can starve that easing for seconds on the way (a phone stopped at §126 on the way to §128b),
+  // which reads as still: for a title, also wait until the reading position has reached it.
+  if (!/\d/.test(query)) {
+    const title = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', title, { timeout: 15_000 }).catch(() => {});
+  }
 }
 
 test('scrubbing the timeline moves the reader, and reading moves the playhead', async ({ page }) => {
@@ -68,8 +74,11 @@ test('desktop: hiding gospels narrows the synopsis', async ({ page }) => {
 const isPhone = () => test.info().project.name === 'phone';
 const mapChip = (page: Page) => page.getByRole('button', { name: 'Map', exact: true });
 
-test('the Map chip opens the map beside the open gospels, with a scale', async ({ page }) => {
+test('the map starts open beside the open gospels, with a scale, and the Map chip toggles it', async ({ page }) => {
   await open(page);
+  await expect(mapChip(page)).toHaveAttribute('aria-pressed', 'true');
+  await mapChip(page).click();
+  await expect(page.locator('.map-pane')).toHaveCount(0);
   await goTo(page, 'Jn 4:6');
   await mapChip(page).click();
   await expect(page.locator('.maplibregl-canvas')).toBeVisible({ timeout: 30_000 });
@@ -81,9 +90,30 @@ test('the Map chip opens the map beside the open gospels, with a scale', async (
   await shot(page, '05-map-samaria');
 });
 
+test('a dark device still starts on Dynamic colours', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await open(page);
+  await expect(page.locator('body')).toHaveAttribute('data-light', 'unstated');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('radio', { name: /^Dynamic/ })).toBeChecked();
+});
+
+test('the Timeline button hides and shows the scrubber, and remembers it', async ({ page }) => {
+  await open(page);
+  const btn = page.getByRole('button', { name: 'Timeline', exact: true });
+  await expect(btn).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.timeline')).toBeVisible();
+  await btn.click();
+  await expect(page.locator('.timeline')).toHaveCount(0);
+  await page.reload();
+  await expect(page.locator('.passage').first()).not.toHaveClass(/loading/, { timeout: 20_000 });
+  await expect(page.locator('.timeline')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  await expect(page.locator('.timeline')).toBeVisible();
+});
+
 test('dragging the divider past 80% leaves only the map, and the timeline still drives it', async ({ page }) => {
   await open(page);
-  await mapChip(page).click();
   const splitter = page.getByRole('separator', { name: 'Resize the map' });
   await expect(splitter).toBeVisible({ timeout: 30_000 });
   const panes = (await page.locator('.panes').boundingBox())!;
@@ -112,51 +142,175 @@ test('where no place is named, the map shows a likely area between the places na
   await goTo(page, 'Picking grain');
   await expect(page.locator('.map-card')).toContainText('Place not named', { timeout: 30_000 });
   await expect(page.locator('.map-card')).toContainText(/Likely (between|around|near)/);
-  await expect.poll(() => newestLegGap(page), { timeout: 10_000 }).toBeLessThan(12);
+  await expect.poll(() => newestLegGap(page), { timeout: 10_000 }).toBeLessThan(2);
   await page.waitForTimeout(2500);
   await shot(page, '09-likely-area');
 });
 
-test('the route line goes to a region Jesus goes to, and the leg before it ages', async ({ page }) => {
-  await page.goto('/?debug');
-  await expect(page.locator('.passage').first()).not.toHaveClass(/loading/, { timeout: 20_000 });
+test('the route goes into a region Jesus goes to, through where he waits, and turns there through a small arc', async ({ page }) => {
+  await openMap(page);
+  const EGYPT = [31.3075, 30.129444], BETHLEHEM = [35.207639, 31.704306], NAZARETH = [35.29769, 32.70214];
+  const near = (p: number[], q: number[], km: number) => Math.hypot((p[0] - q[0]) * 96, (p[1] - q[1]) * 110.6) < km;
+  const runs = (l: Leg, a: number[], b: number[]) => near(l.line[0], a, 1) && near(l.line[l.line.length - 1], b, 1);
+  // In Egypt (an area 150 km about its centre): the line from Bethlehem ends inside it, where the marker waits.
   await goTo(page, 'Flight to Egypt');
-  await mapChip(page).click();
-  await page.waitForFunction(() => (window as unknown as { __jtMap?: { getLayer(id: string): unknown } }).__jtMap?.getLayer('arrows'), null, { timeout: 30_000 });
-  type Leg = { age: number; to: number[] };
-  const legs = () => page.evaluate(async () => {
-    const map = (window as unknown as { __jtMap: { getSource(id: string): { getData(): Promise<GeoJSON.FeatureCollection<GeoJSON.LineString>> } } }).__jtMap;
-    const fc = await map.getSource('trail').getData();
-    return fc.features.map((f) => ({ age: f.properties!.age as number, to: f.geometry.coordinates[1] }));
-  });
-  // The leg ends where the marker is drawn as it drifts in Egypt: within a fifth of the area (150 km) of its centre.
-  const atEgypt = (l: Leg) => Math.abs(l.to[0] - 31.3075) < 0.4 && Math.abs(l.to[1] - 30.129444) < 0.4;
-  await expect.poll(async () => (await legs()).some((l) => l.age === 0 && atEgypt(l))).toBe(true);
+  await expect.poll(async () => (await trailLegs(page)).some((l) => l.age === 0 && near(l.line[0], BETHLEHEM, 1) && near(l.line[l.line.length - 1], EGYPT, 150))).toBe(true);
+  await expect.poll(() => newestLegGap(page), { timeout: 10_000 }).toBeLessThan(2);
   await page.waitForTimeout(2000);
   await shot(page, '10-egypt-leg');
-
+  // Back to Nazareth: the newest leg runs from Bethlehem through where he waited in Egypt (not its centre), turning
+  // there through a small arc, and it's already the line it will stay once he moves on.
   await goTo(page, 'From Egypt to Nazareth');
-  await expect.poll(async () => (await legs()).some((l) => l.age === 1 && atEgypt(l))).toBe(true);
+  const visit = await page.evaluate(() => {
+    const route = (window as unknown as { __jtRoute: { steps: { row: number; key: string }[]; rest: Record<string, number[]> } }).__jtRoute;
+    const egypt = route.steps.find((s) => s.key === 'egypt')!;
+    return route.rest[`${egypt.row}:egypt`];
+  });
+  expect(near(visit, EGYPT, 150) && !near(visit, EGYPT, 20)).toBe(true);
+  // The sharpest bend (degrees) between neighbouring stretches of a line within `km` of a point.
+  const bend = (line: number[][], at: number[], km: number) => {
+    let most = 0;
+    for (let i = 1; i < line.length - 1; i++) {
+      if (!near(line[i], at, km)) continue;
+      const a = Math.atan2(line[i][1] - line[i - 1][1], line[i][0] - line[i - 1][0]), b = Math.atan2(line[i + 1][1] - line[i][1], line[i + 1][0] - line[i][0]);
+      most = Math.max(most, Math.abs(((b - a + 3 * Math.PI) % (2 * Math.PI)) - Math.PI) * (180 / Math.PI));
+    }
+    return most;
+  };
+  let travelled: number[][] = [];
+  await expect.poll(async () => {
+    travelled = (await trailLegs(page)).find((l) => l.age === 0 && runs(l, BETHLEHEM, NAZARETH))?.line ?? [];
+    return travelled.some((p) => near(p, visit, 0.5)) && travelled.length > 4 && bend(travelled, visit, 60) < 30;
+  }).toBe(true);
+  await goTo(page, 'Jesus baptised');
+  await expect.poll(async () => (await trailLegs(page)).some((l) => l.age > 0 && JSON.stringify(l.line) === JSON.stringify(travelled))).toBe(true);
 });
 
-/** Opens the reader with the map showing and waits for the map to be ready. */
+test('the newest leg is drawn rounded from the start: at Sychar it is already the line it stays once he moves on', async ({ page }) => {
+  await openMap(page);
+  await goTo(page, 'The Samaritan woman');
+  const newest = async () => (await trailLegs(page)).find((l) => l.age === 0)?.line ?? [];
+  await expect.poll(async () => (await newest()).length).toBeGreaterThan(4);
+  const atSychar = await newest();
+  await goTo(page, 'Welcomed in Galilee');
+  await expect.poll(async () => (await trailLegs(page)).some((l) => l.age === 1 && JSON.stringify(l.line) === JSON.stringify(atSychar))).toBe(true);
+});
+
+test('setting off from an area, the line leaves from where he waits, the same however long he drifted', async ({ page }) => {
+  await openMap(page);
+  const toJericho = async (wait: number) => {
+    await goTo(page, 'Jesus foretells his death again; James and John');
+    await expect(page.locator('.map-traveller')).toHaveClass(/wandering/, { timeout: 15_000 });
+    await page.waitForTimeout(wait);
+    await goTo(page, 'Healing the blind near Jericho');
+    await expect.poll(async () => (await trailLegs(page)).find((l) => l.age === 0)?.line.length ?? 0).toBeGreaterThan(1);
+    return JSON.stringify((await trailLegs(page)).find((l) => l.age === 0)!.line);
+  };
+  const first = await toJericho(300);
+  expect(await toJericho(3300)).toBe(first);
+});
+
+test('an area’s point is on dry land: east of the Jordan beyond it, off the lake, and the wilderness clear of the Dead Sea', async ({ page }) => {
+  await openMap(page);
+  await goTo(page, 'A deaf man healed');
+  // Where the route visits an area (its first visit, from the planned route), and whether a point is in one of the lakes.
+  const visitAt = (key: string) => page.evaluate((key) => {
+    const route = (window as unknown as { __jtRoute: { steps: { row: number; key: string }[]; rest: Record<string, number[]> } }).__jtRoute;
+    const s = route.steps.find((x) => x.key === key)!;
+    return route.rest[`${s.row}:${s.key}`];
+  }, key);
+  const inLake = (p: number[]) => page.evaluate(async (p) => {
+    const lakes = await (await fetch(new URL('data/geo/lakes.json', document.baseURI))).json() as GeoJSON.FeatureCollection<GeoJSON.Polygon | GeoJSON.MultiPolygon>;
+    const inRing = (ring: number[][]) => {
+      let inside = false;
+      for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) if ((ring[i][1] > p[1]) !== (ring[j][1] > p[1]) && p[0] < ((ring[j][0] - ring[i][0]) * (p[1] - ring[i][1])) / (ring[j][1] - ring[i][1]) + ring[i][0]) inside = !inside;
+      return inside;
+    };
+    return lakes.features.some((f) => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates).some((poly) => inRing(poly[0])));
+  }, p);
+  const decapolis = await visitAt('decapolis');
+  expect(decapolis[0]).toBeGreaterThan(35.65); // in the hills east of the lake, not on it
+  expect(await inLake(decapolis)).toBe(false);
+  const beyond = await visitAt('beyond-jordan');
+  expect(beyond[0]).toBeGreaterThan(35.56); // the Jordan runs at about 35.53–35.55° E there
+  const wilderness = await visitAt('wilderness');
+  expect(wilderness[0]).toBeLessThan(35.44); // west of the Dead Sea's north-western shore
+  expect(wilderness[1]).toBeGreaterThan(31.74);
+  // Every area's point is off the lakes.
+  const rests = await page.evaluate(() => Object.values((window as unknown as { __jtRoute: { rest: Record<string, number[]> } }).__jtRoute.rest));
+  for (const p of rests) expect(await inLake(p)).toBe(false);
+});
+
+test('where the accounts name different places, his marker waits between them and the line goes there', async ({ page }) => {
+  test.skip(isPhone(), 'phones show Matthew alone, which names one place');
+  await openMap(page);
+  const GADARA = [35.679352, 32.655998], GERASA = [35.891397, 32.272281];
+  const mid = [(GADARA[0] + GERASA[0]) / 2, (GADARA[1] + GERASA[1]) / 2];
+  await goTo(page, 'Calming the storm');
+  await goTo(page, 'The demon-possessed man across the lake');
+  await expect(page.locator('.map-card')).toContainText('his marker waits between them');
+  await expect.poll(() => page.locator('.map-traveller .wander').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+  await expect.poll(async () => {
+    const end = (await trailLegs(page)).find((l) => l.age === 0)?.line.at(-1);
+    return !!end && Math.hypot((end[0] - mid[0]) * 94, (end[1] - mid[1]) * 110.6) < 1;
+  }).toBe(true);
+  await expect.poll(() => newestLegGap(page), { timeout: 10_000 }).toBeLessThan(2);
+  await page.waitForTimeout(1500);
+  await shot(page, '10b-between-gadara-gerasa');
+});
+
+test('between Bethany and Jerusalem the likely area stays small, and his marker drifts only a little', async ({ page }) => {
+  test.skip(isPhone(), 'phones show one gospel: in Luke alone the place named after Bethany is between Samaria and Galilee (Lk 17:11)');
+  await openMap(page);
+  await goTo(page, 'Teaching about prayer');
+  await expect(page.locator('.map-card')).toContainText('Likely between Bethany and Jerusalem');
+  await expect(page.locator('.map-traveller')).toHaveClass(/wandering/, { timeout: 15_000 });
+  // How far (px) the marker is drawn from its point, over a few seconds.
+  const off = () => page.evaluate(() => {
+    const t = document.querySelector('.map-traveller')!.getBoundingClientRect(), s = document.querySelector('.map-traveller .sym')!.getBoundingClientRect();
+    return Math.hypot(s.left + s.width / 2 - (t.left + t.width / 2), s.top + s.height / 2 - (t.top + t.height / 2));
+  });
+  const seen: number[] = [];
+  for (let i = 0; i < 8; i++) { await page.waitForTimeout(400); seen.push(await off()); }
+  expect(Math.max(...seen)).toBeLessThan(16);
+  // The places either side are further apart on screen than that.
+  const at = async (name: string) => { const b = (await placeDot(page, name).locator('i').boundingBox())!; return [b.x + b.width / 2, b.y + b.height / 2]; };
+  const [j, b] = [await at('Jerusalem'), await at('Bethany')];
+  expect(Math.hypot(j[0] - b[0], j[1] - b[1])).toBeGreaterThan(Math.max(...seen));
+});
+
+/** Opens the reader (the map shows by default) and waits for the map to be ready. */
 async function openMap(page: Page) {
   await page.goto('/?debug');
   await expect(page.locator('.passage').first()).not.toHaveClass(/loading/, { timeout: 20_000 });
-  await mapChip(page).click();
   await page.waitForFunction(() => (window as unknown as { __jtMap?: { getLayer(id: string): unknown } }).__jtMap?.getLayer('arrows'), null, { timeout: 30_000 });
 }
 const placeDot = (page: Page, name: string) => page.locator(`.map-place:has(> span:text-is("${name}"))`);
-/** How far (px) the newest leg's end is from Jesus' marker; Infinity when there's no newest leg. */
+/** The route's legs as drawn (age 0 is the newest), each as its line of points. */
+type Leg = { age: number; line: number[][] };
+const trailLegs = (page: Page): Promise<Leg[]> => page.evaluate(async () => {
+  const map = (window as unknown as { __jtMap: { getSource(id: string): { getData(): Promise<GeoJSON.FeatureCollection<GeoJSON.LineString>> } } }).__jtMap;
+  return (await map.getSource('trail').getData()).features.map((f) => ({ age: f.properties!.age as number, line: f.geometry.coordinates }));
+});
+/** How far (px) the newest leg's end is from Jesus' marker's point (where it waits; any drift is about it); Infinity
+ *  when there's no newest leg. */
 const newestLegGap = (page: Page) => page.evaluate(async () => {
   type M = { getSource(id: string): { getData(): Promise<GeoJSON.FeatureCollection<GeoJSON.LineString>> }; project(ll: number[]): { x: number; y: number }; getContainer(): HTMLElement };
   const map = (window as unknown as { __jtMap: M }).__jtMap;
   const newest = (await map.getSource('trail').getData()).features.find((f) => f.properties!.age === 0);
-  const sym = document.querySelector('.map-traveller .sym');
-  if (!newest || !sym) return Infinity;
-  const box = map.getContainer().getBoundingClientRect(), s = sym.getBoundingClientRect();
+  const marker = document.querySelector('.map-traveller');
+  if (!newest || !marker) return Infinity;
+  const box = map.getContainer().getBoundingClientRect(), s = marker.getBoundingClientRect();
   const end = map.project(newest.geometry.coordinates[newest.geometry.coordinates.length - 1]);
   return Math.hypot(end.x - (s.left + s.width / 2 - box.left), end.y - (s.top + s.height / 2 - box.top));
+});
+
+test('a place with competing identifications lists their scores, explained in a tooltip', async ({ page }) => {
+  await openMap(page);
+  await goTo(page, 'Water into wine');
+  await expect(page.locator('.map-card .cands span').first()).toHaveAttribute('title', /^OpenBible\.info score out of 1000/, { timeout: 15_000 });
+  await expect(page.locator('.map-card .cands')).not.toContainText('1000');
+  await expect(page.locator('.map-card .cands-note')).toHaveCount(0);
 });
 
 test('going back to the start reframes the map on the whole standard view', async ({ page }) => {
@@ -178,11 +332,8 @@ test('going back to the start reframes the map on the whole standard view', asyn
 test('Jesus appears on the map at Mary’s visit to Elizabeth, setting out from Nazareth', async ({ page }) => {
   test.skip(isPhone(), 'phones show one gospel, Matthew first; the opening sections are Luke’s');
   await openMap(page);
-  const legs = () => page.evaluate(async () => {
-    const map = (window as unknown as { __jtMap: { getSource(id: string): { getData(): Promise<GeoJSON.FeatureCollection<GeoJSON.LineString>> } } }).__jtMap;
-    return (await map.getSource('trail').getData()).features.map((f) => ({ age: f.properties!.age as number, from: f.geometry.coordinates[0], to: f.geometry.coordinates[1] }));
-  });
-  // Judea's end of a leg follows the marker as it drifts there, so it's anywhere within a few km of the centre.
+  const legs = async () => (await trailLegs(page)).map((l) => ({ ...l, from: l.line[0], to: l.line[l.line.length - 1] }));
+  // Judea's end of a leg is where the route visits it (route.ts), near its centre on a trip out and back.
   const at = (p: number[], [x, y]: number[], d = 0.01) => Math.abs(p[0] - x) < d && Math.abs(p[1] - y) < d;
   const NAZARETH = [35.29769, 32.70214], JUDEA = [35.08, 31.62], BETHLEHEM = [35.207639, 31.704306], IN_JUDEA = 0.1;
   const traveller = page.locator('.map-traveller');
@@ -200,11 +351,11 @@ test('Jesus appears on the map at Mary’s visit to Elizabeth, setting out from 
   await expect.poll(async () => (await legs()).some((l) => l.age === 0 && at(l.from, NAZARETH) && at(l.to, JUDEA, IN_JUDEA))).toBe(true);
   await page.waitForTimeout(2000);
   await shot(page, '13-first-journey');
-  // Home to Nazareth (Lk 1:56), then up to Bethlehem (Lk 2:4).
+  // Home to Nazareth (Lk 1:56), then up to Bethlehem (Lk 2:4): the visit is now a loop from Nazareth out to Judea and back.
   await goTo(page, 'The birth of Jesus');
   await expect.poll(async () => {
     const l = await legs();
-    return l.some((x) => x.age === 1 && at(x.from, JUDEA, IN_JUDEA) && at(x.to, NAZARETH)) && l.some((x) => x.age === 0 && at(x.from, NAZARETH) && at(x.to, BETHLEHEM));
+    return l.some((x) => x.age === 1 && at(x.from, NAZARETH) && at(x.to, NAZARETH) && x.line.some((p) => at(p, JUDEA, IN_JUDEA))) && l.some((x) => x.age === 0 && at(x.from, NAZARETH) && at(x.to, BETHLEHEM));
   }, { timeout: 10_000 }).toBe(true); // Go to scrolls through the sections between, which can take a few seconds
 });
 
@@ -238,13 +389,13 @@ test('a mountain section shows the named peaks nearby, with contours', async ({ 
   await expect.poll(async () => (await light()).mountain).toBeLessThan(0.05);
 });
 
-test('in a region the traveller rests at its centre and drifts; at a named place it stands still', async ({ page }) => {
+test('in an area the traveller waits where the route passes through it and drifts; at a named place it stands still', async ({ page }) => {
   await openMap(page);
   await goTo(page, 'Preaching through Galilee');
   await expect(page.locator('.map-traveller')).toHaveClass(/wandering/, { timeout: 8_000 });
   await expect(page.locator('.map-traveller')).not.toHaveClass(/\boff\b/);
-  // A tour within the region he is already in still gets its line, joined to the marker as it drifts.
-  await expect.poll(() => newestLegGap(page), { timeout: 10_000 }).toBeLessThan(12);
+  // A tour within the region he is already in still gets its line, to where the marker waits.
+  await expect.poll(() => newestLegGap(page), { timeout: 10_000 }).toBeLessThan(2);
   await goTo(page, 'Feeding the five thousand');
   await expect(page.locator('.map-traveller')).not.toHaveClass(/wandering/, { timeout: 8_000 });
   // Jesus isn't in the scene: his marker rests (dimmed, named) where he was last placed; the scene gets its own marker.
@@ -291,6 +442,18 @@ test('in scenes without Jesus his marker waits where he was last placed, and goe
   await expect.poll(offNazareth, { timeout: 8_000 }).toBeLessThan(20);
 });
 
+test('a cross, J or crown marks him in black, in the same white glow', async ({ page }) => {
+  await openMap(page);
+  await goTo(page, 'A paralysed man lowered through the roof');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('radio', { name: /^A cross/ }).check();
+  await page.keyboard.press('Escape');
+  const sym = page.locator('.map-traveller .sym');
+  await expect(sym.locator('svg')).toHaveCount(1);
+  await expect.poll(() => sym.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(26, 25, 23)');
+  await expect.poll(() => page.locator('.map-traveller-glow .wander').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
+});
+
 test('Jesus’ glow lies under every other marker and label, and places he has been turn from dark to light', async ({ page }) => {
   await openMap(page);
   await goTo(page, 'A paralysed man lowered through the roof');
@@ -301,15 +464,20 @@ test('Jesus’ glow lies under every other marker and label, and places he has b
   expect(await dot('Jericho')).not.toBe('rgb(255, 255, 255)');
   await page.waitForTimeout(1200);
   await shot(page, '15-light');
-  // MapLibre sets each marker's opacity inline, so hiding works on the inner element: no glow while he rests...
+  // MapLibre sets each marker's opacity inline, so hiding works on the inner element: once he is born, a little glow
+  // stays while he rests in a scene he isn't in, and a little of his light on the land...
   const shown = (sel: string) => page.locator(`${sel} .wander`).evaluate((el) => getComputedStyle(el).opacity);
+  const strength = () => page.evaluate(() => (window as unknown as { __jtMap: { getLayer(id: string): { implementation?: { status(): { strength: number } } } | undefined } }).__jtMap.getLayer('land-light')!.implementation!.status().strength);
   await goTo(page, 'John the Baptist preaches');
-  await expect.poll(() => shown('.map-traveller-glow')).toBe('0');
+  await expect.poll(() => shown('.map-traveller-glow')).toBe('0.45');
   expect(await shown('.map-traveller')).toBe('1');
-  // ...and no marker at all where the accounts name different places (phones show Matthew alone, which names one).
+  await expect.poll(strength).toBeGreaterThan(0.3);
+  expect(await strength()).toBeLessThan(0.4);
+  // ...but none before (phones show one gospel, Matthew first, so they open on a different scene).
   if (isPhone()) return;
-  await goTo(page, 'The demon-possessed man across the lake');
-  await expect.poll(() => shown('.map-traveller')).toBe('0');
+  await goTo(page, 'An angel appears to Joseph');
+  await expect.poll(() => shown('.map-traveller-glow')).toBe('0');
+  await expect.poll(strength).toBeLessThan(0.05);
 });
 
 test('his light lights the contours about him, and in an area grows to cover it in place of a shaded circle', async ({ page }) => {
@@ -367,24 +535,47 @@ test('mountains named or given as candidates, the lake’s shore, and pools wher
   await expect.poll(async () => (await light()).outline).toBeLessThan(0.05);
 });
 
-test('the newest leg stays joined to Jesus’ marker as it drifts in an area', async ({ page }) => {
+test('the Mountains button is on where the text places Jesus on a mountain; it hides them there, or shows them anywhere', async ({ page }) => {
+  await openMap(page);
+  const button = page.getByRole('button', { name: 'Mountains', exact: true });
+  const lit = () => page.evaluate(() => (window as unknown as { __jtMap: { getLayer(id: string): { implementation?: { status(): { mountain: number } } } | undefined } }).__jtMap.getLayer('land-light')!.implementation!.status().mountain);
+  await goTo(page, 'The transfiguration');
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.map-peak')).toHaveCount(3);
+  await expect.poll(lit).toBeGreaterThan(0.9);
+  // Turned off there: no peaks, and no light on them.
+  await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('.map-peak')).toHaveCount(0);
+  await expect(page.locator('.map-card')).toContainText('mountains hidden');
+  await expect.poll(lit).toBeLessThan(0.05);
+  // Elsewhere it starts off; turned on, every named mountain is marked, but not lit.
+  await goTo(page, 'Calming the storm');
+  await expect(button).toHaveAttribute('aria-pressed', 'false');
+  await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => page.locator('.map-peak').count()).toBeGreaterThan(3);
+  await expect.poll(lit).toBeLessThan(0.05);
+});
+
+test('in an area Jesus’ marker drifts a little about where the newest leg ends', async ({ page }) => {
   await openMap(page);
   await goTo(page, 'Flight to Egypt');
   await expect(page.locator('.map-traveller')).toHaveClass(/wandering/, { timeout: 15_000 });
   type M = { getSource(id: string): { getData(): Promise<GeoJSON.FeatureCollection<GeoJSON.LineString>> }; project(ll: number[]): { x: number; y: number }; getContainer(): HTMLElement };
-  // How far the newest leg's end is from the marker, and how far the marker has drifted from Egypt's centre (px).
+  // Where the marker is drawn (px), and how far that is from the newest leg's end.
   const measure = () => page.evaluate(async () => {
     const map = (window as unknown as { __jtMap: M }).__jtMap;
-    const newest = (await map.getSource('trail').getData()).features.find((f) => f.properties!.age === 0)!;
+    const newest = (await map.getSource('trail').getData()).features.find((f) => f.properties!.age === 0)!.geometry.coordinates;
     const box = map.getContainer().getBoundingClientRect(), s = document.querySelector('.map-traveller .sym')!.getBoundingClientRect();
-    const mx = s.left + s.width / 2 - box.left, my = s.top + s.height / 2 - box.top;
-    const end = map.project(newest.geometry.coordinates[1]), centre = map.project([31.3075, 30.129444]);
-    return { gap: Math.hypot(end.x - mx, end.y - my), off: Math.hypot(centre.x - mx, centre.y - my) };
+    const x = s.left + s.width / 2 - box.left, y = s.top + s.height / 2 - box.top, end = map.project(newest[newest.length - 1]);
+    return { x, y, gap: Math.hypot(end.x - x, end.y - y) };
   });
-  const seen = [];
+  const seen: { x: number; y: number; gap: number }[] = [];
   for (let i = 0; i < 6; i++) { await page.waitForTimeout(500); seen.push(await measure()); }
-  expect(Math.max(...seen.map((m) => m.off))).toBeGreaterThan(3);
-  expect(Math.max(...seen.map((m) => m.gap))).toBeLessThan(12);
+  // It drifts, but only a little: the line ends where he waits, and he's never far from it.
+  expect(Math.max(...seen.map((m) => Math.hypot(m.x - seen[0].x, m.y - seen[0].y)))).toBeGreaterThan(1.5);
+  expect(Math.max(...seen.map((m) => m.gap))).toBeLessThan(16);
 });
 
 test('zoomed out, crowded labels give way so none overlap', async ({ page }) => {
@@ -448,7 +639,8 @@ test('clicking a place pins a popup with its photo and links to the stories set 
   await expect(popup).toHaveClass(/pinned/, { timeout: 5_000 });
   await expect.poll(() => popup.locator('.pp-photo img').evaluate((img: HTMLImageElement) => img.naturalWidth), { timeout: 10_000 }).toBeGreaterThan(0);
   await expect(popup.locator('.pp-photo figcaption a')).toHaveAttribute('href', /commons\.wikimedia\.org/);
-  await expect(popup.locator('.pp-h')).toHaveText('13 stories set here');
+  await expect(popup.locator('.pp-stories li')).toHaveCount(13);
+  await expect(popup.locator('.pp-photo figcaption a')).toHaveText('AVRAMGR');
   await expect(popup.locator('.pp-stories a[aria-current]')).toContainText('A stay in Capernaum');
   await shot(page, '13-place-popup');
   // Following a story keeps the popup open and moves the reader there.
@@ -457,7 +649,10 @@ test('clicking a place pins a popup with its photo and links to the stories set 
   await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', /The temple tax/, { timeout: 20_000 });
   await expect(popup).toBeVisible();
   await expect(story).toHaveAttribute('aria-current', 'true');
-  await popup.getByRole('button', { name: 'Close' }).click();
+  // A click elsewhere on the map closes it.
+  const canvas = page.locator('.maplibregl-canvas');
+  const box = (await canvas.boundingBox())!;
+  await canvas.click({ position: { x: 8, y: box.height * 0.5 } }); // the left edge, clear of the card
   await expect(popup).toHaveCount(0);
 });
 
@@ -469,7 +664,7 @@ test('a region’s popup lists the stories set in it', async ({ page }) => {
   await placeDot(page, 'Galilee').locator('span').click();
   const popup = page.locator('.map-popup');
   await expect(popup.locator('.pp-title')).toHaveText('Galilee', { timeout: 5_000 });
-  await expect(popup.locator('.pp-h')).toHaveText(/\d+ stories set here/);
+  await expect(popup.locator('.pp-stories li')).not.toHaveCount(0);
   await expect(popup.locator('.pp-stories a', { hasText: 'Preaching in Galilee' })).toHaveAttribute('aria-current', 'true');
   await expect(popup.locator('.pp-photo img')).toHaveAttribute('alt', /Galilee/);
   await shot(page, '14-region-popup');
@@ -478,7 +673,6 @@ test('a region’s popup lists the stories set in it', async ({ page }) => {
 test('desktop: dragging the divider below 20% closes the map', async ({ page }) => {
   test.skip(isPhone());
   await open(page);
-  await mapChip(page).click();
   const splitter = page.getByRole('separator', { name: 'Resize the map' });
   await expect(splitter).toBeVisible({ timeout: 30_000 });
   const panes = (await page.locator('.panes').boundingBox())!;
@@ -513,4 +707,41 @@ test('dynamic colour tints night scenes; dark mode is available in settings', as
   await page.waitForTimeout(1200);
   await expect(page.locator('body')).toHaveAttribute('data-light', 'night');
   await shot(page, '07-dark');
+});
+
+/** Scrolls the reader so a verse of a gospel sits just past the reading line. */
+async function readVerse(page: Page, book: string, cv: string) {
+  await page.evaluate(([book, cv]) => {
+    const s = document.querySelector<HTMLElement>('.reader')!;
+    const el = document.querySelector<HTMLElement>(`.cell[data-book="${book}"] [data-cv="${cv}"]`)!;
+    const head = document.querySelector<HTMLElement>('.cols-head')?.offsetHeight ?? 0;
+    const line = s.getBoundingClientRect().top + head + (s.clientHeight - head) * 0.22;
+    s.scrollTop += el.getBoundingClientRect().top - line + 4;
+  }, [book, cv]);
+}
+
+test('desktop: the light changes as the text does within a passage (Mk 1:35 dark, daybreak, then day)', async ({ page }) => {
+  test.skip(isPhone());
+  await open(page);
+  await goTo(page, 'Mk 1:35');
+  await expect(page.locator('body')).toHaveAttribute('data-tint', 'predawn');
+  await readVerse(page, 'MRK', '1:36');
+  await expect(page.locator('body')).toHaveAttribute('data-tint', 'dawn');
+  await readVerse(page, 'MRK', '1:39');
+  await expect(page.locator('body')).toHaveAttribute('data-tint', 'day');
+  await goTo(page, 'The bread and the cup');
+  await expect(page.locator('body')).toHaveAttribute('data-tint', 'night');
+});
+
+test('from his death until the angel at the tomb, the colours turn cold and his glow goes out', async ({ page }) => {
+  await open(page);
+  await goTo(page, 'The burial');
+  await expect(page.locator('body')).toHaveAttribute('data-dead', '');
+  await expect(page.locator('body')).toHaveAttribute('data-tint', 'dead');
+  await expect(page.locator('.map-traveller-glow .wander')).toHaveCSS('opacity', '0');
+  await page.waitForTimeout(1500);
+  await shot(page, '15-dead');
+  await goTo(page, 'The earthquake');
+  await expect(page.locator('body')).not.toHaveAttribute('data-dead', '');
+  await expect(page.locator('body')).toHaveAttribute('data-tint', 'dawn');
 });

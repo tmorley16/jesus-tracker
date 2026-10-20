@@ -17,6 +17,8 @@ interface Saved {
   visible: Book[];
   single: Book;
   map: boolean;
+  /** The timeline scrubber under the toolbar. */
+  timeline: boolean;
   /** Map's share of the panes (0–1); null = the default (1.5 × a gospel column, at most half). */
   mapShare: number | null;
   appearance: Appearance;
@@ -33,11 +35,13 @@ interface Saved {
   modern: boolean;
   notes: NotesShown;
 }
-function load(): Partial<Saved> {
+/** Settings version: 2 starts everyone once on Dynamic colours with the map shown. */
+const VERSION = 2;
+function load(): Partial<Saved> & { v?: number } {
   try { return JSON.parse(localStorage.getItem(KEY) ?? '{}'); } catch { return {}; }
 }
 function save(s: Saved) {
-  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* storage unavailable */ }
+  try { localStorage.setItem(KEY, JSON.stringify({ v: VERSION, ...s })); } catch { /* storage unavailable */ }
 }
 
 interface UI extends Saved {
@@ -49,6 +53,7 @@ interface UI extends Saved {
   toggleBook(b: Book): void;
   setSingle(b: Book): void;
   toggleMap(): void;
+  toggleTimeline(): void;
   showOnlyMap(): void;
   setMapShare(share: number | null): void;
   setAppearance(a: Appearance): void;
@@ -65,21 +70,19 @@ interface UI extends Saved {
   setCurrent(i: number): void;
 }
 
-const saved = load();
+const raw = load();
+// Before version 2 the first visit followed a dark device and started without the map; drop those choices once.
+const saved: Partial<Saved> = raw.v === VERSION ? raw : { ...raw, appearance: undefined, map: undefined };
 const isBook = (b: unknown): b is Book => (BOOKS as unknown[]).includes(b);
 const validBooks = (v: unknown): Book[] | null => (Array.isArray(v) && v.every(isBook) ? (v as Book[]) : null);
-// First visit: follow a dark device (or host page) setting; otherwise papyrus with the dynamic tint.
-const prefersDark = () => {
-  const theme = document.documentElement.dataset.theme;
-  return theme === 'dark' || (theme !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-};
-const savedMap = saved.map === true;
+// First visit: Dynamic colours whatever the device's setting, with the map on screen.
+const savedMap = saved.map !== false;
 const savedVisible = validBooks(saved.visible);
 
 export const useUI = create<UI>()((set, get) => {
   const persist = () => {
-    const { visible, single, map, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes } = get();
-    save({ visible, single, map, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes });
+    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes } = get();
+    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes });
   };
   const update = (patch: Partial<UI>) => { set(patch); persist(); };
   return {
@@ -88,8 +91,9 @@ export const useUI = create<UI>()((set, get) => {
     lastVisible: savedVisible?.length ? savedVisible : [...BOOKS],
     single: isBook(saved.single) ? saved.single : 'MAT',
     map: savedMap,
+    timeline: saved.timeline !== false,
     mapShare: typeof saved.mapShare === 'number' ? saved.mapShare : null,
-    appearance: saved.appearance ?? (prefersDark() ? 'dark' : 'dynamic'),
+    appearance: saved.appearance === 'light' || saved.appearance === 'dark' ? saved.appearance : 'dynamic',
     textSize: saved.textSize ?? 'm',
     spacing: saved.spacing === 'even' || saved.spacing === 'chrono' ? saved.spacing : 'text',
     reckoning: saved.reckoning === 'ad33' ? 'ad33' : 'ad30',
@@ -117,6 +121,7 @@ export const useUI = create<UI>()((set, get) => {
       if (!map) { update({ map: true }); return; }
       update({ map: false, visible: visible.length ? visible : lastVisible.length ? lastVisible : [single] });
     },
+    toggleTimeline: () => update({ timeline: !get().timeline }),
     showOnlyMap: () => {
       const { visible, lastVisible } = get();
       update({ map: true, visible: [], lastVisible: visible.length ? visible : lastVisible });
@@ -139,6 +144,9 @@ export const useUI = create<UI>()((set, get) => {
 
 /** Reading position, updated on every scroll frame. u is 0–1 along the timeline. */
 export const playhead = createStore<{ u: number; row: number; f: number }>(() => ({ u: 0, row: 0, f: 0 }));
+
+/** At the reading line: whether Jesus has died and not yet risen (his light on the map goes out). */
+export const scene = createStore<{ dead: boolean }>(() => ({ dead: false }));
 
 /** Each row's span along the timeline (0–1), recomputed whenever the layout changes. */
 export const layout = createStore<{ starts: number[]; ends: number[]; years: Years | null; version: number }>(() => ({ starts: [], ends: [], years: null, version: 0 }));

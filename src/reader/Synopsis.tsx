@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { computeLayout, rowAtU } from './layoutModel';
-import { BOOK_ABBR, BOOK_NAME, ROWS, TEXT_NOTES, fmtRef, versesOf, type Book, type Row, type Texts } from './model';
-import { NotePopover, VerseText } from './Notes';
+import { BOOK_ABBR, BOOK_NAME, PARALLELS, ROWS, TEXT_NOTES, fmtRef, rowTitle, versesOf, type Book, type Row, type Texts } from './model';
+import { NotePopover, VerseText, showVerse } from './Notes';
 import { PlaceChip } from './places';
 import { layout, nav, playhead, useUI } from './state';
 
@@ -230,6 +230,7 @@ const RowView = memo(function RowView({ row, shown, texts, hidden, partStart, si
           )}
         </div>
       </header>
+      {row.moved && row.subIndex === 0 && <p className="row-note">{row.moved}</p>}
       <div className="cells" style={{ gridTemplateColumns: `repeat(${shown.length}, minmax(0, 1fr))` }}>
         {shown.map((b) => <Cell key={b} row={row} book={b} texts={texts} labelEmpty={shown.length > 1} />)}
       </div>
@@ -248,7 +249,7 @@ function Cell({ row, book, texts, labelEmpty }: { row: Row; book: Book; texts: T
   let letters = 0;
   const next = () => letters++;
   return (
-    <div className="cell" style={gospelVar(book)}>
+    <div className="cell" data-book={book} style={gospelVar(book)}>
       <p className="cell-ref">{fmtRef(book, ranges)}</p>
       {row.outOfOrder[book] && <p className="cell-note order">{row.outOfOrder[book]}</p>}
       {note && <p className="cell-note textual">{note.note}</p>}
@@ -256,9 +257,16 @@ function Cell({ row, book, texts, labelEmpty }: { row: Row; book: Book; texts: T
         <p className="passage" key={k}>
           {verses.map((v) => {
             const again = repeats?.[`${v.c}:${v.v}`];
+            const pars = again ? undefined : PARALLELS.get(`${book} ${v.c}:${v.v}`);
             return (
-              <span key={`${v.c}:${v.v}`} className={again ? 'v again' : 'v'} title={again ? `This verse also appears in §${again}; Robertson divides it between sections.` : undefined}>
+              <span key={`${v.c}:${v.v}`} data-cv={`${v.c}:${v.v}`} className={again ? 'v again' : 'v'} title={again ? `This verse also appears in §${again}; Robertson divides it between sections.` : undefined}>
                 {v.label ? <b className="vl">{v.c}:{v.v}</b> : <sup className="vn">{v.v}</sup>}
+                {pars?.map((p) => (
+                  <button
+                    type="button" key={p.ref} className="par" style={gospelVar(p.book)} onClick={() => showVerse(p.book, p.c, p.v)}
+                    title={`Similar passage: ${p.ref}, §${ROWS[p.row].n} ${rowTitle(ROWS[p.row])}. Some synopses print the two side by side; Robertson’s harmony places them on different occasions.`}
+                  >≈ {p.ref}</button>
+                ))}
                 <VerseText book={book} c={v.c} v={v.v} text={v.t} shown={notesShown} next={next} />
               </span>
             );

@@ -1,0 +1,30 @@
+{
+ "_about": "Passages that gospel synopses print side by side although Robertson's harmony places them on different occasions (whether these are one teaching or event told in different settings, or similar words on more than one occasion, is the judgement call; the reader shows both and decides nothing). Each set: the first passage pairs with each of the others, and each of the others links back to it. The pairings follow the traditional KJV 'Harmony of the Gospels' chart the user supplied on 20 Oct 2026. Checked by scripts/validate.mjs: the verses exist and each pair sits in different rows.",
+ "sets": [
+  ["MAT 10:2-4", "MRK 3:16-19", "LUK 6:14-16"],
+  ["JHN 1:32-34", "MAT 3:16-17", "MRK 1:10-11", "LUK 3:21-22"],
+  ["JHN 6:66-69", "MAT 16:13-16", "MRK 8:27-29", "LUK 9:18-20"],
+  ["LUK 7:36-50", "MAT 26:6-13", "MRK 14:3-9", "JHN 12:2-8"],
+  ["LUK 11:2-4", "MAT 6:9-13"],
+  ["LUK 11:9-13", "MAT 7:7-11"],
+  ["LUK 11:14-23", "MAT 12:22-30", "MRK 3:22-27"],
+  ["LUK 11:24-26", "MAT 12:43-45"],
+  ["LUK 11:29-32", "MAT 12:38-42"],
+  ["LUK 11:33", "MAT 5:15"],
+  ["LUK 11:34-36", "MAT 6:22-23"],
+  ["LUK 11:39-52", "MAT 23:4-36"],
+  ["LUK 12:2-9", "MAT 10:26-33"],
+  ["LUK 12:22-31", "MAT 6:25-33"],
+  ["LUK 13:18-19", "MAT 13:31-32", "MRK 4:30-32"],
+  ["LUK 13:20-21", "MAT 13:33"],
+  ["LUK 13:34-35", "MAT 23:37-39"],
+  ["LUK 14:15-24", "MAT 22:1-14"],
+  ["LUK 14:26-27", "MAT 10:37-38"],
+  ["LUK 15:4-7", "MAT 18:12-14"],
+  ["LUK 17:1-2", "MAT 18:6-7", "MRK 9:42"],
+  ["LUK 17:3-4", "MAT 18:15", "MAT 18:21-22"],
+  ["LUK 17:6", "MAT 17:20"],
+  ["LUK 19:11-27", "MAT 25:14-30"],
+  ["MRK 11:25", "MAT 6:14-15"]
+ ]
+}

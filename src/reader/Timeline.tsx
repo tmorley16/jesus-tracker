@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { rowAtU } from './layoutModel';
-import { BOOKS, BOOK_NAME, PARTS, RECKONING_NAME, ROWS, fmtRef, fmtYear, lightFor, rowTitle, type Book, type LightState } from './model';
+import { BOOKS, BOOK_NAME, PARTS, RECKONING_NAME, ROWS, deadAt, fmtRef, fmtYear, lightAt, lightBreaks, rowTitle, type Book, type LightState } from './model';
 import { PlaceChip } from './places';
 import { layout, nav, placeMarks, playhead, useUI } from './state';
 
@@ -8,9 +8,9 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v
 const MAX_ZOOM = 90;
 
 // Swatches for the light strip, matching the dynamic tints in app.css.
-const TINT: Record<LightState, string> = {
+const TINT: Record<LightState | 'dead', string> = {
   unstated: 'transparent', predawn: '#AEB9C6', dawn: '#E9B79F', day: '#E6D29A', midday: '#F2EAD2',
-  evening: '#D9A45E', night: '#59607A', darkness: '#2B2A28',
+  evening: '#D9A45E', night: '#59607A', darkness: '#2B2A28', dead: '#8A949C',
 };
 
 interface Geometry { h: number; partsH: number; feastY: number; lanesTop: number; laneH: number; laneGap: number; titlesY: number | null; lightY: number; miniY: number; font: number }
@@ -154,14 +154,18 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
       for (let i = 0; i < ROWS.length; i++) {
         const s = starts[i], e = ends[i];
         if (e <= s) continue;
-        const state = lightFor(ROWS[i], shownRef.current);
-        if (state === 'unstated') continue;
-        const x0 = X(s), x1 = X(e);
-        if (x1 < 0 || x0 > w) continue;
-        ctx.fillStyle = TINT[state];
-        ctx.globalAlpha = 0.85;
-        ctx.fillRect(x0, g.lightY, Math.max(1, x1 - x0), 3);
-        ctx.globalAlpha = 1;
+        if (X(e) < 0 || X(s) > w) continue;
+        // A row whose light changes part-way is drawn in pieces, from the verse counts.
+        const row = ROWS[i], shown = shownRef.current, breaks = lightBreaks(row, shown);
+        breaks.forEach((b, k) => {
+          const state = deadAt(row, shown, b) ? 'dead' : lightAt(row, shown, b);
+          if (state === 'unstated') return;
+          const x0 = X(s + b * (e - s)), x1 = X(s + (breaks[k + 1] ?? 1) * (e - s));
+          ctx.fillStyle = TINT[state];
+          ctx.globalAlpha = 0.85;
+          ctx.fillRect(x0, g.lightY, Math.max(1, x1 - x0), 3);
+          ctx.globalAlpha = 1;
+        });
       }
     }
 
