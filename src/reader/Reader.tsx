@@ -1,13 +1,15 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { computeLayout, rowAtU } from './layoutModel';
 import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVerse, rowTitle, versePos, type Book, type Reckoning, type Row, type Texts, type VersePos } from './model';
+import { GospelConfig, TimelineConfig } from './Config';
 import { Splitter } from './Splitter';
-import { Synopsis } from './Synopsis';
+import { Stack, Synopsis } from './Synopsis';
 import { ScaleSwitch, Timeline } from './Timeline';
 import { COMPACT_QUERY, layout, nav, playhead, scene, showRow, useUI, type Appearance, type NotesShown, type TextSize, type Traveller } from './state';
 
 const MapPane = lazy(() => import('./MapPane'));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
+const GOLDEN = (1 + Math.sqrt(5)) / 2;
 
 function useMedia(query: string) {
   const [match, setMatch] = useState(() => window.matchMedia(query).matches);
@@ -36,11 +38,16 @@ export default function Reader() {
   const reckoning = useUI((s) => s.reckoning);
   const compress = useUI((s) => s.compress);
   const settingsOpen = useUI((s) => s.settingsOpen);
-  // Phones show one gospel at a time.
-  const gospels = useMemo<Book[]>(() => (compact ? (visible.length ? [visible.includes(single) ? single : visible[0]] : []) : visible), [compact, visible, single]);
+  const phoneGospels = useUI((s) => s.phoneGospels);
+  const one = compact && phoneGospels === 'one';
+  // Phones have the controls beside the timeline, the gospels by their lanes, in place of the toolbar.
+  const side = compact;
+  // Phones can be set to one gospel at a time.
+  const gospels = useMemo<Book[]>(() => (one ? (visible.length ? [visible.includes(single) ? single : visible[0]] : []) : visible), [one, visible, single]);
   // The map follows the gospels on screen, or all four when it's on its own.
   const mapBooks = useMemo<Book[]>(() => (gospels.length ? gospels : BOOKS), [gospels]);
-  const share = mapShare ?? Math.min(0.5, 1.5 / (gospels.length + 1.5));
+  // Desktop: gospels to map in the golden ratio. Phones (stacked): 1.5 × a gospel's share, at most half.
+  const share = mapShare ?? (compact ? Math.min(0.5, 1.5 / (gospels.length + 1.5)) : 1 / (1 + GOLDEN));
   const panesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -57,11 +64,11 @@ export default function Reader() {
       if (e.key.toLowerCase() === 'm') { ui.toggleMap(); return; }
       if (e.key.toLowerCase() === 't' && !compact) { ui.toggleTimeline(); return; }
       const n = Number(e.key);
-      if (n >= 1 && n <= 4) { if (compact) ui.setSingle(BOOKS[n - 1]); else ui.toggleBook(BOOKS[n - 1]); }
+      if (n >= 1 && n <= 4) { if (one) ui.setSingle(BOOKS[n - 1]); else ui.toggleBook(BOOKS[n - 1]); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [compact]);
+  }, [compact, one]);
 
   // With only the map on screen there's no text to scroll: the timeline sets the row directly.
   useEffect(() => {
@@ -79,18 +86,21 @@ export default function Reader() {
   const split = map ? (gospels.length ? 'split' : 'map') : 'text';
   return (
     <div className="jt" data-size={textSize} data-compact={compact ? '' : undefined}>
-      <Toolbar compact={compact} gospels={gospels} />
-      {(timeline || compact) && <Timeline shown={mapBooks} compact={compact} />}
+      {!side && <Toolbar compact={compact} one={one} gospels={gospels} />}
+      {(timeline || compact) && <Timeline shown={mapBooks} compact={compact} side={side ? { left: <LaneChips one={one} gospels={gospels} />, right: <SideTools /> } : undefined} />}
       <div className="panes" ref={panesRef} data-layout={split} style={{ '--map-share': String(share) } as CSSProperties}>
-        {gospels.length > 0 && <Synopsis texts={texts} shown={gospels} single={gospels.length === 1} />}
+        {gospels.length > 1 && compact && (phoneGospels === 'stacked' || phoneGospels === 'grid')
+          ? <Stack texts={texts} shown={gospels} arrangement={phoneGospels} />
+          : gospels.length > 0 && <Synopsis texts={texts} shown={gospels} single={gospels.length === 1} compact={compact} />}
+        {compact && gospels.length > 0 && <GospelConfig />}
         {split === 'split' && <Splitter panesRef={panesRef} share={share} vertical={compact} />}
         {map && (
           <Suspense fallback={<div className="map-pane"><p className="map-loading">Loading the map…</p></div>}>
-            <MapPane books={mapBooks} />
+            <MapPane books={mapBooks} compact={compact} />
           </Suspense>
         )}
       </div>
-      {settingsOpen && <Settings />}
+      {settingsOpen && !compact && <Settings />}
       <TintSync shown={mapBooks} />
       {error && <p className="load-error" role="alert">The text didn’t load: {error}. Check your connection and reload the page.</p>}
     </div>
@@ -99,11 +109,14 @@ export default function Reader() {
 
 /** Where a verse sits in its row on screen (0–1 of the row's height), or by verse count where the reader isn't shown. */
 function versePosOnScreen(row: Row): VersePos {
-  const sec = document.getElementById(`row-${row.id}`);
+  // One section, or (gospels in panes of their own) one in each pane.
+  const secs = [...document.querySelectorAll<HTMLElement>(`section.row[data-row="${row.i}"]`)];
   return (b, c, v) => {
-    const el = sec?.querySelector<HTMLElement>(`.cell[data-book="${b}"] [data-cv="${c}:${v}"]`);
-    if (!sec || !el || !sec.offsetHeight) return versePos(row, b, c, v);
-    return (el.getBoundingClientRect().top - sec.getBoundingClientRect().top) / sec.offsetHeight;
+    for (const sec of secs) {
+      const el = sec.querySelector<HTMLElement>(`.cell[data-book="${b}"] [data-cv="${c}:${v}"]`);
+      if (el && sec.offsetHeight) return (el.getBoundingClientRect().top - sec.getBoundingClientRect().top) / sec.offsetHeight;
+    }
+    return versePos(row, b, c, v);
   };
 }
 
@@ -131,16 +144,52 @@ function TintSync({ shown }: { shown: Book[] }) {
   return null;
 }
 
-function Toolbar({ compact, gospels }: { compact: boolean; gospels: Book[] }) {
+/** Show or hide a gospel; one gospel at a time: switch to it, and tapping the open one with the map on leaves just the map. */
+function pickBook(b: Book, one: boolean, gospels: Book[]) {
+  const ui = useUI.getState();
+  if (!one) { ui.toggleBook(b); return; }
+  if (gospels.includes(b)) { if (ui.map) ui.showOnlyMap(); } else ui.setSingle(b);
+}
+
+const MapIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" /><path d="M9 4v14M15 6v14" /></svg>;
+const SearchIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>;
+const SettingsIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" /></svg>;
+
+/** Phones, controls beside the timeline: each gospel's button by its lane. */
+function LaneChips({ one, gospels }: { one: boolean; gospels: Book[] }) {
+  useUI((s) => s.map); // one at a time, the open gospel's button depends on the map
+  return (
+    <div className="lane-chips" role="group" aria-label="Gospels on screen">
+      {BOOKS.map((b) => (
+        <button type="button" key={b} aria-pressed={gospels.includes(b)} style={gospelVar(b)} onClick={() => pickBook(b, one, gospels)} title={`Show or hide ${BOOK_NAME[b]}`}>
+          <i aria-hidden="true" />{BOOK_ABBR[b]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Phones, controls beside the timeline: the map, Go to, and the timeline's settings at the foot. */
+function SideTools() {
+  const map = useUI((s) => s.map);
+  const ui = useUI.getState();
+  const [searching, setSearching] = useState(false);
+  return (
+    <div className="side-tools">
+      <button type="button" className="icon map-chip" aria-pressed={map} aria-label="Map" onClick={ui.toggleMap}><MapIcon /></button>
+      <button type="button" className="icon" aria-label="Go to a passage or event" onClick={() => setSearching(true)}><SearchIcon /></button>
+      <TimelineConfig />
+      {searching && <GoTo compact onDone={() => setSearching(false)} />}
+    </div>
+  );
+}
+
+function Toolbar({ compact, one, gospels }: { compact: boolean; one: boolean; gospels: Book[] }) {
   const map = useUI((s) => s.map);
   const timeline = useUI((s) => s.timeline);
   const ui = useUI.getState();
   const [searching, setSearching] = useState(false);
-  const pick = (b: Book) => {
-    if (!compact) { ui.toggleBook(b); return; }
-    // Phones: one gospel at a time; tapping the open one with the map on leaves just the map.
-    if (gospels.includes(b)) { if (map) ui.showOnlyMap(); } else ui.setSingle(b);
-  };
+  const pick = (b: Book) => pickBook(b, one, gospels);
   return (
     <header className="toolbar">
       {!compact && <p className="brand">Jesus Tracker</p>}
@@ -151,14 +200,14 @@ function Toolbar({ compact, gospels }: { compact: boolean; gospels: Book[] }) {
           </button>
         ))}
         <button type="button" className="map-chip" aria-pressed={map} aria-label="Map" onClick={ui.toggleMap} title="Show or hide the map (M)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" /><path d="M9 4v14M15 6v14" /></svg>{!compact && 'Map'}
+          <MapIcon />{!compact && 'Map'}
         </button>
       </div>
       {(!compact || searching) && <GoTo compact={compact} onDone={() => setSearching(false)} />}
       <div className="tools">
         {compact && !searching && (
           <button type="button" className="icon" aria-label="Go to a passage or event" onClick={() => setSearching(true)}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>
+            <SearchIcon />
           </button>
         )}
         {/* Phones always show the timeline, so there only the scale switch. */}
@@ -172,7 +221,7 @@ function Toolbar({ compact, gospels }: { compact: boolean; gospels: Book[] }) {
           {(compact || timeline) && <ScaleSwitch />}
         </div>
         <button type="button" className="icon settings-btn" aria-label="Settings" aria-haspopup="dialog" onClick={() => ui.setSettingsOpen(!useUI.getState().settingsOpen)}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" /></svg>
+          <SettingsIcon />
         </button>
       </div>
     </header>
@@ -256,6 +305,7 @@ function GoTo({ compact, onDone }: { compact: boolean; onDone: () => void }) {
   );
 }
 
+/** Desktops' settings (phones have a small settings button in each area instead). */
 function Settings() {
   const appearance = useUI((s) => s.appearance);
   const textSize = useUI((s) => s.textSize);
@@ -307,7 +357,7 @@ function Settings() {
         <p className="fine-print">A small letter marks each note: hover over it to read the note; click or tap to keep it open. Notes on the manuscripts are in the gospel’s colour.</p>
       </fieldset>
       <fieldset>
-        <legend>Timeline in years</legend>
+        <legend>Timeline in time</legend>
         <div className="row-opts">
           {radio<Reckoning>('reckoning', 'ad30', reckoning, ui.setReckoning, 'AD 30', 'Crucifixion in AD 30')}
           {radio<Reckoning>('reckoning', 'ad33', reckoning, ui.setReckoning, 'AD 33', 'Crucifixion in AD 33')}
@@ -316,7 +366,7 @@ function Settings() {
           <input type="checkbox" checked={compress} onChange={(e) => ui.setCompress(e.target.checked)} />
           <span><b>Compress the hidden years</b><small>Shorten the long silences: childhood, and the years after age twelve</small></span>
         </label>
-        <p className="fine-print">For the timeline’s Years scale. Dates are estimates from two common reckonings, interpolated between anchor events such as the Passovers in John.</p>
+        <p className="fine-print">For the timeline’s Time scale. Dates are estimates from two common reckonings, interpolated between anchor events such as the Passovers in John.</p>
       </fieldset>
       <fieldset>
         <legend>Jesus on the map</legend>

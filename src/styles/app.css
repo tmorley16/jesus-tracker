@@ -68,7 +68,6 @@ p { margin: 0; }
    on it only while zoomed. */
 .timeline-controls { position: absolute; top: 4px; right: max(8px, env(safe-area-inset-right, 0px)); z-index: 2; display: flex; align-items: center; padding-left: 6px; background: var(--paper-raised); }
 .timeline-controls .whole { height: 18px; padding: 0 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); cursor: pointer; font-size: 0.72rem; line-height: 1; }
-.jt[data-compact] .timeline-controls .whole { height: 15px; padding: 0 5px; }
 /* Text or Years, in the toolbar; on a desktop it joins the Timeline button as one control. */
 .tl-group { display: flex; }
 .timeline-scale { display: flex; }
@@ -309,7 +308,7 @@ body:not([data-dead]) .map-traveller-glow.resting.born .wander { opacity: 0.45; 
 .map-scene i { position: absolute; inset: 0; transform: rotate(45deg); border: 2px solid var(--ink); background: color-mix(in oklab, var(--paper-raised) 75%, transparent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--paper-raised) 50%, transparent); }
 .map-scene span { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; font: 600 9.5px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 .maplibregl-ctrl-attrib { font-size: 11px; }
-.maplibregl-ctrl-scale { background: color-mix(in oklab, var(--paper-raised) 85%, transparent); border-color: var(--ink); color: var(--ink); font-family: var(--font-mono); font-size: 11px; }
+.maplibregl-ctrl-scale { cursor: pointer; background: color-mix(in oklab, var(--paper-raised) 85%, transparent); border-color: var(--ink); color: var(--ink); font-family: var(--font-mono); font-size: 11px; }
 
 /* ---- settings ---- */
 .settings {
@@ -356,11 +355,51 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .jt[data-compact] .icon { height: 30px; min-width: 30px; padding: 0 6px; }
 .jt[data-compact] .timeline-scale button { height: 30px; padding: 0 7px; font-size: 0.75rem; }
 .jt[data-compact] .goto { position: absolute; z-index: 30; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); top: 6px; max-width: none; }
-.jt[data-compact] .col-h { padding: 6px 16px 7px; }
-.jt[data-compact] .row-head { padding: 8px 16px 6px; }
-.jt[data-compact] .row-head h3 { font-size: 1.08rem; }
-.jt[data-compact] .cell { padding: 4px 16px 16px; }
-.jt[data-compact] .part-div { padding: 24px 16px 6px; }
+/* Every pixel of height counts on a phone: the column heads are slim, and only the section's number and title stay
+   pinned, on one line where they fit (its chips scroll away with the text). */
+.jt[data-compact] .col-h { gap: 6px; padding: 3px 12px 4px; border-top-width: 2px; font-size: 0.82rem; }
+.jt[data-compact] .row-head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; padding: 5px 12px 4px; }
+.jt[data-compact] .row-head h3 { flex: 1 1 12rem; min-width: 0; margin: 0; font-size: 1rem; }
+.jt[data-compact] .row-meta { padding: 5px 12px 0; }
+.jt[data-compact] .row-note { margin: 5px 12px 0; }
+.jt[data-compact] .cell { padding: 2px 12px 12px; }
+.jt[data-compact] .cell-ref { margin: 2px 0 4px; }
+.jt[data-compact] .part-div { padding: 14px 12px 4px; }
+/* Side by side: narrow columns, smaller text, hyphenated. */
+.jt[data-compact] .reader:not([data-cols="1"]) .col-h { padding-inline: 6px; }
+.jt[data-compact] .reader:not([data-cols="1"]) .col-h .dot { display: none; }
+.jt[data-compact] .reader:not([data-cols="1"]) .cell { padding: 2px 6px 10px; }
+.jt[data-compact] .reader:not([data-cols="1"]) .cell-ref { font-size: 0.68rem; }
+.jt[data-compact] .reader:not([data-cols="1"]) .cell-ref::before { display: none; }
+.jt[data-compact] .reader:not([data-cols="1"]) .cell-note { font-size: 0.72rem; }
+.jt[data-compact] .reader:not([data-cols="1"]) .passage { hyphens: auto; line-height: 1.48; }
+.jt[data-compact] .reader[data-cols="2"] .passage { font-size: calc(var(--scripture-size) * 0.9); }
+.jt[data-compact] .reader[data-cols="3"] .passage, .jt[data-compact] .reader[data-cols="4"] .passage { font-size: calc(var(--scripture-size) * 0.8); }
+/* Gospels in panes of their own (stacked, or quadrants): one strip names the section for all of them, so inside the
+   panes the section headings scroll with the text, small. */
+.stack { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-auto-rows: minmax(0, 1fr); }
+.stack[data-arrangement="grid"][data-count="3"], .stack[data-arrangement="grid"][data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.stack[data-arrangement="grid"][data-count="3"] > .reader:last-child { grid-column: 1 / -1; }
+.stack-head { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 3px 12px 4px; background: var(--paper-raised); border-bottom: 1px solid var(--line); font-size: 0.86rem; font-weight: 600; }
+.stack-head .n { flex: none; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 400; }
+.stack-head .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stack > .reader { border-top: 1px solid var(--line); }
+.stack > .reader:nth-of-type(1) { border-top: 0; }
+.stack[data-arrangement="grid"][data-count="3"] > .reader:nth-of-type(2), .stack[data-arrangement="grid"][data-count="4"] > .reader:nth-of-type(2) { border-top: 0; }
+.stack[data-arrangement="grid"][data-count="3"] > .reader:nth-of-type(even), .stack[data-arrangement="grid"][data-count="4"] > .reader:nth-of-type(even) { border-left: 1px solid var(--line); }
+.stack-head .chip { flex: none; margin-left: auto; font-weight: 400; }
+.jt .stack .row-head { position: static; flex-wrap: nowrap; padding: 6px 10px 0; border-bottom: 0; }
+.jt .stack .row-head .kicker { flex: none; font-size: 0.64rem; }
+.jt .stack .row-head .kicker span:not(.n) { display: none; }
+.jt .stack .row-head h3 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 0.74rem var(--font-ui); letter-spacing: 0; color: var(--ink-soft); }
+.jt .stack .row-meta { display: none; }
+.jt .stack .row-note { margin: 3px 10px 0; font-size: 0.72rem; }
+.jt .stack .part-div { padding: 8px 10px 0; font-size: 0.62rem; }
+.jt .stack .cell { padding: 0 10px 8px; }
+.jt .stack .cell-ref { margin: 1px 0 2px; font-size: 0.7rem; }
+.jt .stack .col-h { padding: 2px 10px 3px; font-size: 0.78rem; }
+.stack[data-arrangement="grid"][data-count="3"] > .reader:not(:last-child) .passage, .stack[data-arrangement="grid"][data-count="4"] .passage { font-size: calc(var(--scripture-size) * 0.85); hyphens: auto; line-height: 1.5; }
+.stack[data-arrangement="grid"][data-count="3"] > .reader:not(:last-child) .cell, .stack[data-arrangement="grid"][data-count="4"] .cell { padding-inline: 7px; }
 .jt[data-compact] .timeline-tip { display: none; }
 .jt[data-compact] .panes[data-layout="split"] { grid-template-columns: minmax(0, 1fr); grid-template-rows: calc(var(--map-share) * (100% - 10px)) 10px minmax(0, 1fr); }
 .jt[data-compact] .panes[data-layout="split"] .map-pane { order: -2; }
@@ -379,3 +418,102 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .row-note { margin: 8px 18px 0; padding: 2px 0 2px 9px; border-left: 2px solid var(--ink-faint); font-size: 0.8rem; color: var(--ink-soft); line-height: 1.4; }
 .par { margin: 0 0.4em 0 0.1em; padding: 0 5px; border: 1px solid var(--g); border-radius: 999px; background: none; font-family: var(--font-mono); font-size: 0.66em; font-weight: 700; line-height: 1.5; color: var(--ink-soft); vertical-align: 0.12em; white-space: nowrap; cursor: pointer; }
 .par:hover, .par:focus-visible { color: var(--ink); background: color-mix(in srgb, var(--g) 12%, transparent); }
+
+/* ---- phones: reclaiming height ---- */
+/* With the map and the text both open, each says a thing once: the map's card gives the place (and its candidates),
+   the text gives the story's title. */
+.jt[data-compact] .panes[data-layout="split"] .map-title { display: none; }
+.jt[data-compact] .panes[data-layout="split"] .map-card { padding-block: 5px 6px; }
+.jt[data-compact] .panes[data-layout="split"] .chip.place { display: none; }
+.jt[data-compact] .panes[data-layout="split"] .row-meta:not(:has(> :not(.chip.place, .chip.feast))) { display: none; }
+/* Phones leave out the feast chips (unexplained, and less needed there), and the chips' row when nothing's left. */
+.jt[data-compact] .row-meta .chip.feast { display: none; }
+.jt[data-compact] .row-meta:not(:has(> :not(.chip.feast))) { display: none; }
+/* The section number sits at the right of the title, on its line. */
+.jt[data-compact] .reader:not(.stack > .reader) .row-head .kicker { display: contents; }
+.jt[data-compact] .reader:not(.stack > .reader) .row-head .kicker .n { order: 1; margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); }
+.jt[data-compact] .reader:not(.stack > .reader) .row-head .kicker span:not(.n) { order: 2; flex-basis: 100%; font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-soft); }
+.jt[data-compact] .reader:not(.stack > .reader) .row-head { flex-wrap: wrap; }
+.jt[data-compact] .reader:not(.stack > .reader) .row-head h3 { flex: 1 1 0; }
+/* A section this pane's gospel doesn't have: a short hatched strip, as on the desktop. */
+.row.gap { height: 30px; border-bottom: 0; background: repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in oklab, var(--line) 50%, transparent) 7px 8px); }
+.row.gap span { display: block; padding: 7px 10px 0; font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-soft); }
+/* Zoomed in, a clear way back to the whole timeline. */
+.jt[data-compact] .timeline-controls { top: 2px; padding-left: 0; background: none; }
+.jt[data-compact] .timeline-controls .whole { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 9px 0 7px; border-color: var(--ink-faint); border-radius: 999px; background: var(--paper-raised); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14); font-size: 0.75rem; font-weight: 600; }
+.jt[data-compact] .timeline-controls .whole svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+/* Controls beside the timeline: each gospel's button by its lane, the tools at the right; no toolbar. */
+.timeline.side { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 6px; align-items: start; padding-top: max(4px, env(safe-area-inset-top, 0px)); }
+.lane-chips { display: flex; flex-direction: column; gap: var(--chip-gap); padding-top: var(--lanes-top); }
+/* The same chips as the toolbar's, a little smaller. */
+.lane-chips button {
+  display: inline-flex; align-items: center; gap: 5px; height: var(--chip-h); padding: 0 8px 0 7px; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink-soft); font-size: 0.8rem; font-weight: 500;
+}
+.lane-chips button i { width: 8px; height: 8px; border-radius: 50%; background: var(--g); opacity: 0.3; }
+.lane-chips button[aria-pressed="true"] { color: var(--ink); border-color: var(--g); box-shadow: inset 0 0 0 1px var(--g); }
+.lane-chips button[aria-pressed="true"] i { opacity: 1; }
+/* The map and Go to at the top; the timeline's settings at its foot. */
+.side-tools { display: flex; flex-direction: column; gap: 4px; width: 30px; height: var(--tl-h); }
+.jt[data-compact] .side-tools .icon { height: 28px; min-width: 0; padding: 0; }
+.side-tools .map-chip[aria-pressed="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
+.side-tools .tl-cfg { margin-top: auto; margin-bottom: 4px; }
+.timeline.side .timeline-controls { right: calc(30px + 6px + max(8px, env(safe-area-inset-right, 0px))); }
+.timeline.side .goto { top: 4px; }
+/* The map's toggles and credits behind one button, with the scale beside it, bottom right. */
+.jt[data-compact] .maplibregl-ctrl-attrib { display: none; }
+.jt[data-compact] .maplibregl-ctrl-bottom-left { left: auto; right: 44px; }
+.jt[data-compact] .maplibregl-ctrl-bottom-left .maplibregl-ctrl-scale { margin: 0 0 12px; }
+.jt[data-compact] .maplibregl-ctrl-scale { background: none; border-color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
+/* Phones: each area's settings behind a small round button in its bottom-right corner; a tap off the panel only
+   closes it (the backdrop takes it). */
+.cfg { position: relative; }
+.cfg[data-open] { z-index: 62; }
+.timeline:has(.cfg[data-open]) { z-index: 62; }
+.cfg-backdrop { position: fixed; inset: 0; z-index: 60; touch-action: none; }
+.cfg-btn { position: relative; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid var(--ink-faint); border-radius: 50%; background: color-mix(in oklab, var(--paper-raised) 92%, transparent); color: var(--ink); cursor: pointer; }
+.cfg-btn[aria-expanded="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
+.cfg-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.cfg-btn i { position: absolute; top: 1px; right: 1px; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1.5px var(--paper-raised); }
+.cfg-panel {
+  position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 8px; justify-items: start; width: min(270px, calc(100vw - 32px)); padding: 9px 10px;
+  background: var(--paper-raised); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16); font-size: 0.8rem;
+}
+.cfg.down .cfg-panel { top: calc(100% + 6px); bottom: auto; }
+.cfg-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+.cfg-label { color: var(--ink-soft); font-size: 0.75rem; }
+.cfg-seg { display: flex; }
+.cfg-seg button, .cfg .timeline-scale button { height: 28px; padding: 0 9px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; font-size: 0.75rem; }
+.cfg-seg button + button { border-left: 0; }
+.cfg-seg button:first-child { border-radius: 8px 0 0 8px; }
+.cfg-seg button:last-child { border-radius: 0 8px 8px 0; }
+.cfg-seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
+.cfg-cycle { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 30px; padding: 0 10px; border: 1px solid var(--ink-faint); border-radius: 999px; background: var(--paper); color: var(--ink-soft); cursor: pointer; font: 0.75rem var(--font-ui); }
+.cfg-cycle b { color: var(--ink); font-weight: 600; }
+.cfg-cycle b::after { content: " ›"; color: var(--ink-soft); }
+.cfg-note { font-size: 0.68rem; line-height: 1.4; color: var(--ink-soft); }
+.map-more { position: absolute; z-index: 3; right: 8px; bottom: 8px; }
+.jt[data-compact] .panes { position: relative; }
+.gospel-cfg { position: absolute; z-index: 7; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+.gospel-cfg[data-open] { z-index: 62; }
+/* Phones: the place card holds a tapped place too: its stories scroll, the links stay at its foot. */
+.jt[data-compact] .map-card:not([hidden]) { display: flex; flex-direction: column; align-items: flex-start; max-height: calc(100% - 16px); }
+.jt[data-compact] .map-card > * { flex: none; max-width: 100%; }
+.jt[data-compact] .map-card .pp-stories { flex: 0 1 auto; min-height: 2.6em; max-height: none; margin-top: 6px; width: 100%; }
+.jt[data-compact] .map-card .pp-photo { margin: -5px 0 6px -10px; width: calc(100% + 10px); }
+.jt[data-compact] .map-card .pp-photo img { max-height: 110px; border-radius: 7px 0 0 0; }
+.map-back { margin-top: 4px; padding: 0; border: 0; background: none; color: var(--ink-soft); font: 0.75rem var(--font-ui); text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 2px; cursor: pointer; }
+.map-more-toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.map-credits { font-size: 0.68rem; line-height: 1.4; color: var(--ink-soft); }
+.map-credits a { color: var(--ink); }
+/* The place card folds away to the right, leaving a tab with the place's name. */
+.jt[data-compact] .map-card { padding-right: 34px; }
+.map-card-fold { position: absolute; top: 0; right: 0; bottom: 0; width: 28px; display: grid; place-items: center; padding: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0 8px 8px 0; background: none; color: var(--ink-soft); cursor: pointer; }
+.map-card-fold svg, .map-card-tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.map-card-tab {
+  position: absolute; z-index: 2; top: 8px; right: 0; display: inline-flex; align-items: center; gap: 2px; max-width: 60%; height: 30px; padding: 0 10px 0 4px; cursor: pointer;
+  border: 1px solid var(--line); border-right: 0; border-radius: 999px 0 0 999px; background: var(--paper-raised); color: var(--ink); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); font: 600 0.8rem var(--font-ui);
+}
+.map-card-tab span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Locked panes scroll together under the finger (Stack moves them all at once), not by the browser's own scrolling. */
+.stack[data-locked] > .reader { touch-action: none; }

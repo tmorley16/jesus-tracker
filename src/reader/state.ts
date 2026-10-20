@@ -11,6 +11,15 @@ export type Traveller = 'light' | 'cross' | 'j' | 'crown';
 const TRAVELLERS: Traveller[] = ['light', 'cross', 'j', 'crown'];
 /** Which of the BSB's footnotes the reader marks. */
 export type NotesShown = 'all' | 'textual' | 'none';
+/** On a phone: one gospel at a time, or several: side by side in one aligned reader, stacked in panes of their own, or
+ *  in quadrants (three as two above one; two stacked). */
+export type PhoneGospels = 'one' | 'columns' | 'stacked' | 'grid';
+const PHONE_GOSPELS: PhoneGospels[] = ['one', 'columns', 'stacked', 'grid'];
+/** The map's scale bar: kilometres or miles. */
+export type Units = 'metric' | 'imperial';
+/** Gospels in panes of their own: every section the same length in each, scrolled together; or each at its own length,
+ *  following the one last touched. */
+export type PaneSync = 'locked' | 'follow';
 
 const KEY = 'jt-reader-settings';
 interface Saved {
@@ -19,7 +28,8 @@ interface Saved {
   map: boolean;
   /** The timeline scrubber under the toolbar. */
   timeline: boolean;
-  /** Map's share of the panes (0–1); null = the default (1.5 × a gospel column, at most half). */
+  /** Map's share of the panes (0–1); null = the default (desktop: gospels to map in the golden ratio; phones: 1.5 × a
+   *  gospel's share, at most half). */
   mapShare: number | null;
   appearance: Appearance;
   textSize: TextSize;
@@ -34,9 +44,14 @@ interface Saved {
   /** The map's overlay of modern towns and modern names. */
   modern: boolean;
   notes: NotesShown;
+  phoneGospels: PhoneGospels;
+  /** Phones: the timeline's phase bands and feast marks (desktops always show them). */
+  phases: boolean;
+  units: Units;
+  paneSync: PaneSync;
 }
-/** Settings version: 2 starts everyone once on Dynamic colours with the map shown; 3 compresses the hidden years. */
-const VERSION = 3;
+/** Settings version: 2 starts everyone once on Dynamic colours with the map shown; 3 compresses the hidden years; 4 starts the timeline's scale on Text again. */
+const VERSION = 4;
 function load(): Partial<Saved> & { v?: number } {
   try {
     const v: unknown = JSON.parse(localStorage.getItem(KEY) ?? '{}');
@@ -69,14 +84,18 @@ interface UI extends Saved {
   setLandLight(on: boolean): void;
   setModern(m: boolean): void;
   setNotes(n: NotesShown): void;
+  setPhoneGospels(p: PhoneGospels): void;
+  setPhases(on: boolean): void;
+  setUnits(u: Units): void;
+  setPaneSync(p: PaneSync): void;
   setSettingsOpen(open: boolean): void;
   setCurrent(i: number): void;
 }
 
 const raw = load();
 // Before version 2 the first visit followed a dark device and started without the map; before 3 the hidden years weren't
-// compressed by default. Drop those choices once.
-const saved: Partial<Saved> = raw.v === VERSION ? raw : raw.v === 2 ? { ...raw, compress: undefined } : { ...raw, appearance: undefined, map: undefined, compress: undefined };
+// compressed by default; before 4 the timeline could stay on Time from trying it. Drop those choices once.
+const saved: Partial<Saved> = raw.v === VERSION ? raw : raw.v === 3 ? { ...raw, spacing: undefined } : raw.v === 2 ? { ...raw, compress: undefined, spacing: undefined } : { ...raw, appearance: undefined, map: undefined, compress: undefined, spacing: undefined };
 const isBook = (b: unknown): b is Book => (BOOKS as unknown[]).includes(b);
 const validBooks = (v: unknown): Book[] | null => (Array.isArray(v) && v.every(isBook) ? (v as Book[]) : null);
 // First visit: Dynamic colours whatever the device's setting, with the map on screen.
@@ -85,8 +104,8 @@ const savedVisible = validBooks(saved.visible);
 
 export const useUI = create<UI>()((set, get) => {
   const persist = () => {
-    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes } = get();
-    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes });
+    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync } = get();
+    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync });
   };
   const update = (patch: Partial<UI>) => { set(patch); persist(); };
   return {
@@ -107,6 +126,10 @@ export const useUI = create<UI>()((set, get) => {
     landLight: saved.landLight !== false,
     modern: saved.modern === true,
     notes: saved.notes === 'textual' || saved.notes === 'none' ? saved.notes : 'all',
+    phoneGospels: PHONE_GOSPELS.includes(saved.phoneGospels as PhoneGospels) ? (saved.phoneGospels as PhoneGospels) : 'grid',
+    phases: saved.phases === true,
+    units: saved.units === 'imperial' ? 'imperial' : 'metric',
+    paneSync: saved.paneSync === 'follow' ? 'follow' : 'locked',
     settingsOpen: false,
     current: 0,
     toggleBook: (b) => {
@@ -115,7 +138,7 @@ export const useUI = create<UI>()((set, get) => {
       if (!next.length && !map) return; // keep at least one panel on screen
       update({ visible: next, lastVisible: next.length ? next : get().lastVisible, single: next.includes(single) || !next.length ? single : next[0] });
     },
-    // Phones show one gospel at a time.
+    // Phones set to one gospel at a time.
     setSingle: (b) => {
       const { visible } = get();
       update({ single: b, visible: visible.includes(b) ? visible : visible.length ? [...visible, b] : [b] });
@@ -141,6 +164,10 @@ export const useUI = create<UI>()((set, get) => {
     setLandLight: (landLight) => update({ landLight }),
     setModern: (modern) => update({ modern }),
     setNotes: (notes) => update({ notes }),
+    setPhoneGospels: (phoneGospels) => update({ phoneGospels }),
+    setPhases: (phases) => update({ phases }),
+    setUnits: (units) => update({ units }),
+    setPaneSync: (paneSync) => update({ paneSync }),
     setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
     setCurrent: (current) => { if (current !== get().current) set({ current }); },
   };
@@ -155,10 +182,12 @@ export const scene = createStore<{ dead: boolean }>(() => ({ dead: false }));
 /** Each row's span along the timeline (0–1), recomputed whenever the layout changes. */
 export const layout = createStore<{ starts: number[]; ends: number[]; years: Years | null; version: number }>(() => ({ starts: [], ends: [], years: null, version: 0 }));
 
-/** Phones: one gospel at a time (Reader lays out by the same query). */
+/** Phones (Reader lays out by the same query). */
 export const COMPACT_QUERY = '(max-width: 760px)';
+/** Whether the screen shows one gospel at a time: a phone set to that. */
+export const oneAtATime = () => useUI.getState().phoneGospels === 'one' && window.matchMedia(COMPACT_QUERY).matches;
 
-/** Go to a row, first making sure its passage is on screen: on a phone, switch to a gospel that has it (to `book` when
+/** Go to a row, first making sure its passage is on screen: on a phone showing one gospel at a time, switch to a gospel that has it (to `book` when
  *  given); otherwise add one if none open has it (or `book` if it isn't open). A row no gospel has (only 1 Cor) changes
  *  nothing on screen, and the reader goes to where it sits: the next row shown. */
 export function showRow(i: number, book?: Book) {
@@ -167,7 +196,7 @@ export function showRow(i: number, book?: Book) {
   const ui = useUI.getState();
   const target = book && row.refs[book] ? book : BOOKS.find((b) => row.refs[b]);
   if (target && ui.visible.length) {
-    if (window.matchMedia(COMPACT_QUERY).matches) {
+    if (oneAtATime()) {
       if (!row.refs[ui.single] || book) ui.setSingle(target);
     } else if (!ui.visible.some((b) => row.refs[b]) || (book && !ui.visible.includes(book))) ui.toggleBook(target);
   }

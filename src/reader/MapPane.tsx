@@ -5,6 +5,7 @@ import { AttributionControl, LngLat, Map as MlMap, Marker, Popup, ScaleControl, 
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { FeatureCollection } from 'geojson';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { ConfigButton } from './Config';
 import { bearingDeg, bounds, circleRing, dryLand, haversineKm, inRing, lerp, type LonLat } from './geo';
 import { declutter, type Label } from './mapLabels';
 import { AREAS, BIRTH, BOOK_ABBR, MAP_START, ROWS, mountainFor, rowTitle, storiesAt, type Book } from './model';
@@ -114,7 +115,7 @@ type Content = (full: boolean) => PopupContent | null;
  * full version until it's closed or the map is clicked. While a place's popup is open, the timeline marks the stories
  * set there. The popup is kept to the room on the roomier side of its point, scrolling within if it needs more.
  */
-function makePopup(map: MlMap) {
+function makePopup(map: MlMap, pick: (place: string) => boolean) {
   const popup = new Popup({ closeButton: false, closeOnClick: false, closeOnMove: false, focusAfterOpen: false, offset: 14, maxWidth: '300px', className: 'map-popup' });
   let showT = 0, hideT = 0, owner: object | null = null, pinned = false;
   const pin = (on: boolean) => { pinned = on; popup.getElement()?.classList.toggle('pinned', on); };
@@ -178,6 +179,7 @@ function makePopup(map: MlMap) {
     clearTimeout(showT);
     if (owner === by && popup.isOpen() && pinned) { hide(); return; }
     const c = content(true);
+    if (c?.place && pick(c.place)) return; // phones: the place card shows it instead
     if (c) open(c, by, true);
   };
   const attach = (el: HTMLElement, content: Content) => {
@@ -190,7 +192,9 @@ function makePopup(map: MlMap) {
   return { attach, hover, show, hideSoon, hide };
 }
 
-export default function MapPane({ books }: { books: Book[] }) {
+const CREDITS = 'Natural Earth · Places: <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY 4.0) · Peaks: Wikidata · Terrain: USGS SRTM, GMTED2010; NOAA ETOPO1 · Modern: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)';
+
+export default function MapPane({ books, compact = false }: { books: Book[]; compact?: boolean }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const traveller = useRef<TravellerMarker | null>(null);
@@ -229,6 +233,15 @@ export default function MapPane({ books }: { books: Book[] }) {
   const wander = useUI((s) => s.wander);
   const landLightOn = useUI((s) => s.landLight);
   const modern = useUI((s) => s.modern);
+  const units = useUI((s) => s.units);
+  const scaleRef = useRef<ScaleControl | null>(null);
+  // Phones: the map's toggles and credits behind one button.
+  // Phones: the card can fold away to the right, leaving a tab with the place's name; it starts folded there. It is
+  // also where a tapped place shows (in place of the popup): the place, the stories set there and its links.
+  const [cardFolded, setCardFolded] = useState(compact);
+  const [picked, setPicked] = useState<string | null>(null);
+  const compactRef = useRef(compact);
+  compactRef.current = compact;
   const booksKey = books.join(',');
   const steps = useMemo(() => (places ? journey(books, places) : []), [booksKey, places]); // eslint-disable-line react-hooks/exhaustive-deps
   const routeSteps = useMemo(() => (places ? routeStops(books, places, steps) : []), [steps, places]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -342,11 +355,21 @@ export default function MapPane({ books }: { books: Book[] }) {
       });
       map.touchZoomRotate.disableRotation();
       if (new URLSearchParams(location.search).has('debug')) (window as unknown as { __jtMap: MlMap }).__jtMap = map;
-      map.addControl(new ScaleControl({ maxWidth: 110, unit: 'metric' }), 'bottom-left');
-      map.addControl(new AttributionControl({
-        compact: true,
-        customAttribution: 'Natural Earth · Places: <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY 4.0) · Peaks: Wikidata · Terrain: USGS SRTM, GMTED2010; NOAA ETOPO1 · Modern: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)',
-      }));
+      const scale = new ScaleControl({ maxWidth: 110, unit: useUI.getState().units });
+      scaleRef.current = scale;
+      map.addControl(scale, 'bottom-left');
+      // Tapping or clicking the scale switches between kilometres and miles.
+      const scaleEl = boxRef.current.querySelector<HTMLElement>('.maplibregl-ctrl-scale');
+      if (scaleEl) {
+        const flip = () => { const ui = useUI.getState(); ui.setUnits(ui.units === 'metric' ? 'imperial' : 'metric'); };
+        scaleEl.setAttribute('role', 'button');
+        scaleEl.tabIndex = 0;
+        scaleEl.title = 'Switch between kilometres and miles';
+        scaleEl.setAttribute('aria-label', 'Map scale: switch between kilometres and miles');
+        scaleEl.addEventListener('click', flip);
+        scaleEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+      }
+      map.addControl(new AttributionControl({ compact: true, customAttribution: CREDITS }));
       // Start with the credits folded behind their (i) button, clear of the map's own controls.
       const attrib = boxRef.current.querySelector('.maplibregl-ctrl-attrib');
       attrib?.classList.remove('maplibregl-compact-show');
@@ -355,8 +378,15 @@ export default function MapPane({ books }: { books: Book[] }) {
       ro = new ResizeObserver(() => { map.resize(); declutterSoon.current(); });
       ro.observe(boxRef.current);
       const box = boxRef.current;
-      const pop = makePopup(map);
+      const pop = makePopup(map, (place) => {
+        if (!compactRef.current) return false;
+        setPicked(place);
+        setCardFolded(false);
+        return true;
+      });
       popup.current = pop;
+      // Phones: a tap on the map away from any place takes the card back to the place in the text.
+      map.on('click', () => { if (compactRef.current) setPicked(null); });
 
       // Labels: placed in priority order on every zoom frame, so they never pile up.
       let remeasure = false;
@@ -808,13 +838,66 @@ export default function MapPane({ books }: { books: Book[] }) {
     return () => { live = false; map.off('moveend', update); };
   }, [modern, ready]);
 
+  useEffect(() => { scaleRef.current?.setUnit(units); }, [units, ready]);
+
   const row = ROWS[current];
   const name = (s: Step | null) => (s && places ? places[s.key].name : '');
-  const linkPlace = places && (focus.kind === 'site' || focus.kind === 'region' || focus.kind === 'scene') ? placeLinks(focus.key, focus.place) : null;
+  const focusKey = focus.kind === 'site' || focus.kind === 'region' || focus.kind === 'scene' ? focus.key : null;
+  // Phones: a tapped place other than the one in the text, shown in the card.
+  const pickedPlace = compact && picked && picked !== focusKey && places?.[picked] ? { key: picked, place: places[picked] } : null;
+  const cardKey = pickedPlace?.key ?? focusKey;
+  const linkPlace = places && cardKey ? placeLinks(cardKey, places[cardKey]) : null;
+  // While the card is open on a phone, the timeline marks the stories set at its place (as the popup does).
+  const marksKey = compact && !cardFolded ? cardKey : null;
+  useEffect(() => {
+    if (!compact) return;
+    if (marksKey) placeMarks.setState({ key: marksKey, rows: storiesAt(marksKey).map((st) => st.i) });
+    else if (placeMarks.getState().key) placeMarks.setState({ key: null, rows: [] });
+  }, [compact, marksKey]);
+  /** The stories set at a place, each a link that takes the reader there (phones' card). */
+  const stories = (key: string) => {
+    const list = storiesAt(key);
+    if (!list.length) return null;
+    return (
+      <ol className="pp-stories" aria-label="Stories set here">
+        {list.map((st) => {
+          const r = ROWS[st.i];
+          const notes = [st.books && st.books.map((b) => BOOK_ABBR[b]).join(', '), st.implied && 'implied'].filter(Boolean).join(' · ');
+          return (
+            <li key={st.i}>
+              <a href="#" aria-current={r.sectionId === row.sectionId ? 'true' : undefined} onClick={(e) => { e.preventDefault(); nav.showRow?.(st.i); }}>
+                <span className="pp-n">§{r.n}</span> {r.sectionTitle}{notes && <> <em>{notes}</em></>}
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    );
+  };
+  const effects = landLightOn && wander;
   return (
     <div className="map-pane">
       <div className="map-box" ref={boxRef} role="region" aria-label="Map of the places in the accounts on screen" />
-      <div className="map-card" aria-live="polite">
+      {compact && cardFolded && (
+        <button type="button" className="map-card-tab" aria-label="Show the place card" onClick={() => setCardFolded(false)}>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
+          <span>{focusKey && places ? places[focusKey].name : focus.kind === 'differ' ? focus.places.map((p) => p.place.name).join(' · ') : focus.kind === 'likely' ? 'Place not named' : 'Place'}</span>
+        </button>
+      )}
+      <div className="map-card" aria-live="polite" hidden={compact && cardFolded}>
+        {compact && (
+          <button type="button" className="map-card-fold" aria-label="Fold the place card away" onClick={() => { setCardFolded(true); setPicked(null); }}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6l6 6-6 6" /></svg>
+          </button>
+        )}
+        {pickedPlace ? (
+          <>
+            {pickedPlace.place.photo && <div dangerouslySetInnerHTML={{ __html: photoHtml(pickedPlace.place) }} />}
+            <p className="map-place-name">{pickedPlace.place.name}{(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <em> · a region</em> : today ? <em> · shown at {today}</em> : null; })()}</p>
+            {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
+            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
+          </>
+        ) : <>
         <p className="kicker">§{row.n} · {books.filter((b) => row.refs[b]).map((b) => BOOK_ABBR[b]).join(' ')}</p>
         <p className="map-title">{rowTitle(row)}</p>
         {focus.kind === 'site' && (
@@ -860,20 +943,42 @@ export default function MapPane({ books }: { books: Book[] }) {
             <em>{!mountainsOn ? ' · mountains hidden' : !nearPeaks.length ? '' : given?.named ? ` · shown with its contours` : given ? ` · the mountain isn't named; candidates shown: ${nearPeaks.map((p) => p.name).join(' or ')}` : ` · named peaks within ${PEAK_REACH} km are shown with contours`}</em>
           </p>
         )}
+        </>}
+        {compact && cardKey && stories(cardKey)}
         {linkPlace && (
           <p className="map-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
           </p>
         )}
       </div>
-      <div className="map-toggles">
-        <button type="button" className="map-toggle" aria-pressed={mountainsOn} onClick={() => setMountainsChoice(!mountainsOn)} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)">
-          Mountains
-        </button>
-        <button type="button" className="map-toggle" aria-pressed={modern} onClick={() => useUI.getState().setModern(!modern)} title="Show today’s towns and the modern names of the sites">
-          Modern places
-        </button>
-      </div>
+      {(() => {
+        const toggles = (
+          <>
+            <button type="button" className="map-toggle" aria-pressed={mountainsOn} onClick={() => setMountainsChoice(!mountainsOn)} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)">
+              Mountains
+            </button>
+            <button type="button" className="map-toggle" aria-pressed={modern} onClick={() => useUI.getState().setModern(!modern)} title="Show today’s towns and the modern names of the sites">
+              Modern places
+            </button>
+          </>
+        );
+        if (!compact) return <div className="map-toggles">{toggles}</div>;
+        // Phones: the toggles, the effects and the credits behind one button in the corner, beside the scale.
+        return (
+          <ConfigButton
+            label="Map layers and credits" className="map-more" badge={mountainsOn || modern}
+            icon={<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 12.5l9 5 9-5" /><path d="M3 17l9 5 9-5" /></svg>}
+          >
+            <div className="map-more-toggles">
+              {toggles}
+              <button type="button" className="map-toggle" aria-pressed={effects} onClick={() => { const ui = useUI.getState(); ui.setLandLight(!effects); ui.setWander(!effects); }} title="His light on the land, and his marker's drift within an area">
+                Effects
+              </button>
+            </div>
+            <p className="map-credits" dangerouslySetInnerHTML={{ __html: `Map: <a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre</a> · ${CREDITS}` }} />
+          </ConfigButton>
+        );
+      })()}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import { rowAtU } from './layoutModel';
 import { BOOKS, BOOK_NAME, PARTS, RECKONING_NAME, ROWS, deadAt, fmtRef, fmtYear, lightAt, lightBreaks, rowTitle, type Book, type LightState } from './model';
 import { PlaceChip } from './places';
@@ -13,9 +13,25 @@ const TINT: Record<LightState | 'dead', string> = {
   evening: '#D9A45E', night: '#59607A', darkness: '#2B2A28', dead: '#8A949C',
 };
 
-interface Geometry { h: number; partsH: number; feastY: number; lanesTop: number; laneH: number; laneGap: number; titlesY: number | null; lightY: number; miniY: number; font: number }
+/** lightY null: no light strip (phones, to save room). */
+/** feastY null: no feast marks (phones). rulerTop: the years along the top strip, where the needle's head runs, and no
+ *  section names (titlesY is then the years' baseline). */
+interface Geometry { h: number; partsH: number; feastY: number | null; lanesTop: number; laneH: number; laneGap: number; titlesY: number | null; lightY: number | null; miniY: number; font: number; rulerTop?: boolean }
 const DESKTOP: Geometry = { h: 104, partsH: 18, feastY: 20, lanesTop: 24, laneH: 10, laneGap: 3, titlesY: 88, lightY: 95, miniY: 100, font: 11 };
-const COMPACT: Geometry = { h: 72, partsH: 15, feastY: 16, lanesTop: 19, laneH: 7, laneGap: 2, titlesY: 63, lightY: 66, miniY: 69, font: 10 };
+const COMPACT: Geometry = { h: 67, partsH: 14, feastY: null, lanesTop: 19, laneH: 7, laneGap: 2, titlesY: 62, lightY: null, miniY: 64, font: 10 };
+/** Phones with the controls beside the timeline: room for each gospel's chip beside its lane (CHIP_H tall), and no
+ *  phase bands or section names (partsH 0); on the Time scale, the years along the top. */
+const COMPACT_SIDE: Geometry = { h: 107, partsH: 0, feastY: null, lanesTop: 13, laneH: 12, laneGap: 13, titlesY: 10, lightY: null, miniY: 104, font: 10, rulerTop: true };
+/** The same with the phases and feasts on (Timeline settings): the phase bands on top, the feasts under them, then the
+ *  years on the Time scale. */
+function sideGeometry(phases: boolean, chrono: boolean): Geometry {
+  if (!phases) return COMPACT_SIDE;
+  const lanesTop = chrono ? 34 : 22;
+  return { ...COMPACT_SIDE, partsH: 13, feastY: 17, titlesY: 31, lanesTop, miniY: lanesTop + 91, h: lanesTop + 94 };
+}
+const CHIP_H = 22;
+/** Touch: how far a finger moves before it counts as a drag, and how close to the needle a drag must start to move it. */
+const TOUCH_SLOP = 6, NEEDLE_REACH = 26;
 
 interface Colours { raised: string; sunk: string; paper: string; ink: string; soft: string; faint: string; line: string; glow: string; glowInk: string; gospel: Record<Book, string>; uiFont: string; monoFont: string }
 function readColours(el: Element): Colours {
@@ -65,17 +81,31 @@ export function ScaleSwitch() {
   return (
     <div className="timeline-scale" role="group" aria-label="Timeline scale">
       <button type="button" aria-pressed={spacing !== 'chrono'} onClick={() => setSpacing('text')} title="By length of text: the timeline works like a map of the page">Text</button>
-      <button type="button" aria-pressed={spacing === 'chrono'} onClick={() => setSpacing('chrono')} title="Chronological: estimated historical years (AD 30 or AD 33 reckoning in Settings)">Years</button>
+      <button type="button" aria-pressed={spacing === 'chrono'} onClick={() => setSpacing('chrono')} title="Chronological: estimated historical years (AD 30 or AD 33 reckoning in Settings)">Time</button>
     </div>
   );
 }
 
-export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }) {
+export function Timeline({ shown, compact, side }: {
+  shown: Book[]; compact: boolean;
+  /** Phones: controls beside the timeline (left, by the lanes; right, the tools) in place of the toolbar. */
+  side?: { left: ReactNode; right: ReactNode };
+}) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const geom = compact ? COMPACT : DESKTOP;
+  const phases = useUI((s) => s.phases);
+  const chrono = useUI((s) => s.spacing) === 'chrono';
+  const hasSide = !!side;
+  const geom = useMemo(() => (hasSide ? sideGeometry(phases, chrono) : compact ? COMPACT : DESKTOP), [hasSide, phases, chrono, compact]);
   const view = useRef({ k: 1, o: 0, w: 0 });
-  const io = useRef({ hoverU: null as number | null, dragU: null as number | null, pointers: new Map<number, number>(), pinch: null as null | { d: number; k: number; u: number }, lastManual: 0 });
+  const io = useRef({
+    hoverU: null as number | null, dragU: null as number | null, pointers: new Map<number, number>(), pinch: null as null | { d: number; k: number; u: number }, lastManual: 0,
+    // A finger on the timeline: undecided until it moves or lifts; then it drags the needle, pans the zoomed view, or
+    // (once a pinch has ended under it) does nothing.
+    touch: null as null | { id: number; x0: number; o0: number; onNeedle: boolean; mode: 'pending' | 'scrub' | 'pan' | 'none'; trail: [number, number][] },
+    /** A pan's short glide after the finger lifts. */
+    glide: 0,
+  });
   const [tip, setTip] = useState<{ x: number; row: number } | null>(null);
   const [zoomed, setZoomed] = useState(false);
   const shownRef = useRef(shown);
@@ -107,9 +137,9 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
     let font = '';
     const setFont = (f: string) => { if (f !== font) { ctx.font = f; font = f; } };
 
-    // Part bands.
+    // Part bands (none beside the side controls).
     ctx.textBaseline = 'alphabetic';
-    PARTS.forEach((p, idx) => {
+    if (g.partsH) PARTS.forEach((p, idx) => {
       const x0 = X(starts[p.first]), x1 = X(ends[p.last]);
       if (x1 < 0 || x0 > w || x1 - x0 < 0.5) return;
       ctx.fillStyle = idx % 2 ? col.sunk : col.raised;
@@ -137,6 +167,8 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
       if (x1 < -2 || x0 > w + 2) continue;
       const width = x1 - x0, gap = width > 4 ? 1 : 0;
       const row = ROWS[i];
+      // Phones beside the side controls: the first open gospel's bar also names the section, where there's room.
+      const titled = g.rulerTop ? BOOKS.find((b) => row.refs[b] && shownSet.has(b)) : undefined;
       BOOKS.forEach((b, li) => {
         const ranges = row.refs[b];
         if (!ranges) return;
@@ -145,20 +177,30 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
         ctx.fillStyle = gospel[b];
         ctx.fillRect(x0, y, Math.max(1, width - gap), g.laneH);
         ctx.globalAlpha = 1;
-        if (!compact && shownSet.has(b) && width > 24) {
+        // References on the bars where they fit (lanes too thin for text on phones with the toolbar on top).
+        if ((!compact || g.rulerTop) && shownSet.has(b) && width > 24) {
           const [c, vv] = ranges[0];
           const label = width > 62 ? `${c}:${vv}` : `${c}`;
           setFont(`600 ${g.laneH - 1}px ${monoFont}`);
-          if (ctx.measureText(label).width < width - 5) { ctx.fillStyle = onBar; ctx.fillText(label, x0 + 3, y + g.laneH - 1.5); }
+          const lw = ctx.measureText(label).width;
+          if (lw < width - 5) {
+            ctx.fillStyle = onBar;
+            ctx.fillText(label, x0 + 3, y + g.laneH - 1.5);
+            if (b === titled && width - lw > 60) {
+              setFont(`500 ${g.laneH - 1}px ${uiFont}`);
+              const t = ellipsize(ctx, rowTitle(row), width - lw - 13);
+              if (t) ctx.fillText(t, x0 + lw + 8, y + g.laneH - 1.5);
+            }
+          }
         }
       });
-      if (row.feast) {
+      if (row.feast && g.feastY !== null) {
         ctx.fillStyle = col.glowInk;
         ctx.beginPath();
         ctx.moveTo(x0, g.feastY - 3); ctx.lineTo(x0 + 3, g.feastY); ctx.lineTo(x0, g.feastY + 3); ctx.lineTo(x0 - 3, g.feastY);
         ctx.closePath(); ctx.fill();
       }
-      if (g.titlesY !== null && !years && width > 72) {
+      if (g.titlesY !== null && !g.rulerTop && !years && width > 72) {
         setFont(`${g.font}px ${uiFont}`);
         const t = ellipsize(ctx, `§${row.n} ${rowTitle(row)}`, width - 8);
         if (t) { ctx.fillStyle = col.soft; ctx.fillText(t, x0 + 4, g.titlesY); }
@@ -186,14 +228,16 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
         const u = years.toU(y);
         const x = X(u);
         if (inBreak(u) || x < -30 || x > w + 30 || x - lastX < (compact ? 40 : 54)) continue;
-        ctx.fillRect(Math.round(x), g.titlesY - 11, 1, 4);
+        if (g.rulerTop) ctx.fillRect(Math.round(x), g.titlesY - 9, 1, 10);
+        else ctx.fillRect(Math.round(x), g.titlesY - 11, 1, 4);
         ctx.fillText(fmtYear(y), x + 3, g.titlesY); // the label names the year that starts at the tick
         lastX = x;
       }
     }
 
-    // Light strip — only in the dynamic colour mode.
-    if (appearanceRef.current === 'dynamic') {
+    // Light strip — only in the dynamic colour mode, and not on phones.
+    if (appearanceRef.current === 'dynamic' && g.lightY !== null) {
+      const lightY = g.lightY;
       // A row whose light changes part-way is drawn in pieces, from the verse counts (worked out once per set of gospels).
       if (light.current?.shown !== shownRef.current) light.current = { shown: shownRef.current, pieces: lightPieces(shownRef.current) };
       const pieces = light.current.pieces;
@@ -205,7 +249,7 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
         for (const p of ps) {
           const x0 = X(s + p.from * (e - s)), x1 = X(s + p.to * (e - s));
           ctx.fillStyle = p.colour;
-          ctx.fillRect(x0, g.lightY, Math.max(1, x1 - x0), 3);
+          ctx.fillRect(x0, lightY, Math.max(1, x1 - x0), 3);
         }
       }
       ctx.globalAlpha = 1;
@@ -356,23 +400,67 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
     return () => canvas.removeEventListener('wheel', onWheel);
   }, [setView, zoomAt]);
 
+  // A row none of the gospels on screen has can't be picked: the needle skips to the nearest story that can.
+  const available = (i: number) => shownRef.current.some((b) => ROWS[i].refs[b]);
+  const snapU = (u: number) => {
+    const { starts, ends } = layout.getState();
+    if (!starts.length) return u;
+    const ok = (i: number) => ends[i] > starts[i] && available(i);
+    const i = rowAtU(u, starts, ends);
+    if (ok(i)) return u;
+    let a = i - 1, b = i + 1;
+    while (a >= 0 && !ok(a)) a--;
+    while (b < ROWS.length && !ok(b)) b++;
+    const da = a >= 0 ? u - ends[a] : Infinity, db = b < ROWS.length ? starts[b] - u : Infinity;
+    if (da === Infinity && db === Infinity) return u;
+    return da <= db ? ends[a] - (ends[a] - starts[a]) * 0.001 : starts[b];
+  };
   const scrub = (u: number, dragging: boolean) => {
+    u = snapU(u);
     io.current.dragU = dragging ? u : null;
     nav.scrub?.(u, dragging);
     requestDraw();
   };
 
+  // Touch: a tap moves the needle there; a drag that starts on the needle moves it; any other drag pans the zoomed view
+  // (or, with nothing to pan, moves the needle); two fingers zoom without moving it.
+  // After a pan, the view glides on a little and stops quickly.
+  const glide = (trail: [number, number][]) => {
+    const [t0, x0] = trail[0], [t1, x1] = trail[trail.length - 1];
+    let v = t1 > t0 ? (x1 - x0) / (t1 - t0) : 0; // px per ms
+    if (Math.abs(v) < 0.15) return;
+    let last = performance.now();
+    const step = (now: number) => {
+      const dt = Math.min(32, now - last), { k, o, w } = view.current;
+      last = now;
+      v *= Math.pow(0.99, dt);
+      io.current.lastManual = now;
+      setView(k, o - (v * dt) / w / k);
+      io.current.glide = Math.abs(v) > 0.03 && view.current.o !== o ? requestAnimationFrame(step) : 0;
+    };
+    io.current.glide = requestAnimationFrame(step);
+  };
   const onPointerDown = (e: PointerEvent<HTMLCanvasElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    cancelAnimationFrame(io.current.glide);
+    io.current.glide = 0;
     e.currentTarget.setPointerCapture(e.pointerId);
-    io.current.pointers.set(e.pointerId, e.clientX);
-    if (io.current.pointers.size === 2) {
-      const [a, b] = [...io.current.pointers.values()];
-      io.current.pinch = { d: Math.abs(a - b) || 1, k: view.current.k, u: uAt((a + b) / 2) };
-      io.current.dragU = null;
+    const p = io.current;
+    p.pointers.set(e.pointerId, e.clientX);
+    if (p.pointers.size === 2) {
+      const [a, b] = [...p.pointers.values()];
+      p.pinch = { d: Math.abs(a - b) || 1, k: view.current.k, u: uAt((a + b) / 2) };
+      if (p.dragU !== null) scrub(p.dragU, false);
+      if (p.touch) p.touch.mode = 'none';
       return;
     }
     setTip(null);
+    if (e.pointerType === 'touch') {
+      const rect = canvasRef.current!.getBoundingClientRect(), { k, o, w } = view.current;
+      const needleX = (playhead.getState().u - o) * k * w;
+      p.touch = { id: e.pointerId, x0: e.clientX, o0: o, onNeedle: Math.abs(e.clientX - rect.left - needleX) <= NEEDLE_REACH, mode: 'pending', trail: [[e.timeStamp, e.clientX]] };
+      return;
+    }
     scrub(uAt(e.clientX), true);
   };
   const onPointerMove = (e: PointerEvent<HTMLCanvasElement>) => {
@@ -387,6 +475,19 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
       setView(nk, p.pinch.u - mid / nk);
       return;
     }
+    const t = p.touch;
+    if (t && t.id === e.pointerId) {
+      if (t.mode === 'pending' && Math.abs(e.clientX - t.x0) > TOUCH_SLOP) t.mode = t.onNeedle || view.current.k <= 1.001 ? 'scrub' : 'pan';
+      if (t.mode === 'scrub') scrub(uAt(e.clientX), true);
+      else if (t.mode === 'pan') {
+        const { k, w } = view.current;
+        p.lastManual = performance.now();
+        setView(k, t.o0 - (e.clientX - t.x0) / w / k);
+        t.trail.push([e.timeStamp, e.clientX]);
+        while (t.trail.length > 2 && e.timeStamp - t.trail[0][0] > 80) t.trail.shift();
+      }
+      return;
+    }
     if (p.dragU !== null) { scrub(uAt(e.clientX), true); return; }
     if (e.pointerType === 'mouse') {
       const u = uAt(e.clientX);
@@ -396,10 +497,17 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
       requestDraw();
     }
   };
-  const onPointerUp = (e: PointerEvent<HTMLCanvasElement>) => {
+  const onPointerUp = (e: PointerEvent<HTMLCanvasElement>, cancelled = false) => {
     const p = io.current;
     p.pointers.delete(e.pointerId);
     if (p.pinch) { if (p.pointers.size < 2) p.pinch = null; return; }
+    const t = p.touch;
+    if (t && t.id === e.pointerId) {
+      p.touch = null;
+      if (t.mode === 'scrub' || (t.mode === 'pending' && !cancelled)) scrub(uAt(e.clientX), false);
+      if (t.mode === 'pan' && !cancelled) glide(t.trail);
+      return;
+    }
     if (p.dragU !== null) scrub(uAt(e.clientX), false);
   };
   const onPointerLeave = () => { io.current.hoverU = null; setTip(null); requestDraw(); };
@@ -407,7 +515,7 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
   const stepRow = (dir: 1 | -1) => {
     const { starts, ends } = layout.getState();
     let i = playhead.getState().row + dir;
-    while (i >= 0 && i < ROWS.length && ends[i] <= starts[i]) i += dir;
+    while (i >= 0 && i < ROWS.length && (ends[i] <= starts[i] || !available(i))) i += dir;
     if (i >= 0 && i < ROWS.length) nav.toRow?.(i);
   };
   const onKeyDown = (e: KeyboardEvent) => {
@@ -417,8 +525,8 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
     else if (e.key === '+' || e.key === '=') { e.preventDefault(); io.current.lastManual = performance.now(); zoomAt(u, 1.6); }
     else if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomAt(u, 1 / 1.6); }
     else if (e.key === '0') { e.preventDefault(); setView(1, 0); }
-    else if (e.key === 'Home') { e.preventDefault(); nav.scrub?.(0, false); }
-    else if (e.key === 'End') { e.preventDefault(); nav.scrub?.(1, false); }
+    else if (e.key === 'Home') { e.preventDefault(); nav.scrub?.(snapU(0), false); }
+    else if (e.key === 'End') { e.preventDefault(); nav.scrub?.(snapU(1), false); }
   };
 
   const current = useUI((s) => s.current);
@@ -427,7 +535,11 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
   const tipRow = tip ? ROWS[tip.row] : null;
   const dateText = (i: number) => `c. ${fmtYear(ROWS[i].date[reckoning])}`;
   return (
-    <div className="timeline" ref={wrapRef}>
+    <div
+      className={side ? 'timeline side' : 'timeline'} ref={wrapRef}
+      style={side ? { '--lanes-top': `${geom.lanesTop - (CHIP_H - geom.laneH) / 2}px`, '--chip-h': `${CHIP_H}px`, '--chip-gap': `${geom.laneH + geom.laneGap - CHIP_H}px`, '--tl-h': `${geom.h}px` } as CSSProperties : undefined}
+    >
+      {side?.left}
       <div
         className="timeline-track"
         tabIndex={0}
@@ -444,15 +556,20 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
+          onPointerCancel={(e) => onPointerUp(e, true)}
           onPointerLeave={onPointerLeave}
         />
       </div>
       {/* The timeline keeps its full width: the scale switch is in the toolbar, and zooming is by wheel, pinch or the
           + − 0 keys, with a way back to the whole timeline floating on it while zoomed. */}
+      {side?.right}
       {zoomed && (
         <div className="timeline-controls">
-          <button type="button" className="whole" onClick={() => setView(1, 0)} aria-label="Show the whole timeline" title="Show the whole timeline (0)">⤢{!compact && ' Whole timeline'}</button>
+          <button type="button" className="whole" onClick={() => setView(1, 0)} aria-label="Show the whole timeline" title="Show the whole timeline (0)">
+            {compact
+              ? <><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5M8 10.5h5" /></svg>Zoom out</>
+              : '⤢ Whole timeline'}
+          </button>
         </div>
       )}
       {tipRow && (

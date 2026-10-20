@@ -1,4 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
+import { phonesOneAtATime } from './onePhone';
+
+phonesOneAtATime();
 
 const shot = (page: Page, name: string) => page.screenshot({ path: `${test.info().project.outputDir}/shots/${test.info().project.name}-${name}.png` });
 const isPhone = () => test.info().project.name === 'phone';
