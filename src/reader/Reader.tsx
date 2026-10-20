@@ -4,7 +4,7 @@ import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVe
 import { Splitter } from './Splitter';
 import { Synopsis } from './Synopsis';
 import { Timeline } from './Timeline';
-import { layout, nav, playhead, scene, useUI, type Appearance, type NotesShown, type Spacing, type TextSize, type Traveller } from './state';
+import { layout, nav, playhead, scene, useUI, type Appearance, type NotesShown, type TextSize, type Traveller } from './state';
 
 const MapPane = lazy(() => import('./MapPane'));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
@@ -267,7 +267,6 @@ function GoTo({ compact, onDone }: { compact: boolean; onDone: () => void }) {
 function Settings() {
   const appearance = useUI((s) => s.appearance);
   const textSize = useUI((s) => s.textSize);
-  const spacing = useUI((s) => s.spacing);
   const reckoning = useUI((s) => s.reckoning);
   const compress = useUI((s) => s.compress);
   const traveller = useUI((s) => s.traveller);
@@ -316,23 +315,16 @@ function Settings() {
         <p className="fine-print">A small letter marks each note: hover over it to read the note; click or tap to keep it open. Notes on the manuscripts are in the gospel’s colour.</p>
       </fieldset>
       <fieldset>
-        <legend>Timeline spacing</legend>
-        {radio<Spacing>('spacing', 'text', spacing, ui.setSpacing, 'By length of text', 'The timeline works like a map of the page')}
-        {radio<Spacing>('spacing', 'even', spacing, ui.setSpacing, 'One step per event', 'Short events are easier to pick')}
-        {radio<Spacing>('spacing', 'chrono', spacing, ui.setSpacing, 'Chronological', 'Estimated historical years; zoom in for the ministry')}
-        {spacing === 'chrono' && (
-          <div className="sub-opts">
-            <div className="row-opts">
-              {radio<Reckoning>('reckoning', 'ad30', reckoning, ui.setReckoning, 'AD 30', 'Crucifixion in AD 30')}
-              {radio<Reckoning>('reckoning', 'ad33', reckoning, ui.setReckoning, 'AD 33', 'Crucifixion in AD 33')}
-            </div>
-            <label className="opt">
-              <input type="checkbox" checked={compress} onChange={(e) => ui.setCompress(e.target.checked)} />
-              <span><b>Compress the hidden years</b><small>Shorten the long silences: childhood, and the years after age twelve</small></span>
-            </label>
-            <p className="fine-print">Dates are estimates from two common reckonings, interpolated between anchor events such as the Passovers in John.</p>
-          </div>
-        )}
+        <legend>Timeline in years</legend>
+        <div className="row-opts">
+          {radio<Reckoning>('reckoning', 'ad30', reckoning, ui.setReckoning, 'AD 30', 'Crucifixion in AD 30')}
+          {radio<Reckoning>('reckoning', 'ad33', reckoning, ui.setReckoning, 'AD 33', 'Crucifixion in AD 33')}
+        </div>
+        <label className="opt">
+          <input type="checkbox" checked={compress} onChange={(e) => ui.setCompress(e.target.checked)} />
+          <span><b>Compress the hidden years</b><small>Shorten the long silences: childhood, and the years after age twelve</small></span>
+        </label>
+        <p className="fine-print">For the timeline’s Years scale. Dates are estimates from two common reckonings, interpolated between anchor events such as the Passovers in John.</p>
       </fieldset>
       <fieldset>
         <legend>Jesus on the map</legend>

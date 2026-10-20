@@ -685,14 +685,20 @@ test('desktop: dragging the divider below 20% closes the map', async ({ page }) 
   await expect(page.locator('.cols-head .col-h')).toHaveCount(4);
 });
 
-test('chronological spacing shows estimated years', async ({ page }) => {
+test('the timeline’s Years switch shows estimated years, and Text switches back', async ({ page }) => {
   await open(page);
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByRole('radio', { name: /^Chronological/ }).check();
-  await page.getByRole('button', { name: 'Done' }).click();
+  const years = page.getByRole('group', { name: 'Timeline scale' }).getByRole('button', { name: 'Years' });
+  await expect(years).toHaveAttribute('aria-pressed', 'false');
+  await years.click();
+  await expect(years).toHaveAttribute('aria-pressed', 'true');
   await goTo(page, 'Mk 6:35');
   await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', /Feeding the five thousand, c\. AD 29/);
   await shot(page, '08-chronological');
+  await page.getByRole('group', { name: 'Timeline scale' }).getByRole('button', { name: 'Text' }).click();
+  await expect(years).toHaveAttribute('aria-pressed', 'false');
+  // The switch goes with the timeline.
+  await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  await expect(page.getByRole('group', { name: 'Timeline scale' })).toHaveCount(0);
 });
 
 test('dynamic colour tints night scenes; dark mode is available in settings', async ({ page }) => {

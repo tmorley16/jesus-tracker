@@ -374,6 +374,7 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
 
   const current = useUI((s) => s.current);
   const spacing = useUI((s) => s.spacing);
+  const setSpacing = useUI((s) => s.setSpacing);
   const reckoning = useUI((s) => s.reckoning);
   const tipRow = tip ? ROWS[tip.row] : null;
   const dateText = (i: number) => `c. ${fmtYear(ROWS[i].date[reckoning])}`;
@@ -398,6 +399,10 @@ export function Timeline({ shown, compact }: { shown: Book[]; compact: boolean }
           onPointerCancel={onPointerUp}
           onPointerLeave={onPointerLeave}
         />
+      </div>
+      <div className="timeline-scale" role="group" aria-label="Timeline scale">
+        <button type="button" aria-pressed={spacing !== 'chrono'} onClick={() => setSpacing('text')} title="By length of text: the timeline works like a map of the page">Text</button>
+        <button type="button" aria-pressed={spacing === 'chrono'} onClick={() => setSpacing('chrono')} title="Chronological: estimated historical years (AD 30 or AD 33 reckoning in Settings)">Years</button>
       </div>
       <div className="timeline-zoom" role="group" aria-label="Zoom the timeline">
         {!compact && <button type="button" onClick={() => { io.current.lastManual = performance.now(); zoomAt(playhead.getState().u, 1.8); }} aria-label="Zoom in">+</button>}

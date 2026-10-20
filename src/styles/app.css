@@ -57,13 +57,19 @@ p { margin: 0; }
 
 /* ---- timeline ---- */
 .timeline {
-  position: relative; z-index: 10; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center;
+  position: relative; z-index: 10; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center;
   padding-block: 4px; padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px));
   background: var(--paper-raised); border-bottom: 1px solid var(--line);
 }
 .timeline-track { position: relative; min-width: 0; border-radius: 4px; }
 .timeline-track:focus-visible { outline-offset: 0; }
 .timeline canvas { display: block; cursor: pointer; touch-action: none; }
+/* Text or Years: a two-way switch beside the zoom buttons. */
+.timeline-scale { display: flex; flex-direction: column; padding-left: 8px; }
+.timeline-scale button { height: 24px; padding: 0 8px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; font-size: 0.75rem; line-height: 1; }
+.timeline-scale button:first-child { border-radius: 6px 6px 0 0; }
+.timeline-scale button:last-child { border-radius: 0 0 6px 6px; border-top: 0; }
+.timeline-scale button[aria-pressed="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
 .timeline-zoom { display: flex; flex-direction: column; gap: 4px; padding-left: 8px; }
 .timeline-zoom button { width: 28px; height: 26px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); cursor: pointer; font-size: 0.95rem; line-height: 1; }
 .timeline-zoom button:disabled { opacity: 0.4; cursor: default; }
@@ -340,7 +346,8 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .jt[data-compact] .row-head h3 { font-size: 1.08rem; }
 .jt[data-compact] .cell { padding: 4px 16px 16px; }
 .jt[data-compact] .part-div { padding: 24px 16px 6px; }
-.jt[data-compact] .timeline-zoom { padding-left: 4px; }
+.jt[data-compact] .timeline-zoom, .jt[data-compact] .timeline-scale { padding-left: 4px; }
+.jt[data-compact] .timeline-scale button { height: 22px; padding: 0 6px; font-size: 0.7rem; }
 .jt[data-compact] .timeline-tip { display: none; }
 .jt[data-compact] .panes[data-layout="split"] { grid-template-columns: minmax(0, 1fr); grid-template-rows: calc(var(--map-share) * (100% - 10px)) 10px minmax(0, 1fr); }
 .jt[data-compact] .panes[data-layout="split"] .map-pane { order: -2; }

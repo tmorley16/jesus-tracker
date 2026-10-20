@@ -95,7 +95,7 @@ export const useUI = create<UI>()((set, get) => {
     mapShare: typeof saved.mapShare === 'number' ? saved.mapShare : null,
     appearance: saved.appearance === 'light' || saved.appearance === 'dark' ? saved.appearance : 'dynamic',
     textSize: saved.textSize ?? 'm',
-    spacing: saved.spacing === 'even' || saved.spacing === 'chrono' ? saved.spacing : 'text',
+    spacing: saved.spacing === 'chrono' ? 'chrono' : 'text',
     reckoning: saved.reckoning === 'ad33' ? 'ad33' : 'ad30',
     compress: saved.compress === true,
     traveller: TRAVELLERS.includes(saved.traveller as Traveller) ? (saved.traveller as Traveller) : 'light',
