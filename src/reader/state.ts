@@ -49,6 +49,8 @@ interface Saved {
   phases: boolean;
   units: Units;
   paneSync: PaneSync;
+  /** Phones, gospels in panes: a row of panes (or a quadrant column) none of whose gospels has the section shrinks. */
+  shrinkMissing: boolean;
 }
 /** Settings version: 2 starts everyone once on Dynamic colours with the map shown; 3 compresses the hidden years; 4 starts the timeline's scale on Text again. */
 const VERSION = 4;
@@ -88,6 +90,7 @@ interface UI extends Saved {
   setPhases(on: boolean): void;
   setUnits(u: Units): void;
   setPaneSync(p: PaneSync): void;
+  setShrinkMissing(on: boolean): void;
   setSettingsOpen(open: boolean): void;
   setCurrent(i: number): void;
 }
@@ -104,8 +107,8 @@ const savedVisible = validBooks(saved.visible);
 
 export const useUI = create<UI>()((set, get) => {
   const persist = () => {
-    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync } = get();
-    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync });
+    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync, shrinkMissing } = get();
+    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync, shrinkMissing });
   };
   const update = (patch: Partial<UI>) => { set(patch); persist(); };
   return {
@@ -130,6 +133,7 @@ export const useUI = create<UI>()((set, get) => {
     phases: saved.phases === true,
     units: saved.units === 'imperial' ? 'imperial' : 'metric',
     paneSync: saved.paneSync === 'follow' ? 'follow' : 'locked',
+    shrinkMissing: saved.shrinkMissing !== false,
     settingsOpen: false,
     current: 0,
     toggleBook: (b) => {
@@ -168,6 +172,7 @@ export const useUI = create<UI>()((set, get) => {
     setPhases: (phases) => update({ phases }),
     setUnits: (units) => update({ units }),
     setPaneSync: (paneSync) => update({ paneSync }),
+    setShrinkMissing: (shrinkMissing) => update({ shrinkMissing }),
     setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
     setCurrent: (current) => { if (current !== get().current) set({ current }); },
   };

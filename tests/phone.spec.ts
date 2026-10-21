@@ -6,7 +6,9 @@ test.beforeEach(({}, info) => { test.skip(info.project.name !== 'phone', 'phones
 const shot = (page: Page, name: string) => page.screenshot({ path: `${test.info().project.outputDir}/shots/phone-${name}.png` });
 const currentRow = async (page: Page) => Number(await page.locator('.timeline-track').getAttribute('aria-valuenow'));
 
-async function open(page: Page) {
+async function open(page: Page, { shrink = true } = {}) {
+  // Scroll positions compared in pixels need the panes' widths to stay put: no shrinking where gospels lack a section.
+  if (!shrink) await page.addInitScript(() => localStorage.setItem('jt-reader-settings', JSON.stringify({ v: 4, shrinkMissing: false })));
   await page.goto('/');
   await expect(page.locator('.passage').first()).not.toHaveClass(/loading/, { timeout: 20_000 });
   await page.waitForTimeout(400);
@@ -43,7 +45,7 @@ const atReadingLine = (page: Page) => page.locator('.stack > .reader').evaluateA
 }));
 
 test('phones start with the gospels in quadrants, kept at one place; scrolling any pane leads the others', async ({ page }) => {
-  await open(page);
+  await open(page, { shrink: false });
   await expect(page.locator('.stack[data-arrangement="grid"] > .reader')).toHaveCount(4);
   await goTo(page, 'Mk 6:35');
   // Every pane is at the feeding of the five thousand, and one strip names it for all of them.
@@ -207,7 +209,7 @@ test('on the timeline a finger pans the zoomed view and pinches without moving t
 });
 
 test('locked panes line up section for section and move together; or each keeps its own length', async ({ page }) => {
-  await open(page);
+  await open(page, { shrink: false });
   await goTo(page, 'Mk 6:35');
   const tops = () => page.locator('.stack > .reader').evaluateAll((ps) => ps.map((p) => Math.round(p.scrollTop)));
   const at = (i: number) => page.locator('.stack > .reader').evaluateAll((ps, i) => ps.map((p) => (p.querySelector<HTMLElement>(`section[data-row="${i}"]`)?.offsetTop ?? -1)), i);
@@ -296,4 +298,50 @@ test('an × at the right of a gospel’s heading hides it, as its chip does', as
   await page.getByRole('button', { name: 'Timeline settings' }).click();
   await expect(page.getByRole('group', { name: 'Timeline scale' }).getByRole('button', { name: 'Text' })).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'timeline-settings-text');
+});
+
+test('a row or column of panes whose gospels lack the section shrinks, without moving the text; the panes have no reference dots', async ({ page }) => {
+  await open(page);
+  const panes = page.locator('.stack > .reader');
+  const sizes = () => panes.evaluateAll((ps) => ps.map((p) => { const r = p.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; }));
+  await goTo(page, 'Mk 6:35');
+  const spread = (v: number[]) => Math.max(...v) - Math.min(...v);
+  // All four tell the feeding of the five thousand: four even quadrants.
+  await expect.poll(async () => { const s = await sizes(); return spread(s.map(([w]) => w)) + spread(s.map(([, h]) => h)); }, { timeout: 10_000 }).toBeLessThanOrEqual(2);
+  expect(await page.locator('.stack .cell-ref').first().evaluate((el) => getComputedStyle(el, '::before').display)).toBe('none');
+
+  // The wedding at Cana is John's alone: the top row (Matthew, Mark) and the left column (Matthew, Luke) shrink.
+  await page.getByRole('button', { name: 'Go to a passage or event' }).click();
+  await page.locator('#goto').fill('Jn 2:1');
+  await page.locator('#goto').press('Enter');
+  await expect(page.locator('.stack-head')).toContainText(/Cana/, { timeout: 15_000 });
+  await expect.poll(async () => { const [, mk, , jn] = await sizes(); return jn[1] - mk[1]; }, { timeout: 10_000 }).toBeGreaterThan(40);
+  await page.waitForTimeout(500);
+  // John's verse at the reading line, which panes keep at the line of their full share of the stack.
+  const verse = () => page.locator('.stack').evaluate((st) => {
+    const p = st.querySelectorAll<HTMLElement>(':scope > .reader')[3], head = p.querySelector('.cols-head')!.getBoundingClientRect();
+    const share = (st.clientHeight - st.querySelector('.stack-head')!.getBoundingClientRect().height) / 2;
+    const y = head.bottom + (p.getBoundingClientRect().top + share - head.bottom) * 0.22;
+    let best = '', dist = Infinity;
+    for (const v of p.querySelectorAll<HTMLElement>('[data-cv]')) {
+      const r = v.getBoundingClientRect(), d = r.bottom < y ? y - r.bottom : r.top > y ? r.top - y : 0;
+      if (d < dist) { dist = d; best = v.dataset.cv!; }
+    }
+    return best;
+  });
+  const line = await verse();
+  expect(line).toMatch(/^2:/);
+  const [mt, mk, lk, jn] = await sizes();
+  expect(jn[0]).toBeGreaterThan(lk[0] + 40);
+  expect(jn[1]).toBeGreaterThan(mk[1] + 40);
+  expect(Math.abs(lk[0] - mt[0]) + Math.abs(jn[0] - mk[0]) + Math.abs(lk[1] - jn[1])).toBeLessThanOrEqual(2);
+  await shot(page, 'quadrants-shrunk');
+
+  // Turned off in Gospel settings, the quadrants are even again and John's pane stays at the same verse.
+  await page.getByRole('button', { name: 'Gospel settings' }).click();
+  await page.getByRole('button', { name: 'Shrink missing' }).click();
+  await page.keyboard.press('Escape');
+  await expect.poll(async () => spread((await sizes()).map(([, h]) => h)), { timeout: 10_000 }).toBeLessThanOrEqual(2);
+  await page.waitForTimeout(500);
+  expect(await verse()).toBe(line);
 });

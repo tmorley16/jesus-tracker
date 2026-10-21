@@ -92,6 +92,7 @@ const LayoutIcon = ({ kind }: { kind: PhoneGospels }) => (
 export function GospelConfig() {
   const phoneGospels = useUI((s) => s.phoneGospels);
   const paneSync = useUI((s) => s.paneSync);
+  const shrinkMissing = useUI((s) => s.shrinkMissing);
   const textSize = useUI((s) => s.textSize);
   const appearance = useUI((s) => s.appearance);
   const notes = useUI((s) => s.notes);
@@ -104,6 +105,9 @@ export function GospelConfig() {
       />
       {(phoneGospels === 'stacked' || phoneGospels === 'grid') && (
         <Choice<PaneSync> label="Lengths" value={paneSync} options={[['locked', 'Equal', 'Equal: every section as long in each pane, scrolled together'], ['follow', 'Own', 'Own: each pane its own length, following the one you scroll']]} set={ui.setPaneSync} />
+      )}
+      {(phoneGospels === 'stacked' || phoneGospels === 'grid') && (
+        <Toggle label="Shrink missing" on={shrinkMissing} set={ui.setShrinkMissing} title="Make room for the accounts that tell the section: a row of panes (or a quadrant column) where no gospel has it gets smaller" />
       )}
       <Choice<TextSize> label="Text size" value={textSize} options={[['s', 'S'], ['m', 'M'], ['l', 'L']]} set={ui.setTextSize} />
       <Choice<Appearance> label="Colours" value={appearance} options={[['dynamic', 'Dynamic'], ['light', 'Light'], ['dark', 'Dark']]} set={ui.setAppearance} />

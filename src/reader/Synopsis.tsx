@@ -17,8 +17,11 @@ interface Geo { tops: number[]; heights: number[]; vis: number[]; origin: number
  *  reading position) and the others follow it. */
 const stack = {
   leader: 0, locked: false,
-  panes: new Map<number, { scrub: (u: number, dragging: boolean) => void; toRow: (i: number) => void }>(),
-  /** Locked: even out the sections' lengths again (after text reflows), on the next frame. */
+  panes: new Map<number, { scrub: (u: number, dragging: boolean) => void; toRow: (i: number) => void; gliding: () => boolean }>(),
+  /** Each pane's way back to the reading position, measuring afresh: locked, once the lengths are even again. */
+  restore: new Map<number, () => void>(),
+  /** Locked: even out the sections' lengths again (after text reflows), on the next frame, then put each pane back at the
+   *  reading position. */
   requestEqualize: () => {},
   /** Locked: stop the panes' fling, before the timeline or search moves them. */
   stopFling: () => {},
@@ -58,7 +61,7 @@ export function Stack({ texts, shown, arrangement }: { texts: Texts | null; show
     const el = ref.current;
     if (!el || !locked) { stack.requestEqualize = () => {}; return; }
     let pending = 0;
-    stack.requestEqualize = () => { if (!pending) pending = requestAnimationFrame(() => { pending = 0; equalize(el); }); };
+    stack.requestEqualize = () => { if (!pending) pending = requestAnimationFrame(() => { pending = 0; equalize(el); for (const k of [...stack.restore.keys()].sort()) stack.restore.get(k)!(); }); };
     return () => { cancelAnimationFrame(pending); stack.requestEqualize = () => {}; };
   }, [locked]);
   // Locked: the panes scroll together. The browser's own scrolling of one pane would run ahead of the others, so a
@@ -148,8 +151,36 @@ export function Stack({ texts, shown, arrangement }: { texts: Texts | null; show
     nav.toRow = (i) => lead(i)?.toRow(i);
     return () => { nav.scrub = null; nav.toRow = null; };
   }, [shown]);
+  // A row of panes (or, in quadrants, a column) none of whose gospels has the section at the reading line shrinks, once
+  // the reading has stayed there a moment. Written to the grid's style, so the panes don't render again.
+  const grid = arrangement === 'grid' && shown.length >= 3;
+  const tracks = grid ? 2 : shown.length;
+  const shrink = useUI((s) => s.shrinkMissing);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const rows = grid ? [[0, 1], [2, 3].filter((k) => k < shown.length)] : shown.map((_, k) => [k]);
+    const cols = grid ? (shown.length === 4 ? [[0, 2], [1, 3]] : [[0], [1]]) : [];
+    const apply = (i: number) => {
+      const has = shown.map((b) => !!ROWS[i]?.refs[b]);
+      const any = shrink && has.some(Boolean); // a section none of them has: all alike
+      const size = (ks: number[]) => `minmax(0, ${!any || ks.some((k) => has[k]) ? 1 : 0.5}fr)`;
+      el.style.gridTemplateRows = `auto ${rows.map(size).join(' ')}`;
+      el.style.gridTemplateColumns = cols.length ? cols.map(size).join(' ') : '';
+    };
+    apply(useUI.getState().current);
+    // Only once the panes are at rest: a change of width reflows the text, which mustn't happen mid-glide or mid-fling.
+    let timer = 0;
+    const wait = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => { if ([...stack.panes.values()].some((p) => p.gliding())) wait(); else apply(useUI.getState().current); }, 300);
+    };
+    const off = useUI.subscribe((s, prev) => { if (s.current !== prev.current) wait(); });
+    el.addEventListener('scroll', wait, { capture: true, passive: true });
+    return () => { off(); el.removeEventListener('scroll', wait, { capture: true }); clearTimeout(timer); el.style.gridTemplateRows = ''; el.style.gridTemplateColumns = ''; };
+  }, [shown, grid, shrink]);
   return (
-    <div className="stack" ref={ref} data-arrangement={arrangement} data-count={shown.length} data-locked={locked ? '' : undefined}>
+    <div className="stack" ref={ref} data-arrangement={arrangement} data-count={shown.length} data-tracks={tracks} data-locked={locked ? '' : undefined}>
       <StackHead />
       {shown.map((b, k) => <Synopsis key={b} texts={texts} shown={[b]} single compact pane={k} onScreen={shown} />)}
     </div>
@@ -184,7 +215,7 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   const compress = useUI((s) => s.compress);
   const notes = useUI((s) => s.notes);
   const geo = useRef<Geo>({ tops: [], heights: [], vis: [], origin: 0, span: 1, anchor: 0 });
-  const anim = useRef({ target: 0, tau: 160, raf: 0, last: 0, lastSet: 0 });
+  const anim = useRef({ target: (() => 0) as () => number, tau: 160, raf: 0, last: 0, lastSet: 0 });
   const spacingRef = useRef(spacing);
   spacingRef.current = spacing;
   const shownRef = useRef(shown);
@@ -231,7 +262,12 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     const span = Math.max(1, end - origin);
     const headH = headRef.current?.offsetHeight ?? 0;
     s.style.setProperty('--cols-h', `${headH}px`);
-    geo.current = { tops, heights, vis, origin, span, anchor: headH + (s.clientHeight - headH) * 0.22 };
+    // A pane reads at the line it would have at its full share of the stack, so a pane shrinking or growing (see
+    // Stack) doesn't move its text, and every pane reads at the same line.
+    let h = s.clientHeight;
+    const st = s.parentElement;
+    if (paneRef.current !== undefined && st?.dataset.tracks) h = (st.clientHeight - (st.firstElementChild as HTMLElement).offsetHeight) / Number(st.dataset.tracks);
+    geo.current = { tops, heights, vis, origin, span, anchor: headH + (h - headH) * 0.22 };
     if (paneRef.current !== undefined) return; // a stack lays out the timeline itself
     // Phones lay the timeline out from the verse counts of all four gospels, so a hidden gospel's own sections keep
     // their place on it (the needle skips them); a desktop's Text timeline is a map of the page as shown.
@@ -246,13 +282,15 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     }
   }, []);
 
-  const animateTo = useCallback((target: number, tau: number) => {
+  const animateTo = useCallback((aim: () => number, tau: number) => {
     const s = scrollRef.current;
     if (!s) return;
-    target = clamp(target, 0, s.scrollHeight - s.clientHeight);
+    // The target is worked out again each frame, so text reflowing on the way (a pane resizing) doesn't leave it stale.
+    const at = () => clamp(aim(), 0, s.scrollHeight - s.clientHeight);
+    const target = at();
     if (reduceMotion()) { s.scrollTop = target; return; }
     const a = anim.current;
-    a.target = target; a.tau = tau;
+    a.target = at; a.tau = tau;
     // Long jumps: cut to a screen away, then glide the last stretch.
     const lead = s.clientHeight * 1.2;
     if (Math.abs(target - s.scrollTop) > lead * 2) s.scrollTop = target - Math.sign(target - s.scrollTop) * lead;
@@ -264,9 +302,10 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
       if (Math.abs(cur - a.lastSet) > 3) { a.raf = 0; return; } // something else moved the reader
       const dt = Math.min(64, now - a.last);
       a.last = now;
-      let nextTop = cur + (a.target - cur) * (1 - Math.exp(-dt / a.tau));
-      if (Math.abs(nextTop - cur) < 1) nextTop = cur + Math.sign(a.target - cur);
-      if (Math.abs(a.target - nextTop) < 2) { s.scrollTop = a.target; a.raf = 0; return; }
+      const target = a.target();
+      let nextTop = cur + (target - cur) * (1 - Math.exp(-dt / a.tau));
+      if (Math.abs(nextTop - cur) < 1) nextTop = cur + Math.sign(target - cur);
+      if (Math.abs(target - nextTop) < 2) { s.scrollTop = target; a.raf = 0; return; }
       s.scrollTop = nextTop;
       a.lastSet = s.scrollTop;
       a.raf = requestAnimationFrame(step);
@@ -285,11 +324,10 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
       if (!(g.heights[i] > 0)) i = g.vis.find((v) => v >= i) ?? g.vis[g.vis.length - 1]; // a row these gospels don't have
       const width = ends[i] - starts[i];
       const f = width > 0 ? clamp((u - starts[i]) / width, 0, 1) : 0;
-      animateTo(g.tops[i] + f * g.heights[i] - g.anchor, dragging ? 55 : 150);
+      animateTo(() => { const g = geo.current; return g.tops[i] + f * g.heights[i] - g.anchor; }, dragging ? 55 : 150);
     }, toRow: (i: number) => {
-      const g = geo.current, headH = headRef.current?.offsetHeight ?? 0;
-      animateTo(g.tops[i] - headH - 4, 170);
-    } };
+      animateTo(() => geo.current.tops[i] - (headRef.current?.offsetHeight ?? 0) - 4, 170);
+    }, gliding: () => anim.current.raf !== 0 };
     if (pane !== undefined) {
       stack.panes.set(pane, cmd);
       return () => { if (stack.panes.get(pane) === cmd) stack.panes.delete(pane); };
@@ -334,16 +372,28 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     };
     let pending = 0;
     // Text reflows (fonts arriving, a resize): keep the same place in the same row.
-    const remeasure = () => {
+    const restore = () => {
       const atTop = s.scrollTop <= 2;
       const { row, f } = playhead.getState();
       measure();
+      if (anim.current.raf) return; // a glide on its way aims afresh at each frame, and its scrolling reads the position
       const g = geo.current;
-      if (!atTop && !anim.current.raf) s.scrollTop = g.tops[row] + f * g.heights[row] - g.anchor;
+      if (!atTop) s.scrollTop = g.tops[row] + f * g.heights[row] - g.anchor;
       update();
-      if (paneRef.current !== undefined) stack.requestEqualize();
     };
-    const ro = new ResizeObserver(() => {
+    // Locked panes measured before their lengths are even again would move the reading position: after a reflow (a
+    // change of width, or of the text; not a pane shrinking in height) they wait for that, and it brings them back.
+    const remeasure = () => {
+      const wait = paneRef.current !== undefined && stack.locked && reflow;
+      reflow = false;
+      if (wait) stack.requestEqualize();
+      else restore();
+    };
+    if (paneRef.current !== undefined) stack.restore.set(paneRef.current, restore);
+    let reflow = true, width = s.clientWidth;
+    const ro = new ResizeObserver((entries) => {
+      if (entries.some((e) => e.target === wrap) || s.clientWidth !== width) reflow = true;
+      width = s.clientWidth;
       if (pending) return;
       pending = requestAnimationFrame(() => {
         pending = 0;
@@ -359,6 +409,7 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     const touched = () => { cancelAnim(); if (paneRef.current !== undefined && !stack.locked) stack.leader = paneRef.current; };
     for (const ev of ['wheel', 'touchstart', 'keydown', 'mousedown'] as const) s.addEventListener(ev, touched, { passive: true });
     return () => {
+      if (paneRef.current !== undefined && stack.restore.get(paneRef.current) === restore) stack.restore.delete(paneRef.current);
       ro.disconnect();
       window.removeEventListener('jt-drag-end', remeasure);
       s.removeEventListener('scroll', onScroll);
