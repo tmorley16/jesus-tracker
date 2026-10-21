@@ -174,25 +174,38 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 /* Desktops with the text beside the map: the place is the card's title (over its photo, with the links and the
    photographer's credit, where it has one), then the stories set there, the only part that scrolls. */
 .map-card[data-lean]:not([hidden]) { display: flex; flex-direction: column; align-items: flex-start; max-height: calc(100% - 24px); }
-.map-card[data-lean][data-open] { width: min(380px, calc(100% - 24px)); max-width: none; max-height: min(75%, calc(100% - 24px)); }
+.map-card[data-lean][data-open] { width: min(380px, calc(100% - 24px)); max-width: none; max-height: min(78%, calc(100% - 24px)); }
 .map-card[data-lean] > * { flex: none; max-width: 100%; }
 .map-card[data-lean] .map-title { margin-top: 0; }
 .map-card[data-lean] .pp-stories { flex: 0 1 auto; min-height: 2.6em; max-height: none; width: 100%; padding-top: 6px; border-top: 1px solid var(--line); }
 .map-card[data-lean] .map-place-name + .pp-stories, .map-card[data-lean] .cands + .pp-stories, .map-card[data-lean] .map-mountain + .pp-stories, .map-card[data-lean] .map-heading-note + .pp-stories { margin-top: 8px; }
-.mc-photo { position: relative; align-self: stretch; max-width: none !important; margin: -10px -6px 8px -12px; }
-.mc-photo img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 7px 0 0 0; background: var(--paper-sunk); }
-/* Show more or less: the photo, links and stories. */
-.mc-expand { display: inline-flex; align-items: center; gap: 3px; margin-top: 6px; padding: 0; border: 0; background: none; color: var(--ink-soft); font: 0.75rem var(--font-ui); cursor: pointer; }
-.mc-expand:hover, .mc-expand:focus-visible { color: var(--ink); }
-.mc-expand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.mc-photo figcaption {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 12px 7px; border-radius: 0;
-  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.66)); color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
-}
-.mc-title { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 1.15rem; line-height: 1.15; }
-.mc-links { display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 3px; font-size: 0.72rem; }
+/* The head: the place's name, and its photo, pulled down from the top of the card behind the name (its row growing from
+   nothing) with the links and the photographer's credit over its foot. */
+.mc-head { display: grid; align-self: stretch; max-width: none !important; margin: -10px -30px 6px -12px; }
+.mc-head > * { grid-area: 1 / 1; }
+.mc-img { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms ease; }
+.map-card[data-open] .mc-img { grid-template-rows: 1fr; }
+.mc-img > div { display: flex; align-items: flex-end; min-height: 0; overflow: hidden; border-radius: 7px 7px 0 0; }
+.mc-img img { flex: none; display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: var(--paper-sunk); }
+.mc-cap { position: relative; isolation: isolate; align-self: end; padding: 10px 30px 0 12px; }
+.mc-cap::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.66)); opacity: 0; transition: opacity 320ms; }
+.mc-cap .map-title { transition: color 320ms; }
+.map-card[data-open] .mc-head:has(.mc-img) .mc-cap { padding: 30px 12px 8px; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); }
+.map-card[data-open] .mc-head:has(.mc-img) .mc-cap::before { opacity: 1; }
+.map-card[data-open] .mc-head:has(.mc-img) .map-title { color: #fff; margin-bottom: 0; font-size: 1.15rem; }
+.mc-links { display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 3px; font-size: 0.72rem; animation: fade-in 320ms 160ms ease both; }
 .mc-links a, .mc-links span { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.55); text-underline-offset: 2px; }
 .mc-links .mc-credit { margin-left: auto; font-size: 0.64rem; opacity: 0.9; }
+/* Desktops: fold and expand as two small round buttons in the card's top-right corner. */
+.jt:not([data-compact]) .map-card { padding-right: 30px; }
+.jt:not([data-compact]) .map-card-fold, .mc-expand {
+  position: absolute; z-index: 3; right: 6px; width: 22px; height: 22px; display: grid; place-items: center; padding: 0; cursor: pointer;
+  border: 0; border-radius: 50%; background: color-mix(in oklab, var(--paper-raised) 88%, transparent); color: var(--ink-soft);
+}
+.jt:not([data-compact]) .map-card-fold { top: 6px; bottom: auto; }
+.mc-expand { top: 31px; }
+.jt:not([data-compact]) .map-card-fold:hover, .mc-expand:hover, .jt:not([data-compact]) .map-card-fold:focus-visible, .mc-expand:focus-visible { color: var(--ink); background: var(--paper-raised); }
+.jt:not([data-compact]) .map-card-fold svg, .mc-expand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .map-title { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 1.05rem; margin: 2px 0 4px; line-height: 1.2; }
 .map-place-name { font-weight: 600; font-size: 0.875rem; }
 .map-place-name em { font-style: normal; font-weight: 400; color: var(--ink-soft); }

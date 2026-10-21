@@ -118,7 +118,8 @@ type Content = (full: boolean) => PopupContent | null;
  * full version until it's closed or the map is clicked. While a place's popup is open, the timeline marks the stories
  * set there. The popup is kept to the room on the roomier side of its point, scrolling within if it needs more.
  */
-function makePopup(map: MlMap, pick: (place: string) => boolean) {
+type Marks = { key: string | null; rows: number[] };
+function makePopup(map: MlMap, pick: (place: string) => boolean, cardMarks: () => Marks) {
   const popup = new Popup({ closeButton: false, closeOnClick: false, closeOnMove: false, focusAfterOpen: false, offset: 14, maxWidth: '300px', className: 'map-popup' });
   let showT = 0, hideT = 0, owner: object | null = null, pinned = false;
   const pin = (on: boolean) => { pinned = on; popup.getElement()?.classList.toggle('pinned', on); };
@@ -169,7 +170,8 @@ function makePopup(map: MlMap, pick: (place: string) => boolean) {
   };
   const hide = () => {
     clearTimeout(showT); clearTimeout(hideT); popup.remove(); owner = null; pinned = false;
-    if (placeMarks.getState().key) placeMarks.setState({ key: null, rows: [] });
+    const back = cardMarks();
+    if (placeMarks.getState().key !== back.key) placeMarks.setState(back);
   };
   const hideSoon = () => { clearTimeout(showT); clearTimeout(hideT); if (!pinned) hideT = window.setTimeout(hide, 300); };
   const hover = (by: object, content: Content) => {
@@ -182,7 +184,7 @@ function makePopup(map: MlMap, pick: (place: string) => boolean) {
     clearTimeout(showT);
     if (owner === by && popup.isOpen() && pinned) { hide(); return; }
     const c = content(true);
-    if (c?.place && pick(c.place)) return; // phones: the place card shows it instead
+    if (c?.place && pick(c.place)) { hide(); return; } // the place card shows it instead
     if (c) open(c, by, true);
   };
   const attach = (el: HTMLElement, content: Content) => {
@@ -247,6 +249,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const [cardFolded, setCardFolded] = useState(compact);
   // Desktops with the text beside the map: the card starts brief; Show more adds the photo, links and stories.
   const [cardOpen, setCardOpen] = useState(false);
+  const cardMarks = useRef<Marks>({ key: null, rows: [] });
   const [picked, setPicked] = useState<string | null>(null);
   const compactRef = useRef(compact);
   compactRef.current = compact;
@@ -389,14 +392,14 @@ export default function MapPane({ books, compact = false, withText = false }: { 
       ro.observe(boxRef.current);
       const box = boxRef.current;
       const pop = makePopup(map, (place) => {
-        if (!compactRef.current) return false;
         setPicked(place);
         setCardFolded(false);
+        setCardOpen(true);
         return true;
-      });
+      }, () => cardMarks.current);
       popup.current = pop;
-      // Phones: a tap on the map away from any place takes the card back to the place in the text.
-      map.on('click', () => { if (compactRef.current) setPicked(null); });
+      // A click on the map away from any place takes the card back to the place in the text.
+      map.on('click', () => setPicked(null));
 
       // Labels: placed in priority order on every zoom frame, so they never pile up.
       let remeasure = false;
@@ -856,17 +859,16 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const row = ROWS[current];
   const name = (s: Step | null) => (s && places ? places[s.key].name : '');
   const focusKey = focus.kind === 'site' || focus.kind === 'region' || focus.kind === 'scene' ? focus.key : null;
-  // Phones: a tapped place other than the one in the text, shown in the card.
-  const pickedPlace = compact && picked && picked !== focusKey && places?.[picked] ? { key: picked, place: places[picked] } : null;
+  // A place clicked or tapped, other than the one in the text, shown in the card.
+  const pickedPlace = picked && picked !== focusKey && places?.[picked] ? { key: picked, place: places[picked] } : null;
   const cardKey = pickedPlace?.key ?? focusKey;
   const linkPlace = places && cardKey ? placeLinks(cardKey, places[cardKey]) : null;
-  // While the card is open on a phone, the timeline marks the stories set at its place (as the popup does).
-  const marksKey = compact && !cardFolded ? cardKey : null;
+  // While the card shows the stories set at its place, the timeline marks them (as the popup does).
+  const marksKey = !cardFolded && (compact || pickedPlace || (cardOpen && withText)) ? cardKey : null;
   useEffect(() => {
-    if (!compact) return;
-    if (marksKey) placeMarks.setState({ key: marksKey, rows: storiesAt(marksKey).map((st) => st.i) });
-    else if (placeMarks.getState().key) placeMarks.setState({ key: null, rows: [] });
-  }, [compact, marksKey]);
+    cardMarks.current = marksKey ? { key: marksKey, rows: storiesAt(marksKey).map((st) => st.i) } : { key: null, rows: [] };
+    if (placeMarks.getState().key !== marksKey) placeMarks.setState(cardMarks.current);
+  }, [marksKey]);
   /** The stories set at a place, each a link that takes the reader there (phones' card). */
   const stories = (key: string) => {
     const list = storiesAt(key);
@@ -892,13 +894,17 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   // place chip, app.css); the card gives the place as its title, over its photo with the links and the photographer's
   // credit where it has one, then the stories set there.
   const lean = !compact && withText;
+  // Desktops: a card led by a place (beside the text, or a place clicked), its photo pulled down behind its name on
+  // request.
+  const led = !compact && (lean || !!pickedPlace);
   const leanPlace = lean && focusKey && places ? places[focusKey] : null;
   const leanTitle = leanPlace ? leanPlace.name
     : focus.kind === 'differ' ? focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')
     : focus.kind === 'likely' ? 'Place not named' : null;
-  const photo = leanPlace?.photo ?? null;
-  const more = lean && !!(photo || linkPlace || (cardKey && storiesAt(cardKey).length));
-  const open = lean && cardOpen;
+  const headTitle = pickedPlace ? pickedPlace.place.name : leanTitle;
+  const photo = (pickedPlace?.place ?? leanPlace)?.photo ?? null;
+  const more = led && !!(photo || linkPlace || (cardKey && storiesAt(cardKey).length));
+  const open = led && cardOpen;
   // The card folds towards its own side: right on phones (it spans the map), left on desktops (it sits top left).
   const chevron = (towards: 'left' | 'right') => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={towards === 'right' ? 'M10 6l6 6-6 6' : 'M14 6l-6 6 6 6'} /></svg>;
   const photoBy = photo ? creditName(photo.author) : null;
@@ -911,23 +917,25 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           <span>{focusKey && places ? places[focusKey].name : focus.kind === 'differ' ? focus.places.map((p) => p.place.name).join(' · ') : focus.kind === 'likely' ? 'Place not named' : 'Place'}</span>
         </button>
       )}
-      <div className="map-card" aria-live="polite" hidden={cardFolded} data-lean={lean ? '' : undefined} data-open={open ? '' : undefined}>
+      <div className="map-card" aria-live="polite" hidden={cardFolded} data-lean={led ? '' : undefined} data-open={open ? '' : undefined}>
         <button type="button" className="map-card-fold" aria-label="Fold the place card away" title="Fold the place card away" onClick={() => { setCardFolded(true); setPicked(null); }}>
           {chevron(compact ? 'right' : 'left')}
         </button>
-        {pickedPlace ? (
-          <>
-            {pickedPlace.place.photo && <div dangerouslySetInnerHTML={{ __html: photoHtml(pickedPlace.place) }} />}
-            <p className="map-place-name">{pickedPlace.place.name}{(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <em> · a region</em> : today ? <em> · shown at {today}</em> : null; })()}</p>
-            {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
-            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
-          </>
-        ) : lean ? <>
-          {photo && open ? (
-            <figure className="mc-photo">
-              <img src={new URL(photo.src, document.baseURI).href} alt={photo.caption} title={photo.caption.charAt(0).toUpperCase() + photo.caption.slice(1)} decoding="async" />
-              <figcaption>
-                <p className="mc-title">{leanTitle}</p>
+        {more && (
+          <button type="button" className="mc-expand" aria-expanded={open} aria-label={open ? 'Show less' : 'Show the photo, links and stories'} title={open ? 'Show less' : 'Show the photo, links and stories'} onClick={() => setCardOpen(!open)}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={open ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} /></svg>
+          </button>
+        )}
+        {led ? <>
+          <div className="mc-head">
+            {photo && (
+              <div className="mc-img" aria-hidden={!open}>
+                <div><img src={new URL(photo.src, document.baseURI).href} alt={photo.caption} title={photo.caption.charAt(0).toUpperCase() + photo.caption.slice(1)} decoding="async" /></div>
+              </div>
+            )}
+            <div className="mc-cap">
+              {headTitle && <p className="map-title">{headTitle}</p>}
+              {open && photo && (
                 <p className="mc-links">
                   {linkPlace?.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
                   {(() => {
@@ -936,10 +944,22 @@ export default function MapPane({ books, compact = false, withText = false }: { 
                     return webUrl(photo.page) ? <a className="mc-credit" href={photo.page} target="_blank" rel="noopener" title={tip}>{text}</a> : <span className="mc-credit" title={tip}>{text}</span>;
                   })()}
                 </p>
-              </figcaption>
-            </figure>
-          ) : leanTitle && <p className="map-title">{leanTitle}</p>}
-        </> : <>
+              )}
+            </div>
+          </div>
+          {pickedPlace && <>
+            {(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <p className="map-place-name muted">A region</p> : today ? <p className="map-place-name muted">Shown at {today}</p> : null; })()}
+            {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
+            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
+          </>}
+        </> : pickedPlace ? (
+          <>
+            {pickedPlace.place.photo && <div dangerouslySetInnerHTML={{ __html: photoHtml(pickedPlace.place) }} />}
+            <p className="map-place-name">{pickedPlace.place.name}{(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <em> · a region</em> : today ? <em> · shown at {today}</em> : null; })()}</p>
+            {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
+            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
+          </>
+        ) : <>
         <p className="kicker">§{row.n} · {books.filter((b) => row.refs[b]).map((b) => BOOK_ABBR[b]).join(' ')}</p>
         <p className="map-title">{rowTitle(row)}</p>
         </>}
@@ -992,16 +1012,10 @@ export default function MapPane({ books, compact = false, withText = false }: { 
         )}
         </>}
         {(compact || open) && cardKey && stories(cardKey)}
-        {linkPlace && (!lean || (open && !photo)) && (
+        {linkPlace && (!led || (open && !photo)) && (
           <p className="map-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
           </p>
-        )}
-        {more && (
-          <button type="button" className="mc-expand" aria-expanded={open} onClick={() => setCardOpen(!open)}>
-            {open ? 'Show less' : `Show ${[photo && 'photo', 'links', cardKey && storiesAt(cardKey).length && 'stories'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}`}
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={open ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} /></svg>
-          </button>
         )}
       </div>
       {/* The toggles, the effects and the credits behind one button in the corner, beside the scale. */}

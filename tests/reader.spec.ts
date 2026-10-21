@@ -623,40 +623,37 @@ test('desktop: hovering a place shows links to Wikipedia, OpenBible.info and map
   await expect(popup.getByRole('link', { name: 'Wikipedia' })).toHaveAttribute('href', 'https://en.wikipedia.org/wiki/Sychar');
   await expect(popup.getByRole('link', { name: 'OpenBible.info' })).toHaveAttribute('href', /openbible\.info\/geo\/ancient\//);
   await expect(popup.getByRole('link', { name: 'Google Maps' })).toBeVisible();
-  // The card carries the same links for the place shown.
-  await expect(page.locator('.map-card').getByRole('link', { name: 'Wikipedia' })).toBeVisible();
 });
 
-test('clicking a place pins a popup with its photo and links to the stories set there, marked on the timeline', async ({ page }) => {
-  test.skip(isPhone(), 'phones show a tapped place in the place card instead (phone.spec)');
+test('desktop: clicking a place opens the place card with its photo and the stories set there, marked on the timeline', async ({ page }) => {
+  test.skip(isPhone(), 'phones have their own card (phone.spec)');
   await openMap(page);
   await goTo(page, 'A stay in Capernaum');
   await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', /A stay in Capernaum/, { timeout: 20_000 });
   await page.waitForFunction(() => !(window as unknown as { __jtMap: { isMoving(): boolean } }).__jtMap.isMoving(), null, { timeout: 15_000 });
   await placeDot(page, 'Capernaum').locator('i').click();
-  const popup = page.locator('.map-popup');
-  await expect(popup).toHaveClass(/pinned/, { timeout: 5_000 });
-  await expect.poll(() => popup.locator('.pp-photo img').evaluate((img: HTMLImageElement) => img.naturalWidth), { timeout: 10_000 }).toBeGreaterThan(0);
-  await expect(popup.locator('.pp-photo figcaption a')).toHaveAttribute('href', /commons\.wikimedia\.org/);
-  await expect(popup.locator('.pp-stories li')).toHaveCount(13);
-  await expect(popup.locator('.pp-photo figcaption a')).toHaveText('AVRAMGR');
-  await expect(popup.locator('.pp-stories a[aria-current]')).toContainText('A stay in Capernaum');
-  await shot(page, '13-place-popup');
-  // Following a story keeps the popup open and moves the reader there.
-  const story = popup.locator('.pp-stories a', { hasText: 'The temple tax' });
+  const card = page.locator('.map-card');
+  await expect(card).toHaveAttribute('data-open', '', { timeout: 5_000 });
+  await expect(page.locator('.map-popup.pinned')).toHaveCount(0);
+  await expect.poll(() => card.locator('.mc-img img').evaluate((img: HTMLImageElement) => img.naturalWidth), { timeout: 10_000 }).toBeGreaterThan(0);
+  await expect(card.locator('.mc-credit')).toHaveAttribute('href', /commons\.wikimedia\.org/);
+  await expect(card.locator('.mc-credit')).toHaveText('Photo: AVRAMGR');
+  await expect(card.locator('.pp-stories li')).toHaveCount(13);
+  await expect(card.locator('.pp-stories a[aria-current]')).toContainText('A stay in Capernaum');
+  await page.waitForTimeout(400);
+  await shot(page, '13-place-card');
+  // Following a story moves the reader there, the card still open.
+  const story = card.locator('.pp-stories a', { hasText: 'The temple tax' });
   await story.click();
   await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', /The temple tax/, { timeout: 20_000 });
-  await expect(popup).toBeVisible();
-  await expect(story).toHaveAttribute('aria-current', 'true');
-  // A click elsewhere on the map closes it.
-  const canvas = page.locator('.maplibregl-canvas');
-  const box = (await canvas.boundingBox())!;
-  await canvas.click({ position: { x: 8, y: box.height * 0.5 } }); // the left edge, clear of the card
-  await expect(popup).toHaveCount(0);
+  await expect(card.locator('.pp-stories a[aria-current]')).toContainText('The temple tax');
+  // Less, from the chevron under the fold.
+  await card.getByRole('button', { name: 'Show less' }).click();
+  await expect(card.locator('.pp-stories')).toHaveCount(0);
 });
 
-test('a region’s popup lists the stories set in it', async ({ page }) => {
-  test.skip(isPhone(), 'phones show a tapped place in the place card instead (phone.spec)');
+test('desktop: a region’s name opens the card with the stories set in it', async ({ page }) => {
+  test.skip(isPhone(), 'phones have their own card (phone.spec)');
   await openMap(page);
   await goTo(page, 'Preaching in Galilee');
   await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', /Preaching in Galilee/, { timeout: 20_000 });
@@ -667,12 +664,12 @@ test('a region’s popup lists the stories set in it', async ({ page }) => {
   await page.waitForTimeout(600);
   await expect(page.locator('.map-popup')).toHaveCount(0);
   await placeDot(page, 'Galilee').locator('span').click();
-  const popup = page.locator('.map-popup');
-  await expect(popup.locator('.pp-title')).toHaveText('Galilee', { timeout: 5_000 });
-  await expect(popup.locator('.pp-stories li')).not.toHaveCount(0);
-  await expect(popup.locator('.pp-stories a', { hasText: 'Preaching in Galilee' })).toHaveAttribute('aria-current', 'true');
-  await expect(popup.locator('.pp-photo img')).toHaveAttribute('alt', /Galilee/);
-  await shot(page, '14-region-popup');
+  const card = page.locator('.map-card');
+  await expect(card.locator('.mc-cap .map-title')).toHaveText('Galilee', { timeout: 5_000 });
+  await expect(card.locator('.pp-stories li')).not.toHaveCount(0);
+  await expect(card.locator('.pp-stories a', { hasText: 'Preaching in Galilee' })).toHaveAttribute('aria-current', 'true');
+  await expect(card.locator('.mc-img img')).toHaveAttribute('alt', /Galilee/);
+  await shot(page, '14-region-card');
 });
 
 test('desktop: dragging the divider below 20% closes the map', async ({ page }) => {
@@ -852,8 +849,8 @@ test('desktop: with the text beside the map, the card gives the place and its st
   await shot(page, '18-lean-card');
   // A place with a photo, still open: its name, links and the photographer's credit over it.
   await goTo(page, 'Feeding the five thousand');
-  await expect(card.locator('.mc-photo img')).toBeVisible({ timeout: 15_000 });
-  await expect(card.locator('.mc-title')).toHaveText('Bethsaida');
+  await expect(card.locator('.mc-img img')).toBeVisible({ timeout: 15_000 });
+  await expect(card.locator('.mc-cap .map-title')).toHaveText('Bethsaida');
   await expect(card.locator('.mc-links').getByRole('link', { name: 'Wikipedia' })).toBeVisible();
   await expect(card.locator('.mc-credit')).toContainText('Photo');
   await shot(page, '18-lean-card-photo');
