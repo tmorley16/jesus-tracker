@@ -1019,7 +1019,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
       </div>
       {/* The toggles, the effects and the credits behind one button in the corner, beside the scale. */}
       <ConfigButton
-        label="Map layers and credits" className="map-more" badge={mountainsOn || modern}
+        label="Map layers and credits" className="map-more"
         icon={<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 12.5l9 5 9-5" /><path d="M3 17l9 5 9-5" /></svg>}
       >
         <Toggle label="Mountains" on={mountainsOn} set={setMountainsChoice} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)" />

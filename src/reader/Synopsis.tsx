@@ -3,7 +3,7 @@ import { computeLayout, rowAtU } from './layoutModel';
 import { BOOKS, BOOK_ABBR, BOOK_NAME, PARALLELS, ROWS, START_ROW, TEXT_NOTES, fmtRef, rowTitle, versesOf, type Book, type Row, type Texts } from './model';
 import { NotePopover, VerseText, showVerse } from './Notes';
 import { PlaceChip } from './places';
-import { layout, nav, playhead, useUI, type NotesShown } from './state';
+import { collapseHidden, layout, nav, playhead, useUI, type NotesShown } from './state';
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
@@ -26,6 +26,10 @@ const stack = {
   /** Locked: stop the panes' fling, before the timeline or search moves them. */
   stopFling: () => {},
 };
+
+/** Whether the page has opened at its starting section yet: readers mounted later (a gospel shown again, another
+ *  layout) keep the reading place instead. */
+let opened = false;
 
 /** Whether each reader is gliding (to a place the timeline or search asked for). */
 const gliders = new Set<() => boolean>();
@@ -92,6 +96,7 @@ export function Stack({ texts, shown, arrangement }: { texts: Texts | null; show
   const textSize = useUI((s) => s.textSize);
   const notes = useUI((s) => s.notes);
   const locked = useUI((s) => s.paneSync) === 'locked';
+  const keepHidden = useUI((s) => !collapseHidden(s.collapse, true));
   stack.locked = locked;
   const ref = useRef<HTMLDivElement>(null);
   // After the panes have rendered and measured (their layout effects run first): even out, or undo, the lengths.
@@ -177,12 +182,12 @@ export function Stack({ texts, shown, arrangement }: { texts: Texts | null; show
       el.removeEventListener('wheel', wheel);
     };
   }, [locked, shown]);
-  // The timeline is laid out from the verse counts of all four gospels, as on any phone (see Synopsis' measure).
+  // The timeline is laid out from verse counts: all four gospels', unless hidden gospels are collapsed.
   useLayoutEffect(() => {
-    const l = computeLayout(BOOKS, spacing, { reckoning, compress });
+    const l = computeLayout(keepHidden ? BOOKS : shown, spacing, { reckoning, compress });
     layout.setState((s) => ({ ...l, version: s.version + 1 }));
     playhead.setState((p) => ({ ...p, u: l.starts[p.row] + p.f * (l.ends[p.row] - l.starts[p.row]) }));
-  }, [shown, spacing, reckoning, compress]);
+  }, [shown, spacing, reckoning, compress, keepHidden]);
   useEffect(() => {
     if (stack.leader >= shown.length) stack.leader = 0;
     // The timeline and search move the leading pane, handing the lead to a pane whose gospel has the row.
@@ -248,10 +253,10 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   paneRef.current = pane;
   const compactRef = useRef(compact);
   compactRef.current = compact;
-  // All four gospels lay the timeline out on phones, and on desktops keeping hidden gospels' sections (faded).
-  const keepHidden = useUI((s) => s.hiddenGospels === 'fade');
-  const allFourRef = useRef(compact || keepHidden);
-  allFourRef.current = compact || keepHidden;
+  // All four gospels lay the timeline out unless hidden gospels are collapsed (Timeline settings).
+  const keepHidden = useUI((s) => !collapseHidden(s.collapse, compact));
+  const allFourRef = useRef(keepHidden);
+  allFourRef.current = keepHidden;
   const leads = () => paneRef.current === undefined || stack.leader === paneRef.current;
 
   // Every spacing maps the same way: a row's share of its timeline span = its share of its height.
@@ -297,9 +302,9 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     if (paneRef.current !== undefined && st?.dataset.tracks) h = (st.clientHeight - (st.firstElementChild as HTMLElement).offsetHeight) / Number(st.dataset.tracks);
     geo.current = { tops, heights, vis, origin, span, anchor: headH + (h - headH) * 0.22 };
     if (paneRef.current !== undefined) return; // a stack lays out the timeline itself
-    // Phones (and desktops keeping hidden gospels) lay the timeline out from the verse counts of all four gospels, so
-    // a hidden gospel's own sections keep their place on it (the needle skips them); otherwise a desktop's Text
-    // timeline is a map of the page as shown.
+    // Keeping hidden gospels (phones' default), the timeline is laid out from the verse counts of all four gospels, so
+    // a hidden gospel's own sections keep their place on it (the needle skips them); otherwise the Text timeline is a
+    // map of the page as shown.
     if (spacingRef.current === 'text' && !allFourRef.current) {
       const starts = new Array<number>(n), ends = new Array<number>(n);
       for (let i = 0; i < n; i++) { starts[i] = (tops[i] - origin) / span; ends[i] = starts[i] + heights[i] / span; }
@@ -388,14 +393,14 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
 
   // Re-measure when anything that changes heights changes, keeping the reading position. Until the text has come, the
   // reader opens with the starting section's heading at the top.
-  const opening = useRef(true);
+  const opening = useRef(!opened);
   useLayoutEffect(() => {
     const { row, f } = playhead.getState();
     measure();
     const g = geo.current, s = scrollRef.current;
     if (s && g.vis.length && opening.current && g.heights[START_ROW] > 0) {
       s.scrollTop = g.tops[START_ROW] - (headRef.current?.offsetHeight ?? 0) - 4;
-      if (texts) opening.current = false;
+      if (texts) { opening.current = false; opened = true; }
     } else if (s && g.vis.length && (row > 0 || f > 0)) {
       const i = g.heights[row] > 0 ? row : g.vis.find((v) => v >= row) ?? g.vis[g.vis.length - 1];
       s.scrollTop = g.tops[i] + (i === row ? f : 0) * g.heights[i] - g.anchor;

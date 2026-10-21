@@ -870,7 +870,10 @@ test('desktop: with the text beside the map, the card gives the place and its st
   await expect(card).toBeVisible();
   // Hidden gospels' sections kept on the timeline, faded: the layout no longer changes with the gospels shown.
   await page.getByRole('button', { name: 'Timeline settings' }).click();
-  await page.getByRole('group', { name: 'Hidden gospels' }).getByRole('button', { name: /faded/ }).click();
+  const collapse = page.getByRole('button', { name: 'Collapse hidden gospels' });
+  await expect(collapse).toHaveAttribute('aria-pressed', 'true');
+  await collapse.click();
+  await expect(collapse).toHaveAttribute('aria-pressed', 'false');
   await page.keyboard.press('Escape');
   // With only the map, the card gives the story too.
   for (const n of ['Matthew', 'Mark', 'Luke', 'John']) await page.locator('.toolbar .gospels').getByRole('button', { name: n }).click();

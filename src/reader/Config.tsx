@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { RECKONING_NAME, type Reckoning } from './model';
-import { useUI, type Appearance, type HiddenGospels, type NotesShown, type PaneSync, type PhoneGospels, type Spacing, type TextSize } from './state';
+import { collapseHidden, useUI, type Appearance, type NotesShown, type PaneSync, type PhoneGospels, type Spacing, type TextSize } from './state';
 
 export const SlidersIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
@@ -11,8 +11,8 @@ export const SlidersIcon = () => (
 
 /** A button that opens a small panel above it (or below, `down`). A tap off the panel only closes it: a backdrop takes
  *  it, so nothing underneath is pressed. */
-export function ConfigButton({ label, icon, badge = false, down = false, className = '', children }: {
-  label: string; icon: ReactNode; badge?: boolean; down?: boolean; className?: string; children: ReactNode;
+export function ConfigButton({ label, icon, down = false, className = '', children }: {
+  label: string; icon: ReactNode; down?: boolean; className?: string; children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -26,7 +26,7 @@ export function ConfigButton({ label, icon, badge = false, down = false, classNa
       {open && createPortal(<div className="cfg-backdrop" aria-hidden="true" onClick={() => setOpen(false)} />, document.body)}
       {open && <div className="cfg-panel" role="dialog" aria-label={label}>{children}</div>}
       <button type="button" className="cfg-btn" aria-label={label} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
-        {icon}{badge && <i aria-hidden="true" />}
+        {icon}
       </button>
     </div>
   );
@@ -65,7 +65,7 @@ export function TimelineConfig({ desk = false }: { desk?: boolean }) {
   const compress = useUI((s) => s.compress);
   const phases = useUI((s) => s.phases);
   const timeMarks = useUI((s) => s.timeMarks);
-  const hiddenGospels = useUI((s) => s.hiddenGospels);
+  const collapse = useUI((s) => collapseHidden(s.collapse, !desk));
   const ui = useUI.getState();
   return (
     <ConfigButton label="Timeline settings" icon={<SlidersIcon />} down className="tl-cfg">
@@ -77,9 +77,10 @@ export function TimelineConfig({ desk = false }: { desk?: boolean }) {
         </>
       )}
       {desk
-        ? <><Choice<HiddenGospels> label="Hidden gospels" value={hiddenGospels} set={ui.setHiddenGospels} options={[['fold', 'Fold away', 'Leave out the sections only hidden gospels tell'], ['fade', 'Keep faded', 'Keep the sections only hidden gospels tell in their place, faded']]} />
+        ? <><Toggle label="Collapse hidden gospels" on={collapse} set={ui.setCollapse} title="Leave out the sections only hidden gospels tell (off: keep them in their place, faded)" />
           <Toggle label="Feasts and time of day" on={timeMarks} set={ui.setTimeMarks} title="The feasts the text names, as diamonds along the top, and a strip along the foot tinted where the text gives a time of day" /></>
-        : <Toggle label="Phases and feasts" on={phases} set={ui.setPhases} />}
+        : <><Toggle label="Phases and feasts" on={phases} set={ui.setPhases} />
+          <Toggle label="Collapse hidden gospels" on={collapse} set={ui.setCollapse} title="Leave out the sections only hidden gospels tell (off: keep them in their place, faded)" /></>}
       {spacing === 'chrono' && <p className="cfg-note">Years are estimates ({RECKONING_NAME[reckoning]}).</p>}
       {desk && <p className="cfg-note">Drag or click to move · wheel or + − to zoom, 0 for the whole · ← → step through events.</p>}
     </ConfigButton>
@@ -111,11 +112,11 @@ export function GospelConfig({ desk = false }: { desk?: boolean }) {
         label="Layout" value={phoneGospels} set={ui.setPhoneGospels}
         options={[['grid', <LayoutIcon kind="grid" />, 'Quadrants'], ['columns', <LayoutIcon kind="columns" />, 'Side by side'], ['stacked', <LayoutIcon kind="stacked" />, 'Stacked']]}
       />}
-      {!desk && (phoneGospels === 'stacked' || phoneGospels === 'grid') && (
-        <Choice<PaneSync> label="Lengths" value={paneSync} options={[['locked', 'Equal', 'Equal: every section as long in each pane, scrolled together'], ['follow', 'Own', 'Own: each pane its own length, following the one you scroll']]} set={ui.setPaneSync} />
-      )}
       {!desk && phoneGospels !== 'one' && (
         <Toggle label="Shrink missing" on={shrinkMissing} set={ui.setShrinkMissing} title="Make room for the accounts that tell the section: a row or column of gospels where none has it gets smaller" />
+      )}
+      {!desk && (phoneGospels === 'stacked' || phoneGospels === 'grid') && (
+        <Choice<PaneSync> label="Lengths" value={paneSync} options={[['locked', 'Equal', 'Equal: every section as long in each pane, scrolled together'], ['follow', 'Own', 'Own: each pane its own length, following the one you scroll']]} set={ui.setPaneSync} />
       )}
       <Choice<TextSize> label="Text size" value={textSize} options={[['s', 'S'], ['m', 'M'], ['l', 'L']]} set={ui.setTextSize} />
       <Choice<Appearance> label="Colours" value={appearance} options={[['dynamic', 'Dynamic'], ['light', 'Light'], ['dark', 'Dark']]} set={ui.setAppearance} />

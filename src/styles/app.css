@@ -389,6 +389,9 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .stack-head .n { flex: none; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 400; }
 .stack-head .t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stack > .reader { border-top: 1px solid var(--line); }
+/* The panes start at fractional pixels, so the pinned gospel name reaches a pixel above the pane (clipped) to cover the
+   seam where a hair of scrolling text showed through. */
+.stack > .reader > .cols-head { top: -1px; padding-top: 1px; }
 .stack > .reader:nth-of-type(1) { border-top: 0; }
 .stack[data-arrangement="grid"][data-count="3"] > .reader:nth-of-type(2), .stack[data-arrangement="grid"][data-count="4"] > .reader:nth-of-type(2) { border-top: 0; }
 .stack[data-arrangement="grid"][data-count="3"] > .reader:nth-of-type(even), .stack[data-arrangement="grid"][data-count="4"] > .reader:nth-of-type(even) { border-left: 1px solid var(--line); }
@@ -479,7 +482,6 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .cfg-btn { position: relative; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid var(--ink-faint); border-radius: 50%; background: color-mix(in oklab, var(--paper-raised) 92%, transparent); color: var(--ink); cursor: pointer; }
 .cfg-btn[aria-expanded="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
 .cfg-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.cfg-btn i { position: absolute; top: 1px; right: 1px; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1.5px var(--paper-raised); }
 .cfg-panel {
   position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 6px; justify-items: start; width: min(270px, calc(100vw - 32px)); padding: 9px 10px;
   background: var(--paper-raised); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16); font-size: 0.8rem;
@@ -539,14 +541,19 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .col-off { display: grid; place-items: center; width: 22px; height: 22px; margin: -3px -6px -3px auto; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink-soft); cursor: pointer; }
 .col-off svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 /* Phones: the led card fills the width, its head flush with the card's top, and the photo kept short for the map. */
-.jt[data-compact] .map-card { padding-right: 30px; }
+.jt[data-compact] .map-card { padding-right: 38px; }
 .jt[data-compact] .map-card[data-lean] { padding-top: 5px; }
 .jt[data-compact] .map-card[data-lean][data-open] { width: auto; }
-.jt[data-compact] .mc-head { margin: -5px -30px 4px -10px; }
-.jt[data-compact] .mc-cap { padding: 5px 30px 0 10px; }
+.jt[data-compact] .mc-head { margin: -5px -38px 4px -10px; }
+.jt[data-compact] .mc-cap { padding: 5px 38px 0 10px; }
 .jt[data-compact] .mc-img img { aspect-ratio: auto; height: clamp(108px, 36cqh, 160px); }
 .jt[data-compact] .map-card[data-lean]:not([hidden]) { max-height: calc(100% - 54px); } /* clear of the layers button below */
-.jt[data-compact] .map-card .mc-expand { top: 30px; }
+/* Phones: bigger fold and expand buttons, easier to press. */
+.jt[data-compact] .map-card-fold, .jt[data-compact] .mc-expand { width: 30px; height: 30px; right: 4px; }
+.jt[data-compact] .map-card-fold { top: 4px; }
+.jt[data-compact] .map-card .mc-expand { top: 38px; }
+.jt[data-compact] .map-card[data-lean] .pp-stories { width: calc(100% + 34px); margin-right: -34px; }
+.jt[data-compact] .map-card-fold svg, .jt[data-compact] .mc-expand svg { width: 17px; height: 17px; }
 /* Phones: a short map leaves little room, so the open card scrolls as a whole rather than its stories alone. */
 .jt[data-compact] .map-card[data-lean][data-open] { overflow-y: auto; overscroll-behavior: contain; }
 .jt[data-compact] .map-card[data-lean][data-open] .pp-stories { flex: none; overflow: visible; }

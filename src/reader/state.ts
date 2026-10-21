@@ -15,7 +15,6 @@ export type NotesShown = 'all' | 'textual' | 'none';
  *  in quadrants (three as two above one; two stacked). */
 export type PhoneGospels = 'one' | 'columns' | 'stacked' | 'grid';
 const PHONE_GOSPELS: PhoneGospels[] = ['one', 'columns', 'stacked', 'grid'];
-export type HiddenGospels = 'fold' | 'fade';
 /** The map's scale bar: kilometres or miles. */
 export type Units = 'metric' | 'imperial';
 /** Gospels in panes of their own: every section the same length in each, scrolled together; or each at its own length,
@@ -52,8 +51,9 @@ interface Saved {
   phases: boolean;
   /** Desktops: the timeline's feast marks and its strip of the time of day. */
   timeMarks: boolean;
-  /** Desktops: the sections only hidden gospels tell folded out of the timeline, or kept in place, faded (as on phones). */
-  hiddenGospels: HiddenGospels;
+  /** Timeline settings › Collapse hidden gospels: the sections only hidden gospels tell left out of the timeline, or
+   *  (off) kept in place, faded. null: the screen's default (on for desktops, off for phones); see collapseHidden(). */
+  collapse: boolean | null;
   units: Units;
   paneSync: PaneSync;
   /** Phones, gospels in panes: a row of panes (or a quadrant column) none of whose gospels has the section shrinks. */
@@ -99,7 +99,7 @@ interface UI extends Saved {
   setPaneSync(p: PaneSync): void;
   setShrinkMissing(on: boolean): void;
   setTimeMarks(on: boolean): void;
-  setHiddenGospels(h: HiddenGospels): void;
+  setCollapse(on: boolean): void;
   setCurrent(i: number): void;
 }
 
@@ -115,8 +115,8 @@ const savedVisible = validBooks(saved.visible);
 
 export const useUI = create<UI>()((set, get) => {
   const persist = () => {
-    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, hiddenGospels, units, paneSync, shrinkMissing } = get();
-    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, hiddenGospels, units, paneSync, shrinkMissing });
+    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, collapse, units, paneSync, shrinkMissing } = get();
+    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, collapse, units, paneSync, shrinkMissing });
   };
   const update = (patch: Partial<UI>) => { set(patch); persist(); };
   return {
@@ -141,7 +141,8 @@ export const useUI = create<UI>()((set, get) => {
     phoneGospels: PHONE_GOSPELS.includes(saved.phoneGospels as PhoneGospels) ? (saved.phoneGospels as PhoneGospels) : 'grid',
     phases: saved.phases === true,
     timeMarks: saved.timeMarks !== false,
-    hiddenGospels: saved.hiddenGospels === 'fade' ? 'fade' : 'fold',
+    // (Before the switch: hiddenGospels 'fade', a desktop keeping them, is the switch off.)
+    collapse: typeof saved.collapse === 'boolean' ? saved.collapse : (saved as { hiddenGospels?: string }).hiddenGospels === 'fade' ? false : null,
     units: saved.units === 'imperial' ? 'imperial' : 'metric',
     paneSync: saved.paneSync === 'follow' ? 'follow' : 'locked',
     shrinkMissing: saved.shrinkMissing === true,
@@ -185,7 +186,7 @@ export const useUI = create<UI>()((set, get) => {
     setPaneSync: (paneSync) => update({ paneSync }),
     setShrinkMissing: (shrinkMissing) => update({ shrinkMissing }),
     setTimeMarks: (timeMarks) => update({ timeMarks }),
-    setHiddenGospels: (hiddenGospels) => update({ hiddenGospels }),
+    setCollapse: (collapse) => update({ collapse }),
     setCurrent: (current) => { if (current !== get().current) set({ current }); },
   };
 });
@@ -202,6 +203,8 @@ export const layout = createStore<{ starts: number[]; ends: number[]; years: Yea
 /** Phones (Reader lays out by the same query). */
 export const COMPACT_QUERY = '(max-width: 760px)';
 /** Whether the screen shows one gospel at a time: a phone set to that. */
+/** Whether the timeline leaves out the sections only hidden gospels tell (by default on desktops, not on phones). */
+export const collapseHidden = (collapse: boolean | null, compact: boolean) => collapse ?? !compact;
 export const oneAtATime = () => useUI.getState().phoneGospels === 'one' && window.matchMedia(COMPACT_QUERY).matches;
 
 /** Go to a row, first making sure its passage is on screen: on a phone showing one gospel at a time, switch to a gospel that has it (to `book` when
