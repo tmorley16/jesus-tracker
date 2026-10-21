@@ -75,18 +75,6 @@ function ellipsize(ctx: CanvasRenderingContext2D, text: string, max: number): st
   return lo > 2 ? `${text.slice(0, lo)}…` : '';
 }
 
-/** The timeline's scale: by length of text, or estimated years. */
-export function ScaleSwitch() {
-  const spacing = useUI((s) => s.spacing);
-  const setSpacing = useUI((s) => s.setSpacing);
-  return (
-    <div className="timeline-scale" role="group" aria-label="Timeline scale">
-      <button type="button" aria-pressed={spacing !== 'chrono'} onClick={() => setSpacing('text')} title="By length of text: the timeline works like a map of the page">Text</button>
-      <button type="button" aria-pressed={spacing === 'chrono'} onClick={() => setSpacing('chrono')} title="Chronological: estimated historical years (AD 30 or AD 33 reckoning in Settings)">Time</button>
-    </div>
-  );
-}
-
 export function Timeline({ shown, compact, side, corner }: {
   shown: Book[]; compact: boolean;
   /** Phones: controls beside the timeline (left, by the lanes; right, the tools) in place of the toolbar. */
@@ -570,7 +558,7 @@ export function Timeline({ shown, compact, side, corner }: {
           onPointerLeave={onPointerLeave}
         />
       </div>
-      {/* The timeline keeps its full width: the scale switch is in the toolbar, and zooming is by wheel, pinch or the
+      {/* The timeline keeps its full width: its scale is in its settings, and zooming is by wheel, pinch or the
           + − 0 keys, with a way back to the whole timeline floating on it while zoomed. */}
       {side?.right}
       {corner}

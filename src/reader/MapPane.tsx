@@ -245,6 +245,8 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   // Phones: the card can fold away to the right, leaving a tab with the place's name; it starts folded there. It is
   // also where a tapped place shows (in place of the popup): the place, the stories set there and its links.
   const [cardFolded, setCardFolded] = useState(compact);
+  // Desktops with the text beside the map: the card starts brief; Show more adds the photo, links and stories.
+  const [cardOpen, setCardOpen] = useState(false);
   const [picked, setPicked] = useState<string | null>(null);
   const compactRef = useRef(compact);
   compactRef.current = compact;
@@ -895,22 +897,24 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     : focus.kind === 'differ' ? focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')
     : focus.kind === 'likely' ? 'Place not named' : null;
   const photo = leanPlace?.photo ?? null;
+  const more = lean && !!(photo || linkPlace || (cardKey && storiesAt(cardKey).length));
+  const open = lean && cardOpen;
+  // The card folds towards its own side: right on phones (it spans the map), left on desktops (it sits top left).
+  const chevron = (towards: 'left' | 'right') => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={towards === 'right' ? 'M10 6l6 6-6 6' : 'M14 6l-6 6 6 6'} /></svg>;
   const photoBy = photo ? creditName(photo.author) : null;
   return (
     <div className="map-pane">
       <div className="map-box" data-land={landColour} ref={boxRef} role="region" aria-label="Map of the places in the accounts on screen" />
-      {compact && cardFolded && (
+      {cardFolded && (
         <button type="button" className="map-card-tab" aria-label="Show the place card" onClick={() => setCardFolded(false)}>
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
+          {chevron(compact ? 'left' : 'right')}
           <span>{focusKey && places ? places[focusKey].name : focus.kind === 'differ' ? focus.places.map((p) => p.place.name).join(' · ') : focus.kind === 'likely' ? 'Place not named' : 'Place'}</span>
         </button>
       )}
-      <div className="map-card" aria-live="polite" hidden={compact && cardFolded} data-lean={lean ? '' : undefined} data-photo={photo ? '' : undefined}>
-        {compact && (
-          <button type="button" className="map-card-fold" aria-label="Fold the place card away" onClick={() => { setCardFolded(true); setPicked(null); }}>
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6l6 6-6 6" /></svg>
-          </button>
-        )}
+      <div className="map-card" aria-live="polite" hidden={cardFolded} data-lean={lean ? '' : undefined} data-open={open ? '' : undefined}>
+        <button type="button" className="map-card-fold" aria-label="Fold the place card away" title="Fold the place card away" onClick={() => { setCardFolded(true); setPicked(null); }}>
+          {chevron(compact ? 'right' : 'left')}
+        </button>
         {pickedPlace ? (
           <>
             {pickedPlace.place.photo && <div dangerouslySetInnerHTML={{ __html: photoHtml(pickedPlace.place) }} />}
@@ -919,7 +923,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
             <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
           </>
         ) : lean ? <>
-          {photo ? (
+          {photo && open ? (
             <figure className="mc-photo">
               <img src={new URL(photo.src, document.baseURI).href} alt={photo.caption} title={photo.caption.charAt(0).toUpperCase() + photo.caption.slice(1)} decoding="async" />
               <figcaption>
@@ -987,11 +991,17 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           </p>
         )}
         </>}
-        {(compact || lean) && cardKey && stories(cardKey)}
-        {linkPlace && !photo && (
+        {(compact || open) && cardKey && stories(cardKey)}
+        {linkPlace && (!lean || (open && !photo)) && (
           <p className="map-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
           </p>
+        )}
+        {more && (
+          <button type="button" className="mc-expand" aria-expanded={open} onClick={() => setCardOpen(!open)}>
+            {open ? 'Show less' : `Show ${[photo && 'photo', 'links', cardKey && storiesAt(cardKey).length && 'stories'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}`}
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={open ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} /></svg>
+          </button>
         )}
       </div>
       {/* The toggles, the effects and the credits behind one button in the corner, beside the scale. */}

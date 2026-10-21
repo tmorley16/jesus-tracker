@@ -692,9 +692,9 @@ test('desktop: dragging the divider below 20% closes the map', async ({ page }) 
 
 test('the timeline’s Time switch shows estimated years, and Text switches back', async ({ page }) => {
   await open(page);
-  // Phones keep the scale in the timeline's settings.
-  const settings = async () => { if (isPhone()) await page.getByRole('button', { name: 'Timeline settings' }).click(); };
-  const done = async () => { if (isPhone()) await page.keyboard.press('Escape'); };
+  // The scale is in the timeline's settings.
+  const settings = () => page.getByRole('button', { name: 'Timeline settings' }).click();
+  const done = () => page.keyboard.press('Escape');
   await settings();
   const years = page.getByRole('group', { name: 'Timeline scale' }).getByRole('button', { name: 'Time' });
   await expect(years).toHaveAttribute('aria-pressed', 'false');
@@ -708,13 +708,8 @@ test('the timeline’s Time switch shows estimated years, and Text switches back
   await page.getByRole('group', { name: 'Timeline scale' }).getByRole('button', { name: 'Text' }).click();
   await expect(years).toHaveAttribute('aria-pressed', 'false');
   await done();
-  // On a desktop the switch goes with the timeline; a phone always shows both.
-  if (isPhone()) {
-    await expect(page.getByRole('button', { name: 'Timeline', exact: true })).toHaveCount(0);
-    return;
-  }
-  await page.getByRole('button', { name: 'Timeline', exact: true }).click();
-  await expect(page.getByRole('group', { name: 'Timeline scale' })).toHaveCount(0);
+  // A phone always shows the timeline.
+  if (isPhone()) await expect(page.getByRole('button', { name: 'Timeline', exact: true })).toHaveCount(0);
 });
 
 test('dynamic colour tints night scenes; dark mode is available in settings', async ({ page }) => {
@@ -770,13 +765,13 @@ test('from his death until the angel at the tomb, the colours turn cold and his 
 
 test('the timeline keeps its full width, with the scale in the toolbar and a way back from zooming in', async ({ page }) => {
   await open(page);
-  // Desktops: the timeline's full width but for its settings button, the switch in the toolbar. (Phones have the
-  // gospels and tools beside it.)
+  // Desktops: the timeline's full width but for its settings button, and no scale switch in the toolbar. (Phones
+  // have the gospels and tools beside it.)
   if (!isPhone()) {
     const width = () => page.locator('.timeline canvas').evaluate((c) => c.getBoundingClientRect().width);
     const full = await page.locator('.timeline').evaluate((t) => t.clientWidth - 16 - 36);
     expect(await width()).toBeGreaterThan(full - 4);
-    await expect(page.locator('.toolbar').getByRole('group', { name: 'Timeline scale' })).toBeVisible();
+    await expect(page.locator('.toolbar').getByRole('group', { name: 'Timeline scale' })).toHaveCount(0);
   }
   // Zooming in brings a way back to the whole timeline.
   await expect(page.getByRole('button', { name: 'Show the whole timeline' })).toHaveCount(0);
@@ -848,18 +843,29 @@ test('desktop: with the text beside the map, the card gives the place and its st
   const card = page.locator('.map-card');
   await expect(card).toHaveAttribute('data-lean', '');
   await expect(card.locator('.kicker')).toHaveCount(0);
-  await expect(card.locator('.mc-title, .map-title').first()).toHaveText('Sychar', { timeout: 15_000 });
+  await expect(card.locator('.map-title')).toHaveText('Sychar', { timeout: 15_000 });
+  await expect(card.locator('.pp-stories')).toHaveCount(0);
+  await card.locator('.mc-expand').click();
   await expect(card.locator('.pp-stories li').first()).toBeVisible();
   await expect(card.locator('.pp-stories a[aria-current]')).toContainText('Samaritan');
   await expect(page.locator('section.row .chip.place').first()).toBeHidden();
   await shot(page, '18-lean-card');
-  // A place with a photo: its name, links and the photographer's credit over it.
+  // A place with a photo, still open: its name, links and the photographer's credit over it.
   await goTo(page, 'Feeding the five thousand');
   await expect(card.locator('.mc-photo img')).toBeVisible({ timeout: 15_000 });
   await expect(card.locator('.mc-title')).toHaveText('Bethsaida');
   await expect(card.locator('.mc-links').getByRole('link', { name: 'Wikipedia' })).toBeVisible();
   await expect(card.locator('.mc-credit')).toContainText('Photo');
   await shot(page, '18-lean-card-photo');
+  // Folded away into a tab with the place's name, and back.
+  await card.getByRole('button', { name: 'Fold the place card away' }).click();
+  await expect(card).toBeHidden();
+  await page.getByRole('button', { name: 'Show the place card' }).click();
+  await expect(card).toBeVisible();
+  // Hidden gospels' sections kept on the timeline, faded: the layout no longer changes with the gospels shown.
+  await page.getByRole('button', { name: 'Timeline settings' }).click();
+  await page.getByRole('group', { name: 'Hidden gospels' }).getByRole('button', { name: /faded/ }).click();
+  await page.keyboard.press('Escape');
   // With only the map, the card gives the story too.
   for (const n of ['Matthew', 'Mark', 'Luke', 'John']) await page.locator('.toolbar .gospels').getByRole('button', { name: n }).click();
   await expect(card).not.toHaveAttribute('data-lean', '');

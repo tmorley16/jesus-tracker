@@ -4,7 +4,7 @@ import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVe
 import { GospelConfig, TimelineConfig } from './Config';
 import { Splitter } from './Splitter';
 import { Stack, Synopsis } from './Synopsis';
-import { ScaleSwitch, Timeline } from './Timeline';
+import { Timeline } from './Timeline';
 import { COMPACT_QUERY, layout, nav, playhead, scene, showRow, useUI } from './state';
 
 const MapPane = lazy(() => import('./MapPane'));
@@ -219,6 +219,10 @@ function Toolbar({ compact, one, gospels }: { compact: boolean; one: boolean; go
         <button type="button" className="map-chip" aria-pressed={map} aria-label="Map" onClick={ui.toggleMap} title="Show or hide the map (M)">
           <MapIcon />{!compact && 'Map'}
         </button>
+        <button type="button" className="map-chip timeline-chip" aria-pressed={timeline} aria-label="Timeline" onClick={ui.toggleTimeline} title="Show or hide the timeline (T)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 9v6M21 9v6" /><rect x="10" y="7" width="4" height="10" rx="1.5" /></svg>
+          {!compact && 'Timeline'}
+        </button>
       </div>
       {(!compact || searching) && <GoTo compact={compact} onDone={() => setSearching(false)} />}
       <div className="tools">
@@ -227,16 +231,6 @@ function Toolbar({ compact, one, gospels }: { compact: boolean; one: boolean; go
             <SearchIcon />
           </button>
         )}
-        {/* Phones always show the timeline, so there only the scale switch. */}
-        <div className={!compact && timeline ? 'tl-group joined' : 'tl-group'}>
-          {!compact && (
-            <button type="button" className="icon timeline-btn" aria-pressed={timeline} aria-label="Timeline" onClick={ui.toggleTimeline} title="Show or hide the timeline (T)">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 9v6M21 9v6" /><rect x="10" y="7" width="4" height="10" rx="1.5" /></svg>
-              Timeline
-            </button>
-          )}
-          {(compact || timeline) && <ScaleSwitch />}
-        </div>
       </div>
     </header>
   );

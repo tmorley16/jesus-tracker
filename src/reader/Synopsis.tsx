@@ -248,6 +248,10 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   paneRef.current = pane;
   const compactRef = useRef(compact);
   compactRef.current = compact;
+  // All four gospels lay the timeline out on phones, and on desktops keeping hidden gospels' sections (faded).
+  const keepHidden = useUI((s) => s.hiddenGospels === 'fade');
+  const allFourRef = useRef(compact || keepHidden);
+  allFourRef.current = compact || keepHidden;
   const leads = () => paneRef.current === undefined || stack.leader === paneRef.current;
 
   // Every spacing maps the same way: a row's share of its timeline span = its share of its height.
@@ -293,15 +297,16 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     if (paneRef.current !== undefined && st?.dataset.tracks) h = (st.clientHeight - (st.firstElementChild as HTMLElement).offsetHeight) / Number(st.dataset.tracks);
     geo.current = { tops, heights, vis, origin, span, anchor: headH + (h - headH) * 0.22 };
     if (paneRef.current !== undefined) return; // a stack lays out the timeline itself
-    // Phones lay the timeline out from the verse counts of all four gospels, so a hidden gospel's own sections keep
-    // their place on it (the needle skips them); a desktop's Text timeline is a map of the page as shown.
-    if (spacingRef.current === 'text' && !compactRef.current) {
+    // Phones (and desktops keeping hidden gospels) lay the timeline out from the verse counts of all four gospels, so
+    // a hidden gospel's own sections keep their place on it (the needle skips them); otherwise a desktop's Text
+    // timeline is a map of the page as shown.
+    if (spacingRef.current === 'text' && !allFourRef.current) {
       const starts = new Array<number>(n), ends = new Array<number>(n);
       for (let i = 0; i < n; i++) { starts[i] = (tops[i] - origin) / span; ends[i] = starts[i] + heights[i] / span; }
       layout.setState((l) => ({ starts, ends, years: null, version: l.version + 1 }));
     } else {
       const { reckoning: r, compress: c } = useUI.getState();
-      const model = computeLayout(compactRef.current ? BOOKS : shownRef.current, spacingRef.current, { reckoning: r, compress: c });
+      const model = computeLayout(allFourRef.current ? BOOKS : shownRef.current, spacingRef.current, { reckoning: r, compress: c });
       layout.setState((l) => ({ ...model, version: l.version + 1 }));
     }
   }, []);
@@ -396,7 +401,7 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
       s.scrollTop = g.tops[i] + (i === row ? f : 0) * g.heights[i] - g.anchor;
     }
     update();
-  }, [shown, texts, textSize, notes, spacing, reckoning, compress, compact, measure, update]);
+  }, [shown, texts, textSize, notes, spacing, reckoning, compress, compact, keepHidden, measure, update]);
 
   useEffect(() => {
     const s = scrollRef.current, wrap = rowsRef.current;

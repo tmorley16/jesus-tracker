@@ -15,6 +15,7 @@ export type NotesShown = 'all' | 'textual' | 'none';
  *  in quadrants (three as two above one; two stacked). */
 export type PhoneGospels = 'one' | 'columns' | 'stacked' | 'grid';
 const PHONE_GOSPELS: PhoneGospels[] = ['one', 'columns', 'stacked', 'grid'];
+export type HiddenGospels = 'fold' | 'fade';
 /** The map's scale bar: kilometres or miles. */
 export type Units = 'metric' | 'imperial';
 /** Gospels in panes of their own: every section the same length in each, scrolled together; or each at its own length,
@@ -51,6 +52,8 @@ interface Saved {
   phases: boolean;
   /** Desktops: the timeline's feast marks and its strip of the time of day. */
   timeMarks: boolean;
+  /** Desktops: the sections only hidden gospels tell folded out of the timeline, or kept in place, faded (as on phones). */
+  hiddenGospels: HiddenGospels;
   units: Units;
   paneSync: PaneSync;
   /** Phones, gospels in panes: a row of panes (or a quadrant column) none of whose gospels has the section shrinks. */
@@ -96,6 +99,7 @@ interface UI extends Saved {
   setPaneSync(p: PaneSync): void;
   setShrinkMissing(on: boolean): void;
   setTimeMarks(on: boolean): void;
+  setHiddenGospels(h: HiddenGospels): void;
   setCurrent(i: number): void;
 }
 
@@ -111,8 +115,8 @@ const savedVisible = validBooks(saved.visible);
 
 export const useUI = create<UI>()((set, get) => {
   const persist = () => {
-    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing } = get();
-    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing });
+    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, hiddenGospels, units, paneSync, shrinkMissing } = get();
+    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, hiddenGospels, units, paneSync, shrinkMissing });
   };
   const update = (patch: Partial<UI>) => { set(patch); persist(); };
   return {
@@ -137,6 +141,7 @@ export const useUI = create<UI>()((set, get) => {
     phoneGospels: PHONE_GOSPELS.includes(saved.phoneGospels as PhoneGospels) ? (saved.phoneGospels as PhoneGospels) : 'grid',
     phases: saved.phases === true,
     timeMarks: saved.timeMarks !== false,
+    hiddenGospels: saved.hiddenGospels === 'fade' ? 'fade' : 'fold',
     units: saved.units === 'imperial' ? 'imperial' : 'metric',
     paneSync: saved.paneSync === 'follow' ? 'follow' : 'locked',
     shrinkMissing: saved.shrinkMissing === true,
@@ -180,6 +185,7 @@ export const useUI = create<UI>()((set, get) => {
     setPaneSync: (paneSync) => update({ paneSync }),
     setShrinkMissing: (shrinkMissing) => update({ shrinkMissing }),
     setTimeMarks: (timeMarks) => update({ timeMarks }),
+    setHiddenGospels: (hiddenGospels) => update({ hiddenGospels }),
     setCurrent: (current) => { if (current !== get().current) set({ current }); },
   };
 });

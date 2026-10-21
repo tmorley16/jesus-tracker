@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { RECKONING_NAME, type Reckoning } from './model';
-import { useUI, type Appearance, type NotesShown, type PaneSync, type PhoneGospels, type Spacing, type TextSize } from './state';
+import { useUI, type Appearance, type HiddenGospels, type NotesShown, type PaneSync, type PhoneGospels, type Spacing, type TextSize } from './state';
 
 export const SlidersIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
@@ -65,6 +65,7 @@ export function TimelineConfig({ desk = false }: { desk?: boolean }) {
   const compress = useUI((s) => s.compress);
   const phases = useUI((s) => s.phases);
   const timeMarks = useUI((s) => s.timeMarks);
+  const hiddenGospels = useUI((s) => s.hiddenGospels);
   const ui = useUI.getState();
   return (
     <ConfigButton label="Timeline settings" icon={<SlidersIcon />} down className="tl-cfg">
@@ -76,7 +77,8 @@ export function TimelineConfig({ desk = false }: { desk?: boolean }) {
         </>
       )}
       {desk
-        ? <Toggle label="Feasts and time of day" on={timeMarks} set={ui.setTimeMarks} title="The feasts the text names, as diamonds along the top, and a strip along the foot tinted where the text gives a time of day" />
+        ? <><Choice<HiddenGospels> label="Hidden gospels" value={hiddenGospels} set={ui.setHiddenGospels} options={[['fold', 'Fold away', 'Leave out the sections only hidden gospels tell'], ['fade', 'Keep faded', 'Keep the sections only hidden gospels tell in their place, faded']]} />
+          <Toggle label="Feasts and time of day" on={timeMarks} set={ui.setTimeMarks} title="The feasts the text names, as diamonds along the top, and a strip along the foot tinted where the text gives a time of day" /></>
         : <Toggle label="Phases and feasts" on={phases} set={ui.setPhases} />}
       {spacing === 'chrono' && <p className="cfg-note">Years are estimates ({RECKONING_NAME[reckoning]}).</p>}
       {desk && <p className="cfg-note">Drag or click to move · wheel or + − to zoom, 0 for the whole · ← → step through events.</p>}

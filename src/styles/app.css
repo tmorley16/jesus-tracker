@@ -41,8 +41,6 @@ p { margin: 0; }
   border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 0.875rem;
 }
 .icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-.timeline-btn[aria-pressed="false"] { color: var(--ink-soft); border-style: dashed; }
-.timeline-btn[aria-pressed="true"] { background: var(--paper-raised); }
 .gospels .map-chip { --g: var(--ink); }
 .gospels .map-chip svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
@@ -68,20 +66,10 @@ p { margin: 0; }
 .timeline-track { position: relative; min-width: 0; border-radius: 4px; }
 .timeline-track:focus-visible { outline-offset: 0; }
 .timeline canvas { display: block; cursor: pointer; touch-action: none; }
-/* The timeline keeps its full width: the scale switch sits in the toolbar, and a way back to the whole timeline floats
+/* The timeline keeps its full width: its scale is in its settings, and a way back to the whole timeline floats
    on it only while zoomed. */
 .timeline-controls { position: absolute; top: 4px; right: max(8px, env(safe-area-inset-right, 0px)); z-index: 2; display: flex; align-items: center; padding-left: 6px; background: var(--paper-raised); }
 .timeline-controls .whole { height: 18px; padding: 0 7px; border: 1px solid var(--line); border-radius: 4px; background: var(--paper); color: var(--ink); cursor: pointer; font-size: 0.72rem; line-height: 1; }
-/* Text or Years, in the toolbar; on a desktop it joins the Timeline button as one control. */
-.tl-group { display: flex; }
-.timeline-scale { display: flex; }
-.timeline-scale button { height: 32px; padding: 0 9px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; font-size: 0.8rem; line-height: 1; }
-.timeline-scale button + button { border-left: 0; }
-.timeline-scale button:first-child { border-radius: 8px 0 0 8px; }
-.timeline-scale button:last-child { border-radius: 0 8px 8px 0; }
-.timeline-scale button[aria-pressed="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
-.tl-group.joined .timeline-btn { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.tl-group.joined .timeline-scale button:first-child { border-radius: 0; border-left: 0; }
 .timeline-tip {
   position: absolute; top: calc(100% + 6px); z-index: 40; width: 300px; padding: 10px 12px; pointer-events: none;
   background: var(--paper-raised); border: 1px solid var(--ink-faint); border-radius: 8px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.16);
@@ -185,13 +173,18 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 }
 /* Desktops with the text beside the map: the place is the card's title (over its photo, with the links and the
    photographer's credit, where it has one), then the stories set there, the only part that scrolls. */
-.map-card[data-lean]:not([hidden]) { display: flex; flex-direction: column; align-items: flex-start; width: min(310px, calc(100% - 24px)); max-height: min(58%, calc(100% - 24px)); }
+.map-card[data-lean]:not([hidden]) { display: flex; flex-direction: column; align-items: flex-start; max-height: calc(100% - 24px); }
+.map-card[data-lean][data-open] { width: min(380px, calc(100% - 24px)); max-width: none; max-height: min(75%, calc(100% - 24px)); }
 .map-card[data-lean] > * { flex: none; max-width: 100%; }
 .map-card[data-lean] .map-title { margin-top: 0; }
 .map-card[data-lean] .pp-stories { flex: 0 1 auto; min-height: 2.6em; max-height: none; width: 100%; padding-top: 6px; border-top: 1px solid var(--line); }
 .map-card[data-lean] .map-place-name + .pp-stories, .map-card[data-lean] .cands + .pp-stories, .map-card[data-lean] .map-mountain + .pp-stories, .map-card[data-lean] .map-heading-note + .pp-stories { margin-top: 8px; }
-.mc-photo { position: relative; align-self: stretch; max-width: none !important; margin: -10px -12px 8px; }
-.mc-photo img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 7px 7px 0 0; background: var(--paper-sunk); }
+.mc-photo { position: relative; align-self: stretch; max-width: none !important; margin: -10px -6px 8px -12px; }
+.mc-photo img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 7px 0 0 0; background: var(--paper-sunk); }
+/* Show more or less: the photo, links and stories. */
+.mc-expand { display: inline-flex; align-items: center; gap: 3px; margin-top: 6px; padding: 0; border: 0; background: none; color: var(--ink-soft); font: 0.75rem var(--font-ui); cursor: pointer; }
+.mc-expand:hover, .mc-expand:focus-visible { color: var(--ink); }
+.mc-expand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .mc-photo figcaption {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 12px 7px; border-radius: 0;
   background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.66)); color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
@@ -350,7 +343,6 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .jt[data-compact] .gospels .map-chip { padding: 4px 7px; }
 .jt[data-compact] .tools { gap: 4px; }
 .jt[data-compact] .icon { height: 30px; min-width: 30px; padding: 0 6px; }
-.jt[data-compact] .timeline-scale button { height: 30px; padding: 0 7px; font-size: 0.75rem; }
 .jt[data-compact] .goto { position: absolute; z-index: 30; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); top: 6px; max-width: none; }
 /* Every pixel of height counts on a phone: the column heads are slim, and only the section's number and title stay
    pinned, on one line where they fit (its chips scroll away with the text). */
@@ -520,7 +512,7 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .map-credits { width: 100%; padding-top: 6px; border-top: 1px solid var(--line); font-size: 0.6rem; line-height: 1.35; color: var(--ink-soft); }
 .map-credits a { color: var(--ink); }
 /* The place card folds away to the right, leaving a tab with the place's name. */
-.jt[data-compact] .map-card { padding-right: 34px; }
+.map-card { padding-right: 34px; }
 .map-card-fold { position: absolute; top: 0; right: 0; bottom: 0; width: 28px; display: grid; place-items: center; padding: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0 8px 8px 0; background: none; color: var(--ink-soft); cursor: pointer; }
 .map-card-fold svg, .map-card-tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .map-card-tab {
@@ -528,6 +520,8 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
   border: 1px solid var(--line); border-right: 0; border-radius: 999px 0 0 999px; background: var(--paper-raised); color: var(--ink); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); font: 600 0.8rem var(--font-ui);
 }
 .map-card-tab span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Desktops: the card sits top left, so it folds to the left, into a tab at the left edge. */
+.jt:not([data-compact]) .map-card-tab { top: 12px; left: 0; right: auto; padding: 0 4px 0 10px; flex-direction: row-reverse; border: 1px solid var(--line); border-left: 0; border-radius: 0 999px 999px 0; }
 /* Locked panes scroll together under the finger (Stack moves them all at once), not by the browser's own scrolling. */
 .stack[data-locked] > .reader { touch-action: none; }
 /* Phones: an × at the right of a gospel's heading hides it. */
