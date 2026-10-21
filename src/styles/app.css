@@ -33,9 +33,8 @@ p { margin: 0; }
   border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink-soft); font-size: 0.875rem; font-weight: 500;
 }
 .gospels button i { width: 9px; height: 9px; border-radius: 50%; background: var(--g); opacity: 0.3; }
-.gospels button[aria-pressed="true"], .gospels button[aria-checked="true"] { color: var(--ink); border-color: var(--g); box-shadow: inset 0 0 0 1px var(--g); }
-.gospels button[aria-pressed="true"] i, .gospels button[aria-checked="true"] i { opacity: 1; }
-.tools { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.gospels button[aria-pressed="true"] { color: var(--ink); border-color: var(--g); box-shadow: inset 0 0 0 1px var(--g); }
+.gospels button[aria-pressed="true"] i { opacity: 1; }
 .icon {
   display: inline-flex; align-items: center; gap: 6px; height: 32px; min-width: 32px; justify-content: center; padding: 0 9px; cursor: pointer;
   border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 0.875rem;
@@ -298,39 +297,23 @@ body:not([data-dead]) .map-traveller-glow.resting.born .wander { opacity: 0.45; 
 .pp-title { margin: 0; font-weight: 700; font-size: 0.82rem; }
 .pp-sub { margin: 2px 0 0; font-size: 0.7rem; color: var(--ink-soft); }
 .pp-links { display: flex; flex-wrap: wrap; gap: 2px 10px; margin: 6px 0 0; font-size: 0.72rem; }
-.pp-stories + .pp-links { padding-top: 6px; border-top: 1px solid var(--line); }
-/* A place's popup: its photo, full width at the top, then the stories set there (links into the reader), the only part
-   that scrolls, with the links held at the foot. The card's height is capped to the room beside its point (MapPane). */
+/* A place's popup (on hover): its name, notes and links. */
 .map-popup .maplibregl-popup-content { box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; }
 .map-popup .maplibregl-popup-content > * { flex: none; }
-.pp-photo { position: relative; margin: -9px -11px 7px; }
-.pp-photo img { display: block; width: 100%; max-height: var(--pp-photo-max, none); aspect-ratio: 4 / 3; object-fit: cover; border-radius: 7px 7px 0 0; background: var(--paper-sunk); }
-/* The caption and credit lie over the foot of the photo, on a soft shade so they read on any picture. */
-.pp-photo figcaption {
-  position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 11px 5px;
-  background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.62));
-  font-size: 0.62rem; line-height: 1.3; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
-}
-.pp-photo figcaption a { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.55); text-underline-offset: 2px; overflow-wrap: anywhere; }
 .pp-h { margin: 6px 0 2px; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.03em; color: var(--ink-soft); }
-.map-popup .pp-stories { flex: 0 1 auto; min-height: 1.4rem; }
 .pp-stories { max-height: 14rem; margin: 6px 0 0; padding: 0; overflow-y: auto; overscroll-behavior: contain; list-style: none; font-size: 0.75rem; line-height: 1.3; }
 .pp-stories a { display: block; padding: 2px 0; color: var(--ink); text-decoration: none; }
 .pp-stories a:hover, .pp-stories a:focus-visible { text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 2px; }
 .pp-stories a[aria-current] { font-weight: 700; }
 .pp-stories .pp-n { font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-soft); }
 .pp-stories em { font-style: normal; font-size: 0.66rem; color: var(--ink-soft); }
-@media (max-width: 640px) {
-  .pp-photo img { aspect-ratio: 16 / 10; }
-  .pp-stories { max-height: none; }
-}
+@media (max-width: 640px) { .pp-stories { max-height: none; } }
 .map-candidate { display: flex; align-items: center; gap: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font-mono); font-size: 11px; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 .map-candidate i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px dashed var(--ink); flex: none; }
 /* A scene Jesus isn't in: an open diamond, captioned, so it never reads as his light. */
 .map-scene { position: relative; width: 14px; height: 14px; }
 .map-scene i { position: absolute; inset: 0; transform: rotate(45deg); border: 2px solid var(--ink); background: color-mix(in oklab, var(--paper-raised) 75%, transparent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--paper-raised) 50%, transparent); }
 .map-scene span { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; font: 600 9.5px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
-.maplibregl-ctrl-attrib { font-size: 11px; }
 .maplibregl-ctrl-scale { cursor: pointer; background: color-mix(in oklab, var(--paper-raised) 85%, transparent); border-color: var(--ink); color: var(--ink); font-family: var(--font-mono); font-size: 11px; }
 
 .load-error { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 70; padding: 10px 14px; border: 1px solid var(--ink); border-radius: 8px; background: var(--paper-raised); }
@@ -350,13 +333,6 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .maplibregl-canvas { transition: filter var(--light-duration) ease; }
 
 /* ---- phones ---- */
-/* One row on a phone: tighter chips, the Map chip as an icon, and smaller tools. */
-.jt[data-compact] .toolbar { gap: 6px; padding-block: 6px; padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px)); }
-.jt[data-compact] .gospels { gap: 4px; }
-.jt[data-compact] .gospels button { gap: 5px; padding: 4px 8px 4px 7px; }
-.jt[data-compact] .gospels button i { width: 8px; height: 8px; }
-.jt[data-compact] .gospels .map-chip { padding: 4px 7px; }
-.jt[data-compact] .tools { gap: 4px; }
 .jt[data-compact] .icon { height: 30px; min-width: 30px; padding: 0 6px; }
 .jt[data-compact] .goto { position: absolute; z-index: 30; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); top: 6px; max-width: none; }
 /* Every pixel of height counts on a phone: the column heads are slim, and only the section's number and title stay
@@ -522,8 +498,6 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .jt[data-compact] .map-card:not([hidden]) { display: flex; flex-direction: column; align-items: flex-start; max-height: calc(100% - 16px); }
 .jt[data-compact] .map-card > * { flex: none; max-width: 100%; }
 .jt[data-compact] .map-card .pp-stories { flex: 0 1 auto; min-height: 2.6em; max-height: none; margin-top: 6px; width: 100%; }
-.jt[data-compact] .map-card .pp-photo { margin: -5px 0 6px -10px; width: calc(100% + 10px); }
-.jt[data-compact] .map-card .pp-photo img { max-height: 110px; border-radius: 7px 0 0 0; }
 .map-back { margin-top: 4px; padding: 0; border: 0; background: none; color: var(--ink-soft); font: 0.75rem var(--font-ui); text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 2px; cursor: pointer; }
 .map-credits { width: 100%; padding-top: 6px; border-top: 1px solid var(--line); font-size: 0.6rem; line-height: 1.35; color: var(--ink-soft); }
 .map-credits a { color: var(--ink); }

@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { RECKONING_NAME, type Reckoning } from './model';
 import { collapseHidden, useUI, type Appearance, type NotesShown, type PaneSync, type PhoneGospels, type Spacing, type TextSize } from './state';
 
-export const SlidersIcon = () => (
+const SlidersIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
 );
 
@@ -33,7 +33,7 @@ export function ConfigButton({ label, icon, down = false, className = '', childr
 }
 
 /** A row: its name on the left, its choices on the right, the chosen one filled. Options are [value, text, title?]. */
-export function Choice<T extends string>({ label, group = label, value, options, set }: {
+function Choice<T extends string>({ label, group = label, value, options, set }: {
   label: string; group?: string; value: T; options: [T, ReactNode, string?][]; set: (v: T) => void;
 }) {
   return (
@@ -69,7 +69,7 @@ export function TimelineConfig({ desk = false }: { desk?: boolean }) {
   const ui = useUI.getState();
   return (
     <ConfigButton label="Timeline settings" icon={<SlidersIcon />} down className="tl-cfg">
-      <Choice<Spacing> label="Scale" group="Timeline scale" value={spacing === 'chrono' ? 'chrono' : 'text'} options={[['text', 'Text'], ['chrono', 'Time']]} set={ui.setSpacing} />
+      <Choice<Spacing> label="Scale" group="Timeline scale" value={spacing} options={[['text', 'Text'], ['chrono', 'Time']]} set={ui.setSpacing} />
       {spacing === 'chrono' && (
         <>
           <Choice<Reckoning> label="Crucifixion" value={reckoning} options={[['ad30', 'AD 30'], ['ad33', 'AD 33']]} set={ui.setReckoning} />

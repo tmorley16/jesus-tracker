@@ -6,10 +6,10 @@
 // drawn over it on the map. Away from the places in the accounts the colour fades into the plain land, over a distance
 // that wanders (smooth noise), so the coloured land has no edge or shape of its own.
 //
-//   node scripts/build-relief.mjs   →  public/data/relief.png, src/data/relief.json (its corners)
+//   node scripts/build-relief.mjs   →  public/data/relief.webp, src/data/relief.json (its corners)
 
 import { readFile, writeFile } from 'node:fs/promises';
-import { deflateSync } from 'node:zlib';
+import sharp from 'sharp';
 import { terrariumTile } from './lib/terrain.mjs';
 
 const Z = 8;
@@ -126,30 +126,17 @@ for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
   rgba[i * 4 + 3] = Math.round(255 * fade);
 }
 
-// ---- a minimal PNG encoder (8-bit RGBA, each row filtered against the pixel to its left) ----
-const CRC = new Int32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; return c; });
-const crc32 = (buf) => { let c = -1; for (const b of buf) c = CRC[(c ^ b) & 255] ^ (c >>> 8); return (c ^ -1) >>> 0; };
-function chunk(type, data) {
-  const out = Buffer.alloc(12 + data.length);
-  out.writeUInt32BE(data.length, 0); out.write(type, 4, 'ascii'); data.copy(out, 8);
-  out.writeUInt32BE(crc32(out.subarray(4, 8 + data.length)), 8 + data.length);
-  return out;
-}
-const stride = w * 4, raw = Buffer.alloc(h * (stride + 1));
-for (let y = 0; y < h; y++) {
-  raw[y * (stride + 1)] = 1;
-  for (let x = 0; x < stride; x++) raw[y * (stride + 1) + 1 + x] = (rgba[y * stride + x] - (x >= 4 ? rgba[y * stride + x - 4] : 0)) & 255;
-}
-const ihdr = Buffer.alloc(13);
-ihdr.writeUInt32BE(w, 0); ihdr.writeUInt32BE(h, 4); ihdr[8] = 8; ihdr[9] = 6;
-const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw, { level: 9 })), chunk('IEND', Buffer.alloc(0))]);
-await writeFile('public/data/relief.png', png);
+// WebP, lossy at full quality with lossless alpha (sharp's sharp-YUV conversion): about a quarter of a PNG's size;
+// laid over the land at 85% the colour shown differs from the exact image by under 0.1 of 255 on average.
+const webp = await sharp(rgba, { raw: { width: w, height: h, channels: 4 } })
+  .webp({ quality: 100, alphaQuality: 100, smartSubsample: true, effort: 6 }).toBuffer();
+await writeFile('public/data/relief.webp', webp);
 
 const r6 = (v) => Math.round(v * 1e6) / 1e6;
 const corners = [[x0, y0], [x1, y0], [x1, y1], [x0, y1]].map(([x, y]) => [r6(lonOf(x)), r6(latOf(y))]);
 await writeFile('src/data/relief.json', JSON.stringify({
-  about: 'Corners (top left, top right, bottom right, bottom left) of public/data/relief.png, built by scripts/build-relief.mjs.',
+  about: 'Corners (top left, top right, bottom right, bottom left) of public/data/relief.webp, built by scripts/build-relief.mjs.',
   attribution: 'Land colour: AWS Terrain Tiles (SRTM and GMTED2010, USGS; ETOPO1, NOAA).',
   corners,
 }, null, 2) + '\n');
-console.log(`relief: ${w} × ${h} px, ${(png.length / 1024).toFixed(0)} KB`);
+console.log(`relief: ${w} × ${h} px, ${(webp.length / 1024).toFixed(0)} KB`);

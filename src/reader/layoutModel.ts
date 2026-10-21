@@ -1,8 +1,8 @@
-// Timeline layouts that don't depend on the page: one step per event, estimated dates,
-// and a text-length estimate from verse counts (used when no text is on screen).
+// Timeline layouts that don't depend on the page: estimated dates, and a text-length estimate from verse counts (used
+// when no text is on screen, or to keep hidden gospels' sections in place).
 import { ROWS, type Book, type Reckoning } from './model';
 
-export type Spacing = 'text' | 'even' | 'chrono';
+export type Spacing = 'text' | 'chrono';
 export interface Years {
   first: number;
   last: number;
@@ -42,10 +42,7 @@ export function computeLayout(books: Book[], spacing: Spacing, opts: { reckoning
     };
     return { starts, ends, years: { first: t[0], last: tEnd, toU, breaks } };
   }
-  const weight = ROWS.map((r, i) => {
-    if (!shownIn(i, books)) return 0;
-    return spacing === 'even' ? 1 : Math.max(1, ...books.map((b) => r.counts[b] ?? 0));
-  });
+  const weight = ROWS.map((r, i) => (shownIn(i, books) ? Math.max(1, ...books.map((b) => r.counts[b] ?? 0)) : 0));
   const total = weight.reduce((a, b) => a + b, 0) || 1;
   let acc = 0;
   for (let i = 0; i < n; i++) { starts[i] = acc / total; acc += weight[i]; ends[i] = acc / total; }

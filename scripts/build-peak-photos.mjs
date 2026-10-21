@@ -3,8 +3,8 @@
 //
 //   node scripts/build-peak-photos.mjs   →  public/data/peak-photos/{id}.jpg, photo fields in public/data/peaks.json
 
-import { copyFile, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { files } from './lib/commons.mjs';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { files, writeThumb } from './lib/commons.mjs';
 import { entities } from './lib/wikidata.mjs';
 
 const data = JSON.parse(await readFile('public/data/peaks.json', 'utf8'));
@@ -20,7 +20,7 @@ for (const p of data.peaks) {
   const name = refs[p.id];
   if (!name) continue;
   const { thumb, ...credit } = photos[name];
-  await copyFile(thumb, `${NEXT}/${p.id}.jpg`);
+  await writeThumb(thumb, `${NEXT}/${p.id}.jpg`);
   p.photo = { src: `data/peak-photos/${p.id}.jpg`, caption: p.name, ...credit };
 }
 await rm(DIR, { recursive: true, force: true });

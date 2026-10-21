@@ -8,8 +8,8 @@
 //
 //   node scripts/build-places.mjs   →  public/data/places.json, public/data/photos/{key}.jpg
 
-import { copyFile, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { fileName, files } from './lib/commons.mjs';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { fileName, files, writeThumb } from './lib/commons.mjs';
 import { entities } from './lib/wikidata.mjs';
 
 const meta = JSON.parse(await readFile('src/data/sections.meta.json', 'utf8'));
@@ -64,7 +64,7 @@ await rm(NEXT, { recursive: true, force: true });
 await mkdir(NEXT, { recursive: true });
 for (const [key, [name, caption]] of Object.entries(photoRefs)) {
   const { thumb, ...credit } = photos[name];
-  await copyFile(thumb, `${NEXT}/${key}.jpg`);
+  await writeThumb(thumb, `${NEXT}/${key}.jpg`);
   places[key].photo = { src: `data/photos/${key}.jpg`, caption, ...credit };
 }
 await rm(PHOTOS, { recursive: true, force: true });

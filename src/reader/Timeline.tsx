@@ -13,12 +13,10 @@ const TINT: Record<LightState | 'dead', string> = {
   evening: '#D9A45E', night: '#59607A', darkness: '#2B2A28', dead: '#8A949C',
 };
 
-/** lightY null: no light strip (phones, to save room). */
-/** feastY null: no feast marks (phones). rulerTop: the years along the top strip, where the needle's head runs, and no
- *  section names (titlesY is then the years' baseline). */
-interface Geometry { h: number; partsH: number; feastY: number | null; lanesTop: number; laneH: number; laneGap: number; titlesY: number | null; lightY: number | null; miniY: number; font: number; rulerTop?: boolean }
+/** lightY null: no light strip (phones, to save room). feastY null: no feast marks (phones). rulerTop: the years along
+ *  the top strip, where the needle's head runs, and no section names (titlesY is then the years' baseline). */
+interface Geometry { h: number; partsH: number; feastY: number | null; lanesTop: number; laneH: number; laneGap: number; titlesY: number; lightY: number | null; miniY: number; font: number; rulerTop?: boolean }
 const DESKTOP: Geometry = { h: 104, partsH: 18, feastY: 20, lanesTop: 24, laneH: 10, laneGap: 3, titlesY: 88, lightY: 95, miniY: 100, font: 11 };
-const COMPACT: Geometry = { h: 67, partsH: 14, feastY: null, lanesTop: 19, laneH: 7, laneGap: 2, titlesY: 62, lightY: null, miniY: 64, font: 10 };
 /** Phones with the controls beside the timeline: room for each gospel's chip beside its lane (CHIP_H tall), and no
  *  phase bands or section names (partsH 0); on the Time scale, the years along the top. */
 const COMPACT_SIDE: Geometry = { h: 107, partsH: 0, feastY: null, lanesTop: 13, laneH: 12, laneGap: 13, titlesY: 10, lightY: null, miniY: 104, font: 10, rulerTop: true };
@@ -88,8 +86,9 @@ export function Timeline({ shown, compact, side, corner }: {
   const timeMarks = useUI((s) => s.timeMarks);
   const chrono = useUI((s) => s.spacing) === 'chrono';
   const hasSide = !!side;
-  // Desktops: the feasts and the strip of the time of day can be switched off (Timeline settings).
-  const geom = useMemo(() => (hasSide ? sideGeometry(phases, chrono) : compact ? COMPACT : timeMarks ? DESKTOP : { ...DESKTOP, feastY: null, lightY: null }), [hasSide, phases, chrono, compact, timeMarks]);
+  // Phones always have the side controls. Desktops: the feasts and the strip of the time of day can be switched off
+  // (Timeline settings).
+  const geom = useMemo(() => (hasSide ? sideGeometry(phases, chrono) : timeMarks ? DESKTOP : { ...DESKTOP, feastY: null, lightY: null }), [hasSide, phases, chrono, timeMarks]);
   const view = useRef({ k: 1, o: 0, w: 0 });
   const io = useRef({
     hoverU: null as number | null, dragU: null as number | null, pointers: new Map<number, number>(), pinch: null as null | { d: number; k: number; u: number }, lastManual: 0,
@@ -170,8 +169,8 @@ export function Timeline({ shown, compact, side, corner }: {
         ctx.fillStyle = gospel[b];
         ctx.fillRect(x0, y, Math.max(1, width - gap), g.laneH);
         ctx.globalAlpha = 1;
-        // References on the bars where they fit (lanes too thin for text on phones with the toolbar on top).
-        if ((!compact || g.rulerTop) && shownSet.has(b) && width > 24) {
+        // References on the bars where they fit.
+        if (shownSet.has(b) && width > 24) {
           const [c, vv] = ranges[0];
           const label = width > 62 ? `${c}:${vv}` : `${c}`;
           setFont(`600 ${g.laneH - 1}px ${monoFont}`);
@@ -193,7 +192,7 @@ export function Timeline({ shown, compact, side, corner }: {
         ctx.moveTo(x0, g.feastY - 3); ctx.lineTo(x0 + 3, g.feastY); ctx.lineTo(x0, g.feastY + 3); ctx.lineTo(x0 - 3, g.feastY);
         ctx.closePath(); ctx.fill();
       }
-      if (g.titlesY !== null && !g.rulerTop && !years && width > 72) {
+      if (!g.rulerTop && !years && width > 72) {
         setFont(`${g.font}px ${uiFont}`);
         const t = ellipsize(ctx, `§${row.n} ${rowTitle(row)}`, width - 8);
         if (t) { ctx.fillStyle = col.soft; ctx.fillText(t, x0 + 4, g.titlesY); }
@@ -201,7 +200,7 @@ export function Timeline({ shown, compact, side, corner }: {
     }
 
     // Chronological spacing: a year ruler, with compressed silences hatched as breaks.
-    if (years && g.titlesY !== null) {
+    if (years) {
       const lanesH = 4 * (g.laneH + g.laneGap);
       ctx.strokeStyle = col.line;
       ctx.lineWidth = 1;

@@ -56,8 +56,8 @@ export function splits(books: Book[]): { row: number; keys: string[] }[] {
 }
 
 export type Focus =
-  | { kind: 'site'; key: string; place: PlaceData; moved: boolean }
-  | { kind: 'region'; key: string; place: PlaceData; radius: number; moved: boolean }
+  | { kind: 'site'; key: string; place: PlaceData }
+  | { kind: 'region'; key: string; place: PlaceData; radius: number }
   | { kind: 'likely'; center: LonLat; radius: number; before: Step | null; after: Step | null }
   | { kind: 'scene'; key: string; place: PlaceData }
   | { kind: 'differ'; places: { key: string; books: Book[]; place: PlaceData }[]; center: LonLat; radius: number; present: boolean }
@@ -79,11 +79,7 @@ export function focusFor(i: number, books: Book[], places: Record<string, PlaceD
   if (!row.jesus) return key ? { kind: 'scene', key, place: places[key] } : { kind: 'none' };
   if (key) {
     const place = places[key];
-    let k = -1;
-    steps.forEach((s, j) => { if (s.row === i) k = j; }); // the row's own stop comes after any place it sets out from
-    const moved = k > 0 && steps[k - 1].key !== key;
-    if (place.kind === 'region') return { kind: 'region', key, place, radius: AREAS[key] ?? 20, moved };
-    return { kind: 'site', key, place, moved };
+    return place.kind === 'region' ? { kind: 'region', key, place, radius: AREAS[key] ?? 20 } : { kind: 'site', key, place };
   }
   // Jesus is in the scene but no place is named: an area between the places named before and after.
   let before: Step | null = null, after: Step | null = null;

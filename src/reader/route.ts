@@ -147,7 +147,7 @@ function rounded(pts: LonLat[], areaKm: number[]): { line: LonLat[]; idx: number
   for (let pass = 0; pass < 8; pass++) {
     for (let i = 1; i < P.length - 1; i++) {
       if (!areaKm[i]) continue;
-      const c = fillet(V[i - 1], V[i], V[i + 1], areaKm[i]);
+      const c = turnAt(i);
       V[i] = c ? add(P[i], c.out) : P[i];
     }
   }

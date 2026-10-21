@@ -16,7 +16,7 @@
 // Where the marker is drawn, drift included, is reported (onDraw), so the light on the land
 // follows it.
 import { Marker, MercatorCoordinate, type Map as MlMap } from 'maplibre-gl';
-import type { LonLat } from './geo';
+import { lerp, type LonLat } from './geo';
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const merc = (ll: LonLat) => MercatorCoordinate.fromLngLat(ll);
@@ -184,7 +184,7 @@ export class TravellerMarker {
     } else p = ease(Math.min(1, (now - m.t0!) / 700));
     p = Math.max(m.p, Math.min(1, p));
     m.p = p;
-    this.place(m.way ? along(m.way, p) : [m.from[0] + (m.to[0] - m.from[0]) * p, m.from[1] + (m.to[1] - m.from[1]) * p]);
+    this.place(m.way ? along(m.way, p) : lerp(m.from, m.to, p));
     m.onProgress?.(p);
     if (p < 1) this.frame = requestAnimationFrame(this.step);
     else { this.move = null; this.setDrift(m.wanderKm); m.onArrive?.(); }
@@ -282,7 +282,7 @@ function wayOf(line: LonLat[]): Way {
 function along({ line, ds, total }: Way, p: number): LonLat {
   let left = p * total;
   for (let k = 0; k < ds.length; k++) {
-    if (left <= ds[k] && ds[k] > 0) { const t = left / ds[k]; return [line[k][0] + (line[k + 1][0] - line[k][0]) * t, line[k][1] + (line[k + 1][1] - line[k][1]) * t]; }
+    if (left <= ds[k] && ds[k] > 0) return lerp(line[k], line[k + 1], left / ds[k]);
     left -= ds[k];
   }
   return line[line.length - 1];

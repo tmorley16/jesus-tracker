@@ -8,6 +8,8 @@ import { collapseHidden, layout, nav, playhead, useUI, type NotesShown } from '.
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
 const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/** Each pane's one gospel, the same array every render, so its rows (memoised) don't render again with the stack. */
+const ONE = Object.fromEntries(BOOKS.map((b) => [b, [b]])) as Record<Book, Book[]>;
 
 interface Geo { tops: number[]; heights: number[]; vis: number[]; origin: number; span: number; anchor: number }
 
@@ -34,7 +36,7 @@ let opened = false;
 /** Whether each reader is gliding (to a place the timeline or search asked for). */
 const gliders = new Set<() => boolean>();
 
-/** Phones, Settings › Gospels › Shrink missing: a track (a row of panes, or a column) none of whose gospels has the
+/** Phones, Gospel settings › Shrink missing: a track (a row of panes, or a column) none of whose gospels has the
  *  section at the reading line shrinks to half once the reading comes to rest; one that has it grows back at once, even
  *  mid-scroll. Rows and columns change together, written straight to the style (`write`), so nothing renders again. */
 function useShrink(ref: RefObject<HTMLElement | null>, shown: Book[], rows: number[][], cols: number[][], write: (el: HTMLElement, rows: string[], cols: string[]) => void) {
@@ -211,7 +213,7 @@ export function Stack({ texts, shown, arrangement }: { texts: Texts | null; show
   return (
     <div className="stack" ref={ref} data-arrangement={arrangement} data-count={shown.length} data-tracks={tracks} data-locked={locked ? '' : undefined}>
       <StackHead />
-      {shown.map((b, k) => <Synopsis key={b} texts={texts} shown={[b]} single compact pane={k} onScreen={shown} />)}
+      {shown.map((b, k) => <Synopsis key={b} texts={texts} shown={ONE[b]} single compact pane={k} onScreen={shown} />)}
     </div>
   );
 }
@@ -494,12 +496,17 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   );
 }
 
+/** The chapter of a gospel at or before a row. */
+function chapterAt(book: Book, row: number): number | null {
+  for (let i = row; i >= 0; i--) { const r = ROWS[i].refs[book]; if (r) return r[r.length - 1][2]; }
+  return null;
+}
+
 function ColumnHead({ book, short }: { book: Book; short: boolean }) {
-  const current = useUI((s) => s.current);
+  // Renders again only when the chapter changes, not at every section.
+  const chapter = useUI((s) => chapterAt(book, s.current));
   // An × at the right hides the gospel, as its chip does (at least one panel stays on screen).
   const canHide = useUI((s) => s.visible.length > 1 || s.map);
-  let chapter: number | null = null;
-  for (let i = current; i >= 0 && chapter === null; i--) { const r = ROWS[i].refs[book]; if (r) chapter = r[r.length - 1][2]; }
   return (
     <div className="col-h" style={gospelVar(book)}>
       <span className="dot" aria-hidden="true" />

@@ -85,7 +85,7 @@ export default function Reader() {
   const split = map ? (gospels.length ? 'split' : 'map') : 'text';
   return (
     <div className="jt" data-size={textSize} data-compact={compact ? '' : undefined}>
-      {!side && <Toolbar compact={compact} one={one} gospels={gospels} />}
+      {!side && <Toolbar gospels={gospels} />}
       {(timeline || compact) && <Timeline shown={mapBooks} compact={compact} side={side ? { left: <LaneChips one={one} gospels={gospels} />, right: <SideTools /> } : undefined} corner={side ? undefined : <TimelineConfig desk />} />}
       <div className="panes" ref={panesRef} data-layout={split} style={{ '--map-share': String(share) } as CSSProperties}>
         {gospels.length > 1 && compact && (phoneGospels === 'stacked' || phoneGospels === 'grid')
@@ -181,37 +181,29 @@ function SideTools() {
   );
 }
 
-function Toolbar({ compact, one, gospels }: { compact: boolean; one: boolean; gospels: Book[] }) {
+/** Desktops only (phones have their controls beside the timeline). */
+function Toolbar({ gospels }: { gospels: Book[] }) {
   const map = useUI((s) => s.map);
   const timeline = useUI((s) => s.timeline);
   const ui = useUI.getState();
-  const [searching, setSearching] = useState(false);
-  const pick = (b: Book) => pickBook(b, one, gospels);
   return (
     <header className="toolbar">
-      {!compact && <p className="brand">Jesus Tracker</p>}
+      <p className="brand">Jesus Tracker</p>
       <div className="gospels" role="group" aria-label="Panels on screen">
         {BOOKS.map((b) => (
-          <button type="button" key={b} aria-pressed={gospels.includes(b)} style={gospelVar(b)} onClick={() => pick(b)} title={`Show or hide ${BOOK_NAME[b]} (${BOOKS.indexOf(b) + 1})`}>
-            <i aria-hidden="true" />{compact ? BOOK_ABBR[b] : BOOK_NAME[b]}
+          <button type="button" key={b} aria-pressed={gospels.includes(b)} style={gospelVar(b)} onClick={() => ui.toggleBook(b)} title={`Show or hide ${BOOK_NAME[b]} (${BOOKS.indexOf(b) + 1})`}>
+            <i aria-hidden="true" />{BOOK_NAME[b]}
           </button>
         ))}
         <button type="button" className="map-chip" aria-pressed={map} aria-label="Map" onClick={ui.toggleMap} title="Show or hide the map (M)">
-          <MapIcon />{!compact && 'Map'}
+          <MapIcon />Map
         </button>
-        <button type="button" className="map-chip timeline-chip" aria-pressed={timeline} aria-label="Timeline" onClick={ui.toggleTimeline} title="Show or hide the timeline (T)">
+        <button type="button" className="map-chip" aria-pressed={timeline} aria-label="Timeline" onClick={ui.toggleTimeline} title="Show or hide the timeline (T)">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M3 9v6M21 9v6" /><rect x="10" y="7" width="4" height="10" rx="1.5" /></svg>
-          {!compact && 'Timeline'}
+          Timeline
         </button>
       </div>
-      {(!compact || searching) && <GoTo compact={compact} onDone={() => setSearching(false)} />}
-      <div className="tools">
-        {compact && !searching && (
-          <button type="button" className="icon" aria-label="Go to a passage or event" onClick={() => setSearching(true)}>
-            <SearchIcon />
-          </button>
-        )}
-      </div>
+      <GoTo compact={false} onDone={() => {}} />
     </header>
   );
 }

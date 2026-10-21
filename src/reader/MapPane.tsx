@@ -24,9 +24,9 @@ const JERUSALEM_SITES = new Set(['jerusalem', 'gethsemane', 'golgotha', 'gabbath
 // Places packed close together: their labels appear only once the map is zoomed in.
 const CLOSE_SITES = new Set([...JERUSALEM_SITES, 'bethany', 'emmaus', 'gennesaret', 'magadan', 'bethsaida']);
 CLOSE_SITES.delete('jerusalem');
-// Close enough to read the place, wide enough to see its neighbours and the lie of the land.
 /** The seas' names, as the lake's is written (labels only, given way to anything the reader needs). */
 const SEAS: { name: string; ll: LonLat }[] = [{ name: 'Dead Sea', ll: [35.49, 31.47] }, { name: 'Mediterranean Sea', ll: [34.45, 32.45] }];
+// Close enough to read the place, wide enough to see its neighbours and the lie of the land.
 const zoomFor = (key: string, p: PlaceData) => (JERUSALEM_SITES.has(key) ? 12.4 : key === 'bethany' ? 11 : p.kind === 'water' ? 9 : 9.2);
 const EMPTY = { type: 'FeatureCollection' as const, features: [] };
 // The standard view: the land of the gospels, from Tyre to the Dead Sea.
@@ -97,7 +97,7 @@ function placeLinks(key: string, p: PlaceData): Link[] {
   links.push(p.kind === 'region' ? { label: 'OpenStreetMap', href: osmUrl(ll, z) } : { label: 'Google Maps', href: googleUrl(ll) });
   return links.filter((l) => webUrl(l.href));
 }
-const linksHtml = (links: Link[]) => `<p class="pp-links">${links.filter((l) => webUrl(l.href)).map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join('')}</p>`;
+const linksHtml = (links: Link[]) => `<p class="pp-links">${links.map((l) => `<a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}</a>`).join('')}</p>`;
 /** A modern name OpenBible gives for where the place is shown, when it differs from the place's own. */
 function modernName(p: PlaceData): string | null {
   const label = p.candidates[0]?.label ?? '';
@@ -112,92 +112,53 @@ const peakCorners = (peaks: Peak[]): LonLat[] => peaks.flatMap(({ lonlat: [x, y]
   return [[x - dx, y - dy], [x + dx, y + dy]] as LonLat[];
 });
 
-interface PopupContent { ll: LonLat; html: string; /** The place shown, whose stories the timeline marks. */ place?: string; /** A peak shown (its Wikidata ID). */ peak?: string }
-/** A popup's content: `full` for a click or tap (a place's photo and stories), otherwise the short hover version. */
-type Content = (full: boolean) => PopupContent | null;
+interface PopupContent { ll: LonLat; html: string }
 /**
- * One popup for the map. Hovering (mouse) previews it, with a grace period to reach its links; a click or tap pins the
- * full version until it's closed or the map is clicked. While a place's popup is open, the timeline marks the stories
- * set there. The popup is kept to the room on the roomier side of its point, scrolling within if it needs more.
+ * One popup for the map, for hovering (mouse): a preview of a place or peak, with a grace period to reach its links.
+ * A click or tap shows the place or peak in the place card instead (`pick`). While a place's popup is open, the
+ * timeline marks the stories set there. The popup is kept to the room on the roomier side of its point.
  */
 type Marks = { key: string | null; rows: number[] };
-function makePopup(map: MlMap, pick: (place: string) => boolean, cardMarks: () => Marks) {
+function makePopup(map: MlMap, pick: (key: string) => void, cardMarks: () => Marks) {
   const popup = new Popup({ closeButton: false, closeOnClick: false, closeOnMove: false, focusAfterOpen: false, offset: 14, maxWidth: '300px', className: 'map-popup' });
-  let showT = 0, hideT = 0, owner: object | null = null, pinned = false;
-  const pin = (on: boolean) => { pinned = on; popup.getElement()?.classList.toggle('pinned', on); };
-  const open = (c: PopupContent, by: object, pinIt: boolean) => {
+  let showT = 0, hideT = 0, owner: object | null = null;
+  const open = (c: PopupContent, by: object, place: string | null) => {
     clearTimeout(hideT);
     owner = by;
     popup.setLngLat(c.ll).setHTML(c.html);
     if (!popup.isOpen()) popup.addTo(map);
-    pin(pinIt);
     const el = popup.getElement();
     const h = map.getContainer().clientHeight, y = map.project(c.ll).y;
-    let room = Math.max(y, h - y) - 34;
-    // A pinned card short of room (a phone's map): move the place towards the far edge so the card fits.
-    const want = Math.min(h - 60, 330);
-    if (pinIt && room < want) {
-      const above = y >= h - y, shift = Math.min(want - room, above ? h - 26 - y : y - 26);
-      if (shift > 0) { map.panBy([0, above ? -shift : shift], { animate: false }); room += shift; }
-    }
     const body = el.querySelector<HTMLElement>('.maplibregl-popup-content');
-    if (body) {
-      body.style.maxHeight = `${Math.max(120, room)}px`;
-      body.style.setProperty('--pp-photo-max', `${Math.round(Math.max(56, room * 0.45))}px`);
-      // If the name, the shortest story list and the links at the foot still don't fit, the photo gives way.
-      const img = body.querySelector<HTMLElement>('.pp-photo img');
-      for (let k = 0; img && k < 3; k++) {
-        const over = body.scrollHeight - body.clientHeight;
-        if (over <= 0) break;
-        // On a short map the photo goes altogether before the links or the name would be cut off.
-        if (img.offsetHeight <= 56) { img.closest<HTMLElement>('.pp-photo')!.style.display = 'none'; break; }
-        body.style.setProperty('--pp-photo-max', `${Math.round(Math.max(56, img.offsetHeight - over - 2))}px`);
-      }
-    }
+    if (body) body.style.maxHeight = `${Math.max(120, Math.max(y, h - y) - 34)}px`;
     popup.setLngLat(c.ll); // re-anchor for the capped height
     el.onpointerenter = () => clearTimeout(hideT);
     el.onpointerleave = (e) => { if (e.pointerType === 'mouse') hideSoon(); };
-    el.onclick = (e) => {
-      e.stopPropagation();
-      const t = e.target as Element;
-      const story = t.closest<HTMLElement>('[data-row]');
-      if (!story) return;
-      e.preventDefault();
-      pin(true); // stay open, to step through the place's stories
-      el.querySelectorAll('[data-row][aria-current]').forEach((a) => a.removeAttribute('aria-current'));
-      story.setAttribute('aria-current', 'true');
-      nav.showRow?.(Number(story.dataset.row));
-    };
-    placeMarks.setState(c.place ? { key: c.place, rows: storiesAt(c.place).map((st) => st.i) } : { key: null, rows: [] });
+    el.onclick = (e) => e.stopPropagation();
+    placeMarks.setState(place ? { key: place, rows: storiesAt(place).map((st) => st.i) } : { key: null, rows: [] });
   };
   const hide = () => {
-    clearTimeout(showT); clearTimeout(hideT); popup.remove(); owner = null; pinned = false;
+    clearTimeout(showT); clearTimeout(hideT); popup.remove(); owner = null;
     const back = cardMarks();
     if (placeMarks.getState().key !== back.key) placeMarks.setState(back);
   };
-  const hideSoon = () => { clearTimeout(showT); clearTimeout(hideT); if (!pinned) hideT = window.setTimeout(hide, 300); };
-  const hover = (by: object, content: Content) => {
-    clearTimeout(hideT); clearTimeout(showT);
-    // Pinned, or already showing this one (the mouse moving about a region's area): nothing to rebuild.
-    if (pinned || (owner === by && popup.isOpen())) return;
-    showT = window.setTimeout(() => { const c = content(false); if (c) open(c, by, false); }, 150);
-  };
-  const show = (by: object, content: Content) => {
-    clearTimeout(showT);
-    if (owner === by && popup.isOpen() && pinned) { hide(); return; }
-    const c = content(true);
-    const key = c?.place ?? (c?.peak ? `peak:${c.peak}` : null);
-    if (key && pick(key)) { hide(); return; } // the place card shows it instead
-    if (c) open(c, by, true);
-  };
-  const attach = (el: HTMLElement, content: Content) => {
-    el.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hover(el, content); });
+  const hideSoon = () => { clearTimeout(showT); clearTimeout(hideT); hideT = window.setTimeout(hide, 300); };
+  /** `key`: the place's key, or `peak:` and the peak's Wikidata ID. */
+  const attach = (el: HTMLElement, key: string, content: () => PopupContent) => {
+    const place = key.startsWith('peak:') ? null : key;
+    el.addEventListener('pointerenter', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      clearTimeout(hideT); clearTimeout(showT);
+      // Already showing this one (the mouse moving about a region's area): nothing to rebuild.
+      if (owner === el && popup.isOpen()) return;
+      showT = window.setTimeout(() => open(content(), el, place), 150);
+    });
     el.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') hideSoon(); });
-    el.addEventListener('click', (e) => { e.stopPropagation(); show(el, content); });
+    el.addEventListener('click', (e) => { e.stopPropagation(); clearTimeout(showT); pick(key); hide(); });
   };
   map.on('click', hide);
-  map.on('dragstart', () => { if (!pinned) hide(); });
-  return { attach, hideSoon, hide };
+  map.on('dragstart', hide);
+  return { attach, hide };
 }
 
 const CREDITS = 'Natural Earth · Places: <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY 4.0) · Peaks: Wikidata · Terrain: USGS SRTM, GMTED2010; NOAA ETOPO1 · Modern: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)';
@@ -222,7 +183,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const landLight = useRef<LandLight | null>(null);
   const drawRoute = useRef<() => void>(() => {});
   // What the route's sources were last sent, so an unchanged route isn't sent again.
-  const sent = useRef<{ plan: unknown; trail: string; arrows: string }>({ plan: null, trail: '', arrows: '' });
+  const sent = useRef<{ plan: unknown; trail: string; arrows: string; other: Record<string, string> }>({ plan: null, trail: '', arrows: '', other: {} });
   // The lakes' shapes, so the shore of the water he's at can light up.
   const lakeShapes = useRef<FC | null>(null);
   const [places, setPlaces] = useState<Record<string, PlaceData> | null>(null);
@@ -246,12 +207,12 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const trail = useUI((s) => s.trail);
   const units = useUI((s) => s.units);
   const scaleRef = useRef<ScaleControl | null>(null);
-  // Phones: the map's toggles and credits behind one button.
-  // Phones: the card can fold away to the right, leaving a tab with the place's name; it starts folded there. It is
-  // also where a tapped place shows (in place of the popup): the place, the stories set there and its links.
+  // The card can fold away (to the right on phones, where it starts folded; to the left on desktops), leaving a tab
+  // with the place's name. It is also where a clicked or tapped place shows: the place, its photo, links and stories.
   const [cardFolded, setCardFolded] = useState(compact);
-  // Desktops with the text beside the map: the card starts brief; Show more adds the photo, links and stories.
+  // The card starts brief; its expand button adds the photo, links and stories.
   const [cardOpen, setCardOpen] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const cardMarks = useRef<Marks>({ key: null, rows: [] });
   const [picked, setPicked] = useState<string | null>(null);
   // Moving along the text takes the card back from a place clicked to the place in the text.
@@ -325,8 +286,8 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           land: { type: 'geojson', data: land },
           lakes: { type: 'geojson', data: lakes },
           rivers: { type: 'geojson', data: rivers },
-          // The land coloured by height (scripts/build-relief.mjs), shown with Land › By height.
-          relief: { type: 'image', url: new URL('data/relief.png', document.baseURI).href, coordinates: relief.corners as [[number, number], [number, number], [number, number], [number, number]] },
+          // The land coloured by height (scripts/build-relief.mjs), shown with map layers › Terrain.
+          relief: { type: 'image', url: new URL('data/relief.webp', document.baseURI).href, coordinates: relief.corners as [[number, number], [number, number], [number, number], [number, number]] },
           veil: { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[[W, S], [E, S], [E, N], [W, N], [W, S]]] } } },
           area: { type: 'geojson', data: EMPTY },
           trail: { type: 'geojson', data: EMPTY, lineMetrics: true },
@@ -400,7 +361,6 @@ export default function MapPane({ books, compact = false, withText = false }: { 
         setPicked(place);
         setCardFolded(false);
         setCardOpen(true);
-        return true;
       }, () => cardMarks.current);
       popup.current = pop;
       // A click on the map away from any place takes the card back to the place in the text.
@@ -438,7 +398,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
         new Marker({ element: el, anchor, offset: p.kind === 'site' ? [-4, 0] : [0, 0] }).setLngLat(p.candidates[0].lonlat).addTo(map);
         markers.current.places.set(key, el);
         labels.current.places.set(key, { el, ll: p.candidates[0].lonlat, anchor, dx: p.kind === 'site' ? -4 : 0, priority: 5, flips: p.kind === 'site' });
-        pop.attach(el, (full) => ({ ll: p.candidates[0].lonlat, html: placePopup(key, p, full), place: key }));
+        pop.attach(el, key, () => ({ ll: p.candidates[0].lonlat, html: placePopup(key, p) }));
       }
       for (const sea of SEAS) {
         const el = document.createElement('div');
@@ -514,7 +474,8 @@ export default function MapPane({ books, compact = false, withText = false }: { 
       traveller.current = null;
       mapRef.current?.remove();
       mapRef.current = null;
-      sent.current = { plan: null, trail: '', arrows: '' };
+      sent.current = { plan: null, trail: '', arrows: '', other: {} };
+      head.current = 1;
     };
   }, []);
 
@@ -525,6 +486,12 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     const tr = traveller.current;
     if (!map || !tr || !places || !ready) return;
     const src = (id: string) => map.getSource(id) as GeoJSONSource | undefined;
+    // A source sent its data only when what it shows (`key`) has changed.
+    const send = (id: string, key: string, data: () => FC) => {
+      if (sent.current.other[id] === key) return;
+      sent.current.other[id] = key;
+      src(id)?.setData(data());
+    };
 
     // The line: Jesus' places so far, one feature per leg, newest leg age 0 (route.ts).
     const pts = routeTo(routeSteps, current);
@@ -566,6 +533,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     const reveal = !quiet && (continuing || !!(forward && target && end && dep && from && haversineKm(end, target.to) < 0.5 && haversineKm(dep, from) < 0.1));
     revealing.current = reveal ? legKey : '';
     const setHead = (h: number) => {
+      if (h === head.current) return;
       head.current = h;
       map.setPaintProperty('trail', 'line-gradient', trailGradient(h));
     };
@@ -579,7 +547,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     const trailKey = [...pts.map(stopId), quiet].join('|');
     if (sent.current.plan !== plan || sent.current.trail !== trailKey) {
       src('trail')?.setData({ type: 'FeatureCollection', features: legs.map((line, k) => ({ type: 'Feature', properties: { age: legs.length - 1 - k, q: q(legs.length - 1 - k) }, geometry: { type: 'LineString', coordinates: line } })) });
-      sent.current = { plan, trail: trailKey, arrows: '' };
+      sent.current = { ...sent.current, plan, trail: trailKey, arrows: '' };
     }
     const recentLegs = legs.slice(-3).map((line, k, all) => ({ age: all.length - 1 - k, mid: halfway(line) }));
     drawRoute.current = () => {
@@ -590,9 +558,11 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     };
     drawRoute.current();
     // The heading sets off from where he waits.
-    src('heading')?.setData(tip && target ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [target.to, tip] } }] } : EMPTY);
-    const ring = focus.kind === 'likely' ? circleRing(focus.center, focus.radius) : focus.kind === 'region' ? circleRing(focus.place.candidates[0].lonlat, focus.radius) : null;
-    src('area')?.setData(ring ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } }] } : EMPTY);
+    const headingKey = tip && target ? `${target.to}|${tip}` : '';
+    send('heading', headingKey, () => (tip && target ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [target.to, tip] } }] } : EMPTY));
+    const areaAt = focus.kind === 'likely' ? { c: focus.center, r: focus.radius } : focus.kind === 'region' ? { c: focus.place.candidates[0].lonlat, r: focus.radius } : null;
+    const ring = areaAt && circleRing(areaAt.c, areaAt.r);
+    send('area', areaAt ? `${areaAt.c}|${areaAt.r}` : '', () => (ring ? { type: 'FeatureCollection', features: [{ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ring] } }] } : EMPTY));
 
     // Jesus' marker: travels to the place (or where the route visits the area) as the camera does, along the line as the
     // newest leg grows behind it; in a scene he isn't in, it rests, dimmed, where he was last placed (travelling back
@@ -680,10 +650,10 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     // line is heading.
     if (tip && ahead && target) {
       const bearing = bearingDeg(target.to, tip);
-      src('heading-tip')?.setData({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: { bearing }, geometry: { type: 'Point', coordinates: tip } }] });
+      send('heading-tip', headingKey, () => ({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: { bearing }, geometry: { type: 'Point', coordinates: tip } }] }));
       const east = bearing < 180;
       add('map-heading', tip, `<span>toward ${esc(ahead.place.name)}</span>`, east ? 'left' : 'right', true, east ? 12 : -12);
-    } else src('heading-tip')?.setData(EMPTY);
+    } else send('heading-tip', '', () => EMPTY);
 
     let t = 0;
     const fly = (fn: () => void) => { t = window.setTimeout(fn, 220); };
@@ -693,7 +663,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     const corners = peakCorners(textPeaks);
     // The card covers the top of the map, so whatever is framed sits below it.
     const pad = (p: number) => {
-      const card = boxRef.current?.parentElement?.querySelector<HTMLElement>('.map-card');
+      const card = cardRef.current;
       const below = card ? card.offsetTop + card.offsetHeight : 0;
       return { top: Math.min(p + below, map.getContainer().clientHeight * 0.45), right: p, bottom: p, left: p };
     };
@@ -773,7 +743,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
       el.innerHTML = isPlace ? '<i></i>' : `<i></i><span>${esc(p.name)}<small> ≈ ${p.elev} m</small></span>`;
       markers.current.peaks.push(new Marker({ element: el, anchor: 'left', offset: [-6, 0] }).setLngLat(p.lonlat).addTo(map));
       if (!isPlace) labels.current.peaks.push({ el, ll: p.lonlat, anchor: 'left', dx: -6, priority: givenNamed ? 0.5 : 2, flips: true });
-      popup.current?.attach(el, () => ({ ll: p.lonlat, html: peakPopup(p), peak: p.id }));
+      popup.current?.attach(el, `peak:${p.id}`, () => ({ ll: p.lonlat, html: peakPopup(p) }));
     }
     declutterSoon.current(true);
     const ids = [...new Set(textPeaks.map((p) => p.cluster))];
@@ -799,8 +769,8 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     return () => { live = false; };
   }, [nearPeaks, textPeaks, peaks, placesByWiki, givenNamed, ready]);
 
-  // Light on the land (Settings): with it on, an area is shown by the light itself rather than a shaded circle (the
-  // circle stays, unseen, for hovering). From his death until the angel at the tomb the light goes out.
+  // Light on the land (map layers › Effects): with it on, an area is shown by the light itself rather than a shaded
+  // circle. From his death until the angel at the tomb the light goes out.
   const dead = useStore(scene, (s) => s.dead);
   useEffect(() => {
     const map = mapRef.current, light = landLight.current;
@@ -818,7 +788,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     for (const id of ['trail-old', 'trail', 'arrows', 'heading', 'heading-tip']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', trail ? 'visible' : 'none');
   }, [trail, ready]);
 
-  // Land › By height: the relief image shows, and the water turns bluer (app.css, .map-box[data-land]).
+  // Terrain: the relief image shows, and the water turns bluer (app.css, .map-box[data-land]).
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || !map.getLayer('relief')) return;
@@ -882,26 +852,6 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     cardMarks.current = marksKey ? { key: marksKey, rows: storiesAt(marksKey).map((st) => st.i) } : { key: null, rows: [] };
     if (placeMarks.getState().key !== marksKey) placeMarks.setState(cardMarks.current);
   }, [marksKey]);
-  /** The stories set at a place, each a link that takes the reader there (phones' card). */
-  const stories = (key: string) => {
-    const list = storiesAt(key);
-    if (!list.length) return null;
-    return (
-      <ol className="pp-stories" aria-label="Stories set here">
-        {list.map((st) => {
-          const r = ROWS[st.i];
-          const notes = [st.books && st.books.map((b) => BOOK_ABBR[b]).join(', '), st.implied && 'implied'].filter(Boolean).join(' · ');
-          return (
-            <li key={st.i}>
-              <a href="#" aria-current={r.sectionId === row.sectionId ? 'true' : undefined} onClick={(e) => { e.preventDefault(); nav.showRow?.(st.i); }}>
-                <span className="pp-n">§{r.n}</span> {r.sectionTitle}{notes && <> <em>{notes}</em></>}
-              </a>
-            </li>
-          );
-        })}
-      </ol>
-    );
-  };
   const effects = landLightOn && wander;
   // Desktops with the text open beside the map: each says a thing once. The text gives the story's title (and drops its
   // place chip, app.css); the card gives the place as its title, over its photo with the links and the photographer's
@@ -922,12 +872,27 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const storyList = cardKey ? storiesAt(cardKey) : [];
   const showStories = storyList.length > 0 && !(storyList.length === 1 && ROWS[storyList[0].i].sectionId === row.sectionId);
   const more = !!(photo || linkPlace || showStories);
+  /** The stories set at the place, each a link that takes the reader there. */
+  const storiesEl = () => (
+    <ol className="pp-stories" aria-label="Stories set here">
+      {storyList.map((st) => {
+        const r = ROWS[st.i];
+        const notes = [st.books && st.books.map((b) => BOOK_ABBR[b]).join(', '), st.implied && 'implied'].filter(Boolean).join(' · ');
+        return (
+          <li key={st.i}>
+            <a href="#" aria-current={r.sectionId === row.sectionId ? 'true' : undefined} onClick={(e) => { e.preventDefault(); nav.showRow?.(st.i); }}>
+              <span className="pp-n">§{r.n}</span> {r.sectionTitle}{notes && <> <em>{notes}</em></>}
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  );
   const open = more && cardOpen;
   // The card folds towards its own side: right on phones (its tab sits at the right), left on desktops (top left).
   const chevron = (towards: 'left' | 'right') => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={towards === 'right' ? 'M10 6l6 6-6 6' : 'M14 6l-6 6 6 6'} /></svg>;
   const photoBy = photo ? creditName(photo.author) : null;
   // Phones, brief: the links fill the room beside the buttons where the card's own text leaves it empty.
-  const cardRef = useRef<HTMLDivElement>(null);
   const [briefLinks, setBriefLinks] = useState(false);
   useLayoutEffect(() => {
     const el = cardRef.current, btn = el?.querySelector('.mc-expand');
@@ -985,7 +950,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
         </>}
         {pickedPlace && <>
-          {(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <p className="map-place-name muted">A region</p> : today ? <p className="map-place-name muted">Shown at {today}</p> : null; })()}
+          {(() => { const sub = placeSub(pickedPlace.place); return sub && <p className="map-place-name muted">{sub}</p>; })()}
           {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
           <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
         </>}
@@ -1037,14 +1002,14 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           </p>
         )}
         </>}
-        {open && showStories && cardKey && stories(cardKey)}
+        {open && showStories && storiesEl()}
         {compact && !open && briefLinks && linkPlace && (
           <p className="map-links mc-brief-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
           </p>
         )}
         {!compact && more && !open && (() => {
-          const n = cardKey ? storiesAt(cardKey).length : 0;
+          const n = storyList.length;
           const what = [n > 1 ? `${n} stories here` : n === 1 ? '1 story here' : null, photo ? 'photo' : null, n ? null : 'links'].filter(Boolean).join(' · ');
           return <button type="button" className="mc-more" onClick={() => setCardOpen(true)}>{what.charAt(0).toUpperCase() + what.slice(1)}</button>;
         })()}
@@ -1070,20 +1035,15 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   );
 }
 
-function placePopup(key: string, p: PlaceData, full: boolean): string {
+/** What a place's popup and card say under its name: a region, or the modern site it's shown at. */
+function placeSub(p: PlaceData): string | null {
   const today = modernName(p);
-  const sub = p.kind === 'region' ? 'A region' : today ? `Shown at ${today}` : null;
-  const stories = full ? storiesHtml(key) : storiesAt(key).length ? '<p class="pp-h">Click for the photo and stories</p>' : '';
-  return `${full ? photoHtml(p) : ''}<p class="pp-title">${esc(p.name)}</p>${sub ? `<p class="pp-sub">${esc(sub)}</p>` : ''}${p.wiki?.note ? `<p class="pp-sub">Wikipedia link: ${esc(p.wiki.note)}</p>` : ''}${stories}${linksHtml(placeLinks(key, p))}`;
+  return p.kind === 'region' ? 'A region' : today ? `Shown at ${today}` : null;
 }
-function photoHtml(p: PlaceData): string {
-  const ph = p.photo;
-  if (!ph) return '';
-  const caption = ph.caption.charAt(0).toUpperCase() + ph.caption.slice(1);
-  const by = creditName(ph.author);
-  const title = [by ? `Photo: ${by}` : 'Photo', ph.licence, 'Wikimedia Commons'].filter(Boolean).join(' · ');
-  const credit = webUrl(ph.page) ? `<a href="${esc(ph.page)}" target="_blank" rel="noopener" title="${esc(title)}">${esc(by ?? 'Photo')}</a>` : `<span title="${esc(title)}">${esc(by ?? 'Photo')}</span>`;
-  return `<figure class="pp-photo"><img src="${esc(new URL(ph.src, document.baseURI).href)}" alt="${esc(caption)}" decoding="async"><figcaption>${esc(caption)}. ${credit}</figcaption></figure>`;
+function placePopup(key: string, p: PlaceData): string {
+  const sub = placeSub(p);
+  const stories = storiesAt(key).length ? '<p class="pp-h">Click for the photo and stories</p>' : '';
+  return `<p class="pp-title">${esc(p.name)}</p>${sub ? `<p class="pp-sub">${esc(sub)}</p>` : ''}${p.wiki?.note ? `<p class="pp-sub">Wikipedia link: ${esc(p.wiki.note)}</p>` : ''}${stories}${linksHtml(placeLinks(key, p))}`;
 }
 /** Just the photographer's name from a Commons author line ("Bill Rice from Flat Rock, MI, …" → "Bill Rice"); the link has the rest. */
 function creditName(author: string | null): string | null {
@@ -1091,23 +1051,11 @@ function creditName(author: string | null): string | null {
   const name = author.replace(/^The original uploader was /i, '').replace(/\s+(from|at|on)\s.*$/i, '').replace(/\s*\(.*$/, '').replace(/,.*$/, '').trim();
   return name || null;
 }
-/** The stories set at a place, each a link that takes the reader there. */
-function storiesHtml(key: string): string {
-  const stories = storiesAt(key);
-  if (!stories.length) return '';
-  const section = ROWS[useUI.getState().current].sectionId;
-  const items = stories.map((st) => {
-    const r = ROWS[st.i];
-    const notes = [st.books && st.books.map((b) => BOOK_ABBR[b]).join(', '), st.implied && 'implied'].filter(Boolean).join(' · ');
-    return `<li><a href="#" data-row="${st.i}"${r.sectionId === section ? ' aria-current="true"' : ''}><span class="pp-n">§${esc(r.n)}</span> ${esc(r.sectionTitle)}${notes ? ` <em>${esc(notes)}</em>` : ''}</a></li>`;
-  });
-  return `<ol class="pp-stories" aria-label="Stories set here">${items.join('')}</ol>`;
-}
 function peakLinks(p: Peak): Link[] {
   const links: Link[] = [];
   if (p.wiki) links.push({ label: 'Wikipedia', href: p.wiki.url });
   links.push({ label: 'Google Maps', href: googleUrl(p.lonlat) });
-  return links;
+  return links.filter((l) => webUrl(l.href));
 }
 const peakHeight = (p: Peak) => `≈ ${p.elev} m above sea level (terrain data); contours every ${p.interval} m`;
 function peakPopup(p: Peak): string {

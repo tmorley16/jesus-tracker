@@ -1,5 +1,5 @@
 {
-  "about": "Corners (top left, top right, bottom right, bottom left) of public/data/relief.png, built by scripts/build-relief.mjs.",
+  "about": "Corners (top left, top right, bottom right, bottom left) of public/data/relief.webp, built by scripts/build-relief.mjs.",
   "attribution": "Land colour: AWS Terrain Tiles (SRTM and GMTED2010, USGS; ETOPO1, NOAA).",
   "corners": [
     [

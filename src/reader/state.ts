@@ -7,7 +7,6 @@ export type { Spacing };
 export type Appearance = 'dynamic' | 'light' | 'dark';
 /** The map's land: one plain colour, or coloured by height (with a bluer sea). */
 export type LandColour = 'plain' | 'height';
-/** What marks "now" (the timeline's needle, the current section's heading): ink, or the gold of Jesus' marker. */
 export type TextSize = 's' | 'm' | 'l';
 /** Which of the BSB's footnotes the reader marks. */
 export type NotesShown = 'all' | 'textual' | 'none';
@@ -202,10 +201,10 @@ export const layout = createStore<{ starts: number[]; ends: number[]; years: Yea
 
 /** Phones (Reader lays out by the same query). */
 export const COMPACT_QUERY = '(max-width: 760px)';
-/** Whether the screen shows one gospel at a time: a phone set to that. */
 /** Whether the timeline leaves out the sections only hidden gospels tell (by default on desktops, not on phones). */
 export const collapseHidden = (collapse: boolean | null, compact: boolean) => collapse ?? !compact;
-export const oneAtATime = () => useUI.getState().phoneGospels === 'one' && window.matchMedia(COMPACT_QUERY).matches;
+/** Whether the screen shows one gospel at a time: a phone set to that. */
+const oneAtATime = () => useUI.getState().phoneGospels === 'one' && window.matchMedia(COMPACT_QUERY).matches;
 
 /** Go to a row, first making sure its passage is on screen: on a phone showing one gospel at a time, switch to a gospel that has it (to `book` when
  *  given); otherwise add one if none open has it (or `book` if it isn't open). A row no gospel has (only 1 Cor) changes
