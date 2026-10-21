@@ -369,8 +369,8 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .jt[data-compact] .cell-ref { margin: 2px 0 4px; }
 .jt[data-compact] .part-div { padding: 14px 12px 4px; }
 /* Side by side: narrow columns, smaller text, hyphenated. */
-.jt[data-compact] .reader:not([data-cols="1"]) .col-h { padding-inline: 6px; }
-.jt[data-compact] .reader:not([data-cols="1"]) .col-h .dot { display: none; }
+.jt[data-compact] .reader:not([data-cols="1"]) .col-h { gap: 4px; padding-inline: 6px; }
+.jt[data-compact] .reader:not([data-cols="1"]) .col-h .dot { flex: none; width: 7px; height: 7px; }
 .jt[data-compact] .reader:not([data-cols="1"]) .cell { padding: 2px 6px 10px; }
 .jt[data-compact] .reader:not([data-cols="1"]) .cell-ref { font-size: 0.68rem; }
 .jt[data-compact] .reader:not([data-cols="1"]) .cell-ref::before { display: none; }
