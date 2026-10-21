@@ -28,6 +28,8 @@ type XY = [number, number];
 const CELL = 1 / 4096; // culling grid cell, in mercator units (about 8 km here)
 const PIECE = 24; // most vertices in a piece of line
 const POINT_PX = 120; // radius of the light about a named place, in CSS pixels
+const FAR_ZOOM = [5.8, 7.2]; // the light fades out as the map zooms out across these
+const FAR_MIN = 0.03;
 const MAX_WINDOWS = 8, MAX_ZONES = 4, MAX_PEAKS = 6, MAX_POOLS = 4;
 const FLOATS = 4; // per vertex: x, y, class (a mountain line's band; < 0 ends a line), slope (< 0: not known)
 
@@ -475,6 +477,9 @@ export class LandLight implements CustomLayerInterface {
     // Centre and reach: the pool about the marker, blended into the area as it grows to cover it.
     const zoom = map.getZoom(), dpr = map.getPixelRatio(), lat = map.getCenter().lat;
     const pointR = POINT_PX / (512 * 2 ** zoom);
+    // Zoomed far out the pool would reach the edge of the region the contours cover and show it as a box, so the light
+    // dies away as the map zooms out past the broad view of the land.
+    const far = FAR_MIN + (1 - FAR_MIN) * band(zoom, FAR_ZOOM[0], FAR_ZOOM[1]);
     const [ox, oy] = this.origin;
     const here: XY = at ?? (this.pools.length ? [this.pools[0][0] + ox, this.pools[0][1] + oy] : [ox, oy]);
     const c: XY = area && e > 0 ? [here[0] + (area.c[0] - here[0]) * e, here[1] + (area.c[1] - here[1]) * e] : here;
@@ -505,7 +510,7 @@ export class LandLight implements CustomLayerInterface {
     gl.uniform1f(this.loc.u_radius, r);
     // A pool about him; covering an area, an even wash that fades towards its edge.
     gl.uniform1f(this.loc.u_inner, 0.1 + 0.4 * e);
-    gl.uniform1f(this.loc.u_strength, (0.85 - 0.15 * e) * s);
+    gl.uniform1f(this.loc.u_strength, (0.85 - 0.15 * e) * s * far);
     // Classes (200, 100, 50, 25, 12.5 m) come in as the map zooms in, the 100 m ones only past the broad views of a
     // region (which read best with the 200 m lines alone); the slope then decides where each shows.
     const kinds = this.kinds;
@@ -525,8 +530,8 @@ export class LandLight implements CustomLayerInterface {
     gl.uniform1i(this.loc.u_zoneCount, zones.length);
     gl.uniform3fv(this.loc.u_pools, pack(this.poolsU, this.pools, 3));
     gl.uniform1i(this.loc.u_poolCount, this.pools.length);
-    gl.uniform1f(this.loc.u_poolStrength, 0.75 * pv);
-    gl.uniform1f(this.loc.u_outline, 0.9 * ov);
+    gl.uniform1f(this.loc.u_poolStrength, 0.75 * pv * far);
+    gl.uniform1f(this.loc.u_outline, 0.9 * ov * far);
     gl.disable(gl.DEPTH_TEST);
     gl.disable(gl.STENCIL_TEST);
     gl.disable(gl.CULL_FACE);

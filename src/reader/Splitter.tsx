@@ -37,6 +37,7 @@ export function Splitter({ panesRef, share, vertical }: { panesRef: RefObject<HT
 
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault(); // no text selection or native drag (of a link nearby) to cancel the pointer mid-resize
     e.currentTarget.setPointerCapture(e.pointerId);
     document.body.dataset.dragging = '';
   };

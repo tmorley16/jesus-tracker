@@ -16,6 +16,7 @@ import { nav, placeMarks, scene, useUI } from './state';
 import { useStore } from 'zustand';
 import { LandLight } from './landLight';
 import { TravellerMarker } from './traveller';
+import relief from '../data/relief.json';
 
 setWorkerUrl(new URL(workerUrl, import.meta.url).href);
 
@@ -38,6 +39,8 @@ const PEAK_REACH = 20;
 const SPLIT_KM = 12;
 // From his birth, while he rests in a scene he isn't in, a little of his light on the land stays (a share of its strength).
 const RESTING_LIGHT = 0.35;
+/** How strongly the land's height colour lies over the plain land. */
+const RELIEF_OPACITY = 0.85;
 const ABBR: Record<string, string> = { ...BOOK_ABBR, ACT: 'Acts' };
 // How often each place is named, for deciding which labels win when they crowd.
 const MENTIONS = new Map<string, number>();
@@ -189,7 +192,7 @@ function makePopup(map: MlMap, pick: (place: string) => boolean) {
   };
   map.on('click', hide);
   map.on('dragstart', () => { if (!pinned) hide(); });
-  return { attach, hover, show, hideSoon, hide };
+  return { attach, hideSoon, hide };
 }
 
 const CREDITS = 'Natural Earth · Places: <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY 4.0) · Peaks: Wikidata · Terrain: USGS SRTM, GMTED2010; NOAA ETOPO1 · Modern: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)';
@@ -197,7 +200,7 @@ const CREDITS = 'Natural Earth · Places: <a href="https://www.openbible.info/ge
 /** Phones' credits, short: each source and its licence. */
 const SHORT_CREDITS = '<a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre</a> · Natural Earth · <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY 4.0) · Wikidata · SRTM, GMTED2010, ETOPO1 · <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)';
 
-export default function MapPane({ books, compact = false }: { books: Book[]; compact?: boolean }) {
+export default function MapPane({ books, compact = false, withText = false }: { books: Book[]; compact?: boolean; withText?: boolean }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const traveller = useRef<TravellerMarker | null>(null);
@@ -205,7 +208,6 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
   const head = useRef(1); // how much of the newest leg is drawn (0–1)
   const revealing = useRef(''); // the leg being drawn as Jesus travels it
   const routeKeys = useRef<string[]>([]);
-  const focusRef = useRef<Focus>({ kind: 'none' });
   const declutterSoon = useRef<(remeasure?: boolean) => void>(() => {});
   const labels = useRef({ places: new Map<string, Label>(), focus: [] as Label[], peaks: [] as Label[], modern: new Map<string, Label>() });
   const markers = useRef({ places: new Map<string, HTMLElement>(), focus: [] as Marker[], peaks: [] as Marker[], modern: new Map<string, Marker>() });
@@ -232,10 +234,11 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
     return m;
   }, [places]);
   const current = useUI((s) => s.current);
-  const travellerKind = useUI((s) => s.traveller);
   const wander = useUI((s) => s.wander);
   const landLightOn = useUI((s) => s.landLight);
   const modern = useUI((s) => s.modern);
+  const landColour = useUI((s) => s.landColour);
+  const trail = useUI((s) => s.trail);
   const units = useUI((s) => s.units);
   const scaleRef = useRef<ScaleControl | null>(null);
   // Phones: the map's toggles and credits behind one button.
@@ -281,7 +284,6 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
   const nearPeaks = useMemo(() => peaksNow, [peakIds]); // eslint-disable-line react-hooks/exhaustive-deps
   // The peaks the text calls for: lit, joined to his light, and framed with the place shown.
   const textPeaks = useMemo(() => (autoMountains ? nearPeaks : []), [autoMountains, nearPeaks]);
-  focusRef.current = focus;
 
   useEffect(() => {
     let cancelled = false;
@@ -313,6 +315,8 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
           land: { type: 'geojson', data: land },
           lakes: { type: 'geojson', data: lakes },
           rivers: { type: 'geojson', data: rivers },
+          // The land coloured by height (scripts/build-relief.mjs), shown with Land › By height.
+          relief: { type: 'image', url: new URL('data/relief.png', document.baseURI).href, coordinates: relief.corners as [[number, number], [number, number], [number, number], [number, number]] },
           veil: { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[[W, S], [E, S], [E, N], [W, N], [W, S]]] } } },
           area: { type: 'geojson', data: EMPTY },
           trail: { type: 'geojson', data: EMPTY, lineMetrics: true },
@@ -323,6 +327,7 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
         layers: [
           { id: 'sea', type: 'background', paint: { 'background-color': c.water } },
           { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': c.land } },
+          { id: 'relief', type: 'raster', source: 'relief', paint: { 'raster-opacity': useUI.getState().landColour === 'height' ? RELIEF_OPACITY : 0, 'raster-fade-duration': 0 } },
           { id: 'coast', type: 'line', source: 'land', paint: { 'line-color': c.shore, 'line-width': 0.9 } },
           { id: 'lakes', type: 'fill', source: 'lakes', paint: { 'fill-color': c.water } },
           { id: 'lake-shore', type: 'line', source: 'lakes', paint: { 'line-color': c.shore, 'line-width': 1 } },
@@ -425,20 +430,9 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
         labels.current.places.set(key, { el, ll: p.candidates[0].lonlat, anchor, dx: p.kind === 'site' ? -4 : 0, priority: 5, flips: p.kind === 'site' });
         pop.attach(el, (full) => ({ ll: p.candidates[0].lonlat, html: placePopup(key, p, full), place: key }));
       }
-      // Hovering or clicking the highlighted region's circle shows the region's popup too (the map's own click
-      // handler, which closes the popup, runs first).
-      map.on('mousemove', 'area-fill', (e) => {
-        const f = focusRef.current;
-        if (f.kind === 'region') pop.hover(f, (full) => ({ ll: [e.lngLat.lng, e.lngLat.lat], html: placePopup(f.key, f.place, full), place: f.key }));
-      });
-      map.on('click', 'area-fill', (e) => {
-        const f = focusRef.current;
-        if (f.kind === 'region') pop.show(f, (full) => ({ ll: [e.lngLat.lng, e.lngLat.lat], html: placePopup(f.key, f.place, full), place: f.key }));
-      });
-      map.on('mouseleave', 'area-fill', () => pop.hideSoon());
+      // A region's popup comes only from its name, never from the area itself, so moving over the map stays clear.
 
       traveller.current = new TravellerMarker(map);
-      traveller.current.setKind(useUI.getState().traveller);
       // The light on the land follows the marker, drift and all (the route doesn't: it's the line as planned).
       traveller.current.onDraw = (ll) => landLight.current?.follow(ll);
       map.on('load', () => {
@@ -507,7 +501,6 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
     };
   }, []);
 
-  useEffect(() => { traveller.current?.setKind(travellerKind); }, [travellerKind, ready]);
 
   // Follow the reading position.
   useEffect(() => {
@@ -801,6 +794,21 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
     map.setPaintProperty('area-edge', 'line-opacity', landLightOn ? 0 : 1);
   }, [landLightOn, dead, ready]);
 
+  // Trail: the route's lines, arrows and heading shown or hidden.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    for (const id of ['trail-old', 'trail', 'arrows', 'heading', 'heading-tip']) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', trail ? 'visible' : 'none');
+  }, [trail, ready]);
+
+  // Land › By height: the relief image shows, and the water turns bluer (app.css, .map-box[data-land]).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !map.getLayer('relief')) return;
+    map.setPaintProperty('relief', 'raster-opacity', landColour === 'height' ? RELIEF_OPACITY : 0);
+    applyColours.current();
+  }, [landColour, ready]);
+
   // Modern places: towns and cities of today, and the modern names of the sites, when switched on.
   useEffect(() => {
     const map = mapRef.current, box = boxRef.current;
@@ -878,16 +886,26 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
     );
   };
   const effects = landLightOn && wander;
+  // Desktops with the text open beside the map: each says a thing once. The text gives the story's title (and drops its
+  // place chip, app.css); the card gives the place as its title, over its photo with the links and the photographer's
+  // credit where it has one, then the stories set there.
+  const lean = !compact && withText;
+  const leanPlace = lean && focusKey && places ? places[focusKey] : null;
+  const leanTitle = leanPlace ? leanPlace.name
+    : focus.kind === 'differ' ? focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')
+    : focus.kind === 'likely' ? 'Place not named' : null;
+  const photo = leanPlace?.photo ?? null;
+  const photoBy = photo ? creditName(photo.author) : null;
   return (
     <div className="map-pane">
-      <div className="map-box" ref={boxRef} role="region" aria-label="Map of the places in the accounts on screen" />
+      <div className="map-box" data-land={landColour} ref={boxRef} role="region" aria-label="Map of the places in the accounts on screen" />
       {compact && cardFolded && (
         <button type="button" className="map-card-tab" aria-label="Show the place card" onClick={() => setCardFolded(false)}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
           <span>{focusKey && places ? places[focusKey].name : focus.kind === 'differ' ? focus.places.map((p) => p.place.name).join(' · ') : focus.kind === 'likely' ? 'Place not named' : 'Place'}</span>
         </button>
       )}
-      <div className="map-card" aria-live="polite" hidden={compact && cardFolded}>
+      <div className="map-card" aria-live="polite" hidden={compact && cardFolded} data-lean={lean ? '' : undefined} data-photo={photo ? '' : undefined}>
         {compact && (
           <button type="button" className="map-card-fold" aria-label="Fold the place card away" onClick={() => { setCardFolded(true); setPicked(null); }}>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 6l6 6-6 6" /></svg>
@@ -900,12 +918,32 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
             {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
             <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
           </>
-        ) : <>
+        ) : lean ? <>
+          {photo ? (
+            <figure className="mc-photo">
+              <img src={new URL(photo.src, document.baseURI).href} alt={photo.caption} title={photo.caption.charAt(0).toUpperCase() + photo.caption.slice(1)} decoding="async" />
+              <figcaption>
+                <p className="mc-title">{leanTitle}</p>
+                <p className="mc-links">
+                  {linkPlace?.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
+                  {(() => {
+                    const tip = [photoBy ? `Photo: ${photoBy}` : 'Photo', photo.licence, 'Wikimedia Commons'].filter(Boolean).join(' · ');
+                    const text = `Photo: ${photoBy ?? 'Wikimedia Commons'}`;
+                    return webUrl(photo.page) ? <a className="mc-credit" href={photo.page} target="_blank" rel="noopener" title={tip}>{text}</a> : <span className="mc-credit" title={tip}>{text}</span>;
+                  })()}
+                </p>
+              </figcaption>
+            </figure>
+          ) : leanTitle && <p className="map-title">{leanTitle}</p>}
+        </> : <>
         <p className="kicker">§{row.n} · {books.filter((b) => row.refs[b]).map((b) => BOOK_ABBR[b]).join(' ')}</p>
         <p className="map-title">{rowTitle(row)}</p>
+        </>}
+        {!pickedPlace && <>
         {focus.kind === 'site' && (
           <>
-            <p className="map-place-name">{focus.place.name}{row.placeImplied && <em> · implied by the context</em>}</p>
+            {lean ? row.placeImplied && <p className="map-place-name muted">Implied by the context</p>
+              : <p className="map-place-name">{focus.place.name}{row.placeImplied && <em> · implied by the context</em>}</p>}
             {focus.place.candidates.length > 1 && (
               <ul className="cands">
                 {focus.place.candidates.map((c, i) => <li key={c.label}>{i === 0 ? 'Shown: ' : ''}{c.label}{c.score !== null && <span title="OpenBible.info score out of 1000: how well the reference works support this location"> · {c.score}</span>}</li>)}
@@ -913,16 +951,18 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
             )}
           </>
         )}
-        {focus.kind === 'region' && <p className="map-place-name">{focus.place.name} <em>· a region{row.placeImplied ? ', implied by the context' : ''}</em></p>}
+        {focus.kind === 'region' && (lean
+          ? <p className="map-place-name muted">A region{row.placeImplied ? ', implied by the context' : ''}</p>
+          : <p className="map-place-name">{focus.place.name} <em>· a region{row.placeImplied ? ', implied by the context' : ''}</em></p>)}
         {focus.kind === 'scene' && (
-          <p className="map-place-name">
-            {focus.place.name} <em>· Jesus isn’t in this scene{resting ? `; his marker waits at ${resting.name}, where the text last placed him` : '; the line shows only his movements'}</em>
+          <p className={lean ? 'map-place-name muted' : 'map-place-name'}>
+            {!lean && <>{focus.place.name} <em>· </em></>}<em>Jesus isn’t in this scene{resting ? `; his marker waits at ${resting.name}, where the text last placed him` : '; the line shows only his movements'}</em>
           </p>
         )}
-        {focus.kind === 'differ' && <p className="map-place-name">{focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')} <em>· the accounts name different places{focus.present ? '; his marker waits between them' : `; Jesus isn’t in this scene${resting ? `; his marker waits at ${resting.name}, where the text last placed him` : ''}`}</em></p>}
+        {focus.kind === 'differ' && <p className={lean ? 'map-place-name muted' : 'map-place-name'}>{!lean && `${focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')} `}<em>{lean ? 'The' : '· the'} accounts name different places{focus.present ? '; his marker waits between them' : `; Jesus isn’t in this scene${resting ? `; his marker waits at ${resting.name}, where the text last placed him` : ''}`}</em></p>}
         {focus.kind === 'likely' && (
           <p className="map-place-name muted">
-            Place not named. {focus.before && focus.after
+            {!lean && 'Place not named. '}{focus.before && focus.after
               ? focus.before.key === focus.after.key
                 ? `Likely around ${name(focus.before)}, the place named before and after.`
                 : `Likely between ${name(focus.before)} and ${name(focus.after)}, the places named before and after.`
@@ -947,38 +987,25 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
           </p>
         )}
         </>}
-        {compact && cardKey && stories(cardKey)}
-        {linkPlace && (
+        {(compact || lean) && cardKey && stories(cardKey)}
+        {linkPlace && !photo && (
           <p className="map-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
           </p>
         )}
       </div>
-      {(() => {
-        const toggles = (
-          <>
-            <button type="button" className="map-toggle" aria-pressed={mountainsOn} onClick={() => setMountainsChoice(!mountainsOn)} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)">
-              Mountains
-            </button>
-            <button type="button" className="map-toggle" aria-pressed={modern} onClick={() => useUI.getState().setModern(!modern)} title="Show today’s towns and the modern names of the sites">
-              Modern places
-            </button>
-          </>
-        );
-        if (!compact) return <div className="map-toggles">{toggles}</div>;
-        // Phones: the toggles, the effects and the credits behind one button in the corner, beside the scale.
-        return (
-          <ConfigButton
-            label="Map layers and credits" className="map-more" badge={mountainsOn || modern}
-            icon={<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 12.5l9 5 9-5" /><path d="M3 17l9 5 9-5" /></svg>}
-          >
-            <Toggle label="Mountains" on={mountainsOn} set={setMountainsChoice} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)" />
-            <Toggle label="Modern places" on={modern} set={(on) => useUI.getState().setModern(on)} title="Show today’s towns and the modern names of the sites" />
-            <Toggle label="Effects" on={effects} set={(on) => { const ui = useUI.getState(); ui.setLandLight(on); ui.setWander(on); }} title="His light on the land, and his marker's drift within an area" />
-            <p className="map-credits" dangerouslySetInnerHTML={{ __html: SHORT_CREDITS }} />
-          </ConfigButton>
-        );
-      })()}
+      {/* The toggles, the effects and the credits behind one button in the corner, beside the scale. */}
+      <ConfigButton
+        label="Map layers and credits" className="map-more" badge={mountainsOn || modern}
+        icon={<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 12.5l9 5 9-5" /><path d="M3 17l9 5 9-5" /></svg>}
+      >
+        <Toggle label="Mountains" on={mountainsOn} set={setMountainsChoice} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)" />
+        <Toggle label="Modern places" on={modern} set={(on) => useUI.getState().setModern(on)} title="Show today’s towns and the modern names of the sites" />
+        <Toggle label="Trail" on={trail} set={(on) => useUI.getState().setTrail(on)} title="The line of the way Jesus has come" />
+        <Toggle label="Terrain" on={landColour === 'height'} set={(on) => useUI.getState().setLandColour(on ? 'height' : 'plain')} title="The land coloured by height: sage in the low ground, sand and ochre in the hills, pale stone on the heights" />
+        <Toggle label="Effects" on={effects} set={(on) => { const ui = useUI.getState(); ui.setLandLight(on); ui.setWander(on); }} title="His light on the land, and his marker's drift within an area" />
+        <p className="map-credits" dangerouslySetInnerHTML={{ __html: SHORT_CREDITS }} />
+      </ConfigButton>
     </div>
   );
 }

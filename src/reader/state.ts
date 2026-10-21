@@ -5,10 +5,11 @@ import { BOOKS, ROWS, START_ROW, type Book, type Reckoning } from './model';
 
 export type { Spacing };
 export type Appearance = 'dynamic' | 'light' | 'dark';
+/** The map's land: one plain colour, or coloured by height (with a bluer sea). */
+export type LandColour = 'plain' | 'height';
+/** What marks "now" (the timeline's needle, the current section's heading): ink, or the gold of Jesus' marker. */
+export type Accent = 'ink' | 'gold';
 export type TextSize = 's' | 'm' | 'l';
-/** How Jesus is marked on the map. */
-export type Traveller = 'light' | 'cross' | 'j' | 'crown';
-const TRAVELLERS: Traveller[] = ['light', 'cross', 'j', 'crown'];
 /** Which of the BSB's footnotes the reader marks. */
 export type NotesShown = 'all' | 'textual' | 'none';
 /** On a phone: one gospel at a time, or several: side by side in one aligned reader, stacked in panes of their own, or
@@ -36,17 +37,22 @@ interface Saved {
   spacing: Spacing;
   reckoning: Reckoning;
   compress: boolean;
-  traveller: Traveller;
   /** In an area rather than at a named place, the traveller drifts within it. */
   wander: boolean;
   /** His light on the land: the contours near Jesus drawn in white (in an area, covering it in place of a shaded circle). */
   landLight: boolean;
   /** The map's overlay of modern towns and modern names. */
   modern: boolean;
+  /** The map's line of the way Jesus has come (and the dashed heading where he makes for a place). */
+  trail: boolean;
+  landColour: LandColour;
+  accent: Accent;
   notes: NotesShown;
   phoneGospels: PhoneGospels;
-  /** Phones: the timeline's phase bands and feast marks (desktops always show them). */
+  /** Phones: the timeline's phase bands and feast marks (desktops always show the phases). */
   phases: boolean;
+  /** Desktops: the timeline's feast marks and its strip of the time of day. */
+  timeMarks: boolean;
   units: Units;
   paneSync: PaneSync;
   /** Phones, gospels in panes: a row of panes (or a quadrant column) none of whose gospels has the section shrinks. */
@@ -67,7 +73,6 @@ function save(s: Saved) {
 interface UI extends Saved {
   /** The gospels shown before the map took the whole screen, to restore later. */
   lastVisible: Book[];
-  settingsOpen: boolean;
   /** Index of the row at the reading line. */
   current: number;
   toggleBook(b: Book): void;
@@ -81,17 +86,19 @@ interface UI extends Saved {
   setSpacing(s: Spacing): void;
   setReckoning(r: Reckoning): void;
   setCompress(c: boolean): void;
-  setTraveller(t: Traveller): void;
   setWander(w: boolean): void;
   setLandLight(on: boolean): void;
   setModern(m: boolean): void;
+  setTrail(on: boolean): void;
+  setLandColour(l: LandColour): void;
+  setAccent(a: Accent): void;
   setNotes(n: NotesShown): void;
   setPhoneGospels(p: PhoneGospels): void;
   setPhases(on: boolean): void;
   setUnits(u: Units): void;
   setPaneSync(p: PaneSync): void;
   setShrinkMissing(on: boolean): void;
-  setSettingsOpen(open: boolean): void;
+  setTimeMarks(on: boolean): void;
   setCurrent(i: number): void;
 }
 
@@ -107,8 +114,8 @@ const savedVisible = validBooks(saved.visible);
 
 export const useUI = create<UI>()((set, get) => {
   const persist = () => {
-    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync, shrinkMissing } = get();
-    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, traveller, wander, landLight, modern, notes, phoneGospels, phases, units, paneSync, shrinkMissing });
+    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, accent, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing } = get();
+    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, accent, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing });
   };
   const update = (patch: Partial<UI>) => { set(patch); persist(); };
   return {
@@ -124,17 +131,19 @@ export const useUI = create<UI>()((set, get) => {
     spacing: saved.spacing === 'chrono' ? 'chrono' : 'text',
     reckoning: saved.reckoning === 'ad33' ? 'ad33' : 'ad30',
     compress: saved.compress !== false,
-    traveller: TRAVELLERS.includes(saved.traveller as Traveller) ? (saved.traveller as Traveller) : 'light',
     wander: saved.wander !== false,
     landLight: saved.landLight !== false,
     modern: saved.modern === true,
+    trail: saved.trail !== false,
+    landColour: saved.landColour === 'plain' ? 'plain' : 'height',
+    accent: saved.accent === 'ink' ? 'ink' : 'gold',
     notes: saved.notes === 'textual' || saved.notes === 'none' ? saved.notes : 'all',
     phoneGospels: PHONE_GOSPELS.includes(saved.phoneGospels as PhoneGospels) ? (saved.phoneGospels as PhoneGospels) : 'grid',
     phases: saved.phases === true,
+    timeMarks: saved.timeMarks !== false,
     units: saved.units === 'imperial' ? 'imperial' : 'metric',
     paneSync: saved.paneSync === 'follow' ? 'follow' : 'locked',
     shrinkMissing: saved.shrinkMissing === true,
-    settingsOpen: false,
     current: START_ROW,
     toggleBook: (b) => {
       const { visible, map, single } = get();
@@ -163,17 +172,19 @@ export const useUI = create<UI>()((set, get) => {
     setSpacing: (spacing) => update({ spacing }),
     setReckoning: (reckoning) => update({ reckoning }),
     setCompress: (compress) => update({ compress }),
-    setTraveller: (traveller) => update({ traveller }),
     setWander: (wander) => update({ wander }),
     setLandLight: (landLight) => update({ landLight }),
     setModern: (modern) => update({ modern }),
+    setTrail: (trail) => update({ trail }),
+    setLandColour: (landColour) => update({ landColour }),
+    setAccent: (accent) => update({ accent }),
     setNotes: (notes) => update({ notes }),
     setPhoneGospels: (phoneGospels) => update({ phoneGospels }),
     setPhases: (phases) => update({ phases }),
     setUnits: (units) => update({ units }),
     setPaneSync: (paneSync) => update({ paneSync }),
     setShrinkMissing: (shrinkMissing) => update({ shrinkMissing }),
-    setSettingsOpen: (settingsOpen) => set({ settingsOpen }),
+    setTimeMarks: (timeMarks) => update({ timeMarks }),
     setCurrent: (current) => { if (current !== get().current) set({ current }); },
   };
 });

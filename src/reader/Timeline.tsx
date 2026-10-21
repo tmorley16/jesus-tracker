@@ -33,13 +33,14 @@ const CHIP_H = 22;
 /** Touch: how far a finger moves before it counts as a drag, and how close to the needle a drag must start to move it. */
 const TOUCH_SLOP = 6, NEEDLE_REACH = 26;
 
-interface Colours { raised: string; sunk: string; paper: string; ink: string; soft: string; faint: string; line: string; glow: string; glowInk: string; gospel: Record<Book, string>; uiFont: string; monoFont: string }
+interface Colours { raised: string; sunk: string; paper: string; ink: string; soft: string; faint: string; line: string; glow: string; glowInk: string; now: { line: string; glow: string; mark: string; ring: string; halo: string }; gospel: Record<Book, string>; uiFont: string; monoFont: string }
 function readColours(el: Element): Colours {
   const cs = getComputedStyle(el);
   const v = (name: string) => cs.getPropertyValue(name).trim();
   return {
     raised: v('--paper-raised'), sunk: v('--paper-sunk'), paper: v('--paper'), ink: v('--ink'), soft: v('--ink-soft'), faint: v('--ink-faint'),
     line: v('--line'), glow: v('--glow'), glowInk: v('--glow-ink'),
+    now: { line: v('--now-line'), glow: v('--now-glow'), mark: v('--now-mark'), ring: v('--now-ring'), halo: v('--now-halo') },
     gospel: { MAT: v('--gospel-mat'), MRK: v('--gospel-mrk'), LUK: v('--gospel-luk'), JHN: v('--gospel-jhn') },
     uiFont: v('--font-ui') || 'system-ui', monoFont: v('--font-mono') || 'monospace',
   };
@@ -86,17 +87,21 @@ export function ScaleSwitch() {
   );
 }
 
-export function Timeline({ shown, compact, side }: {
+export function Timeline({ shown, compact, side, corner }: {
   shown: Book[]; compact: boolean;
   /** Phones: controls beside the timeline (left, by the lanes; right, the tools) in place of the toolbar. */
   side?: { left: ReactNode; right: ReactNode };
+  /** Desktops: the timeline's settings button, in a narrow column at its right. */
+  corner?: ReactNode;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const phases = useUI((s) => s.phases);
+  const timeMarks = useUI((s) => s.timeMarks);
   const chrono = useUI((s) => s.spacing) === 'chrono';
   const hasSide = !!side;
-  const geom = useMemo(() => (hasSide ? sideGeometry(phases, chrono) : compact ? COMPACT : DESKTOP), [hasSide, phases, chrono, compact]);
+  // Desktops: the feasts and the strip of the time of day can be switched off (Timeline settings).
+  const geom = useMemo(() => (hasSide ? sideGeometry(phases, chrono) : compact ? COMPACT : timeMarks ? DESKTOP : { ...DESKTOP, feastY: null, lightY: null }), [hasSide, phases, chrono, compact, timeMarks]);
   const view = useRef({ k: 1, o: 0, w: 0 });
   const io = useRef({
     hoverU: null as number | null, dragU: null as number | null, pointers: new Map<number, number>(), pinch: null as null | { d: number; k: number; u: number }, lastManual: 0,
@@ -296,14 +301,28 @@ export function Timeline({ shown, compact, side }: {
 
     const pu = io.current.dragU ?? playhead.getState().u;
     const px = X(pu);
-    if (px >= -6 && px <= w + 6) {
-      ctx.fillStyle = col.ink;
+    if (px >= -6 && px <= w + 6 && col.now.ring) {
+      // In gold: a white needle headed by Jesus' marker (a white dot with a gold ring), both in a soft glow (--now-halo:
+      // white in the dark, a warm gold on the papyrus, where white wouldn't show).
+      ctx.save();
+      ctx.shadowColor = col.now.halo;
+      ctx.shadowBlur = 7 * dpr;
+      ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(Math.round(px) - 1, 6, 2, g.h - 6);
-      ctx.fillStyle = col.glow;
+      ctx.shadowBlur = 14 * dpr;
+      ctx.beginPath(); ctx.arc(px, 6, 5.25, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      ctx.strokeStyle = col.now.ring;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(px, 6, 5.25, 0, Math.PI * 2); ctx.stroke();
+    } else if (px >= -6 && px <= w + 6) {
+      ctx.fillStyle = col.now.line;
+      ctx.fillRect(Math.round(px) - 1, 6, 2, g.h - 6);
+      ctx.fillStyle = col.now.glow;
       ctx.globalAlpha = 0.4;
       ctx.beginPath(); ctx.arc(px, 6, 8, 0, Math.PI * 2); ctx.fill();
       ctx.globalAlpha = 1;
-      ctx.fillStyle = col.glowInk;
+      ctx.fillStyle = col.now.mark;
       ctx.beginPath(); ctx.arc(px, 6, 4.5, 0, Math.PI * 2); ctx.fill();
     }
   }, [geom, compact]);
@@ -375,7 +394,7 @@ export function Timeline({ shown, compact, side }: {
     };
     const start = () => { cancelAnimationFrame(id); until = performance.now() + lightDuration() + 60; tick(); };
     const mo = new MutationObserver(start);
-    mo.observe(document.body, { attributes: true, attributeFilter: ['data-light', 'data-tint'] });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['data-light', 'data-tint', 'data-accent'] });
     start();
     return () => { mo.disconnect(); cancelAnimationFrame(id); };
   }, [draw, appearance]);
@@ -536,7 +555,7 @@ export function Timeline({ shown, compact, side }: {
   const dateText = (i: number) => `c. ${fmtYear(ROWS[i].date[reckoning])}`;
   return (
     <div
-      className={side ? 'timeline side' : 'timeline'} ref={wrapRef}
+      className={side ? 'timeline side' : corner ? 'timeline with-cfg' : 'timeline'} ref={wrapRef}
       style={side ? { '--lanes-top': `${geom.lanesTop - (CHIP_H - geom.laneH) / 2}px`, '--chip-h': `${CHIP_H}px`, '--chip-gap': `${geom.laneH + geom.laneGap - CHIP_H}px`, '--tl-h': `${geom.h}px` } as CSSProperties : undefined}
     >
       {side?.left}
@@ -563,6 +582,7 @@ export function Timeline({ shown, compact, side }: {
       {/* The timeline keeps its full width: the scale switch is in the toolbar, and zooming is by wheel, pinch or the
           + − 0 keys, with a way back to the whole timeline floating on it while zoomed. */}
       {side?.right}
+      {corner}
       {zoomed && (
         <div className="timeline-controls">
           <button type="button" className="whole" onClick={() => setView(1, 0)} aria-label="Show the whole timeline" title="Show the whole timeline (0)">

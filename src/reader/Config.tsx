@@ -1,5 +1,5 @@
-// Phones: each area's settings behind a small button overlaid in its bottom-right corner (the timeline's, the
-// gospels', and the map's layers), in place of a Settings dialog.
+// Each area's settings behind a small round button of its own (the timeline's, the gospels', and the map's layers), in
+// place of one Settings dialog.
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { RECKONING_NAME, type Reckoning } from './model';
@@ -33,7 +33,7 @@ export function ConfigButton({ label, icon, badge = false, down = false, classNa
 }
 
 /** A row: its name on the left, its choices on the right, the chosen one filled. Options are [value, text, title?]. */
-function Choice<T extends string>({ label, group = label, value, options, set }: {
+export function Choice<T extends string>({ label, group = label, value, options, set }: {
   label: string; group?: string; value: T; options: [T, ReactNode, string?][]; set: (v: T) => void;
 }) {
   return (
@@ -57,12 +57,14 @@ export function Toggle({ label, on, set, title }: { label: string; on: boolean; 
   );
 }
 
-/** The timeline's: its scale first; on the Time scale, the reckoning and the compression; the phase bands and feasts. */
-export function TimelineConfig() {
+/** The timeline's: its scale first; on the Time scale, the reckoning and the compression; on phones the phase bands and
+ *  feasts (desktops always show the phases), on desktops the feasts and the strip of the time of day. */
+export function TimelineConfig({ desk = false }: { desk?: boolean }) {
   const spacing = useUI((s) => s.spacing);
   const reckoning = useUI((s) => s.reckoning);
   const compress = useUI((s) => s.compress);
   const phases = useUI((s) => s.phases);
+  const timeMarks = useUI((s) => s.timeMarks);
   const ui = useUI.getState();
   return (
     <ConfigButton label="Timeline settings" icon={<SlidersIcon />} down className="tl-cfg">
@@ -73,8 +75,11 @@ export function TimelineConfig() {
           <Toggle label="Compress the hidden years" on={compress} set={ui.setCompress} title="Shorten the long silences: childhood, and the years after age twelve" />
         </>
       )}
-      <Toggle label="Phases and feasts" on={phases} set={ui.setPhases} />
+      {desk
+        ? <Toggle label="Feasts and time of day" on={timeMarks} set={ui.setTimeMarks} title="The feasts the text names, as diamonds along the top, and a strip along the foot tinted where the text gives a time of day" />
+        : <Toggle label="Phases and feasts" on={phases} set={ui.setPhases} />}
       {spacing === 'chrono' && <p className="cfg-note">Years are estimates ({RECKONING_NAME[reckoning]}).</p>}
+      {desk && <p className="cfg-note">Drag or click to move · wheel or + − to zoom, 0 for the whole · ← → step through events.</p>}
     </ConfigButton>
   );
 }
@@ -88,8 +93,9 @@ const LayoutIcon = ({ kind }: { kind: PhoneGospels }) => (
   </svg>
 );
 
-/** The gospels': their layout, equal or own lengths in panes, text size, colours, notes and the text's sources. */
-export function GospelConfig() {
+/** The gospels': on phones their layout, equal or own lengths in panes and shrinking; text size, colours, notes and the
+ *  text's sources. Desktops keep the gospels side by side, scrolled together. */
+export function GospelConfig({ desk = false }: { desk?: boolean }) {
   const phoneGospels = useUI((s) => s.phoneGospels);
   const paneSync = useUI((s) => s.paneSync);
   const shrinkMissing = useUI((s) => s.shrinkMissing);
@@ -99,20 +105,20 @@ export function GospelConfig() {
   const ui = useUI.getState();
   return (
     <ConfigButton label="Gospel settings" icon={<SlidersIcon />} className="gospel-cfg">
-      <Choice<PhoneGospels>
+      {!desk && <Choice<PhoneGospels>
         label="Layout" value={phoneGospels} set={ui.setPhoneGospels}
         options={[['grid', <LayoutIcon kind="grid" />, 'Quadrants'], ['columns', <LayoutIcon kind="columns" />, 'Side by side'], ['stacked', <LayoutIcon kind="stacked" />, 'Stacked']]}
-      />
-      {(phoneGospels === 'stacked' || phoneGospels === 'grid') && (
+      />}
+      {!desk && (phoneGospels === 'stacked' || phoneGospels === 'grid') && (
         <Choice<PaneSync> label="Lengths" value={paneSync} options={[['locked', 'Equal', 'Equal: every section as long in each pane, scrolled together'], ['follow', 'Own', 'Own: each pane its own length, following the one you scroll']]} set={ui.setPaneSync} />
       )}
-      {phoneGospels !== 'one' && (
+      {!desk && phoneGospels !== 'one' && (
         <Toggle label="Shrink missing" on={shrinkMissing} set={ui.setShrinkMissing} title="Make room for the accounts that tell the section: a row or column of gospels where none has it gets smaller" />
       )}
       <Choice<TextSize> label="Text size" value={textSize} options={[['s', 'S'], ['m', 'M'], ['l', 'L']]} set={ui.setTextSize} />
       <Choice<Appearance> label="Colours" value={appearance} options={[['dynamic', 'Dynamic'], ['light', 'Light'], ['dark', 'Dark']]} set={ui.setAppearance} />
       <Choice<NotesShown> label="BSB notes" value={notes} options={[['all', 'All'], ['textual', 'Manuscripts'], ['none', 'None']]} set={ui.setNotes} />
-      <p className="cfg-note">Text: BSB (public domain). Order: Robertson’s <i>Harmony</i> (1922).</p>
+      <p className="cfg-note">Text: BSB (public domain). Order: Robertson’s <i>Harmony</i> (1922).{desk && <><br />Keys: 1–4 show or hide a gospel · M map · T timeline · / go to.</>}</p>
     </ConfigButton>
   );
 }

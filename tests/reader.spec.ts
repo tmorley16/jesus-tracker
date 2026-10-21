@@ -97,14 +97,9 @@ test('a dark device still starts on Dynamic colours', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await open(page);
   await expect(page.locator('body')).toHaveAttribute('data-light', 'unstated');
-  // Phones keep the colours with the gospels' settings.
-  if (isPhone()) {
-    await page.getByRole('button', { name: 'Gospel settings' }).click();
-    await expect(page.getByRole('group', { name: 'Colours' }).getByRole('button', { name: 'Dynamic' })).toHaveAttribute('aria-pressed', 'true');
-    return;
-  }
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByRole('radio', { name: /^Dynamic/ })).toBeChecked();
+  // The colours are with the gospels' settings.
+  await page.getByRole('button', { name: 'Gospel settings' }).click();
+  await expect(page.getByRole('group', { name: 'Colours' }).getByRole('button', { name: 'Dynamic' })).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('the Timeline button hides and shows the scrubber, and remembers it', async ({ page }) => {
@@ -452,19 +447,6 @@ test('in scenes without Jesus his marker waits where he was last placed, and goe
   await expect.poll(offNazareth, { timeout: 8_000 }).toBeLessThan(20);
 });
 
-test('a cross, J or crown marks him in black, in the same white glow', async ({ page }) => {
-  test.skip(isPhone(), 'the marker choice is a desktop setting; phones keep the light');
-  await openMap(page);
-  await goTo(page, 'A paralysed man lowered through the roof');
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByRole('radio', { name: /^A cross/ }).check();
-  await page.keyboard.press('Escape');
-  const sym = page.locator('.map-traveller .sym');
-  await expect(sym.locator('svg')).toHaveCount(1);
-  await expect.poll(() => sym.evaluate((el) => getComputedStyle(el).color)).toBe('rgb(26, 25, 23)');
-  await expect.poll(() => page.locator('.map-traveller-glow .wander').evaluate((el) => getComputedStyle(el).opacity)).toBe('1');
-});
-
 test('Jesus’ glow lies under every other marker and label, and places he has been turn from dark to light', async ({ page }) => {
   await openMap(page);
   await goTo(page, 'A paralysed man lowered through the roof');
@@ -508,21 +490,15 @@ test('his light lights the contours about him, and in an area grows to cover it 
   await expect.poll(async () => (await light()).zones, { timeout: 10_000 }).toContain('jerusalem');
   await page.waitForTimeout(1500);
   await shot(page, '15-light-jerusalem');
-  // In an area the light grows to cover it; the circle stays only for hovering.
+  // In an area the light grows to cover it, in place of the shaded circle.
   await goTo(page, 'Flight to Egypt');
   await expect.poll(async () => (await light()).cover, { timeout: 10_000 }).toBeGreaterThan(0.95);
   expect(await circle()).toBe(0);
   await shot(page, '16-light-egypt');
   // Switched off in Settings (on a phone, Effects): no light, and the shaded circle is back.
-  if (isPhone()) {
-    await page.getByRole('button', { name: 'Map layers and credits' }).click();
-    await page.getByRole('button', { name: 'Effects' }).click();
-    await page.keyboard.press('Escape');
-  } else {
-    await page.getByRole('button', { name: 'Settings' }).click();
-    await page.getByRole('checkbox', { name: /Light on the land/ }).uncheck();
-    await page.getByRole('button', { name: 'Done' }).click();
-  }
+  await page.getByRole('button', { name: 'Map layers and credits' }).click();
+  await page.getByRole('button', { name: 'Effects' }).click();
+  await page.keyboard.press('Escape');
   expect((await light()).enabled).toBe(false);
   expect(await circle()).toBe(0.12);
 });
@@ -555,8 +531,8 @@ test('mountains named or given as candidates, the lake’s shore, and pools wher
 test('the Mountains button is on where the text places Jesus on a mountain; it hides them there, or shows them anywhere', async ({ page }) => {
   await openMap(page);
   const button = page.getByRole('button', { name: 'Mountains', exact: true });
-  // Phones keep the map's toggles behind its layers button.
-  const ensure = async () => { if (test.info().project.name === 'phone' && !(await button.isVisible())) await page.getByRole('button', { name: 'Map layers and credits' }).click(); };
+  // The map's toggles are behind its layers button.
+  const ensure = async () => { if (!(await button.isVisible())) await page.getByRole('button', { name: 'Map layers and credits' }).click(); };
   const lit = () => page.evaluate(() => (window as unknown as { __jtMap: { getLayer(id: string): { implementation?: { status(): { mountain: number } } } | undefined } }).__jtMap.getLayer('land-light')!.implementation!.status().mountain);
   await goTo(page, 'The transfiguration');
   await ensure(); await expect(button).toHaveAttribute('aria-pressed', 'true');
@@ -569,7 +545,7 @@ test('the Mountains button is on where the text places Jesus on a mountain; it h
   await expect(page.locator('.map-card')).toContainText('mountains hidden');
   await expect.poll(lit).toBeLessThan(0.05);
   // Elsewhere it starts off; turned on, every named mountain is marked, but not lit.
-  if (test.info().project.name === 'phone') await page.keyboard.press('Escape'); // the layers panel's backdrop would take the tap
+  await page.keyboard.press('Escape'); // the layers panel's backdrop would take the tap
   await goTo(page, 'Calming the storm');
   await ensure(); await expect(button).toHaveAttribute('aria-pressed', 'false');
   await ensure(); await button.click();
@@ -621,8 +597,8 @@ test('the Modern places button shows today’s towns and modern site names', asy
   await openMap(page);
   await goTo(page, 'Feeding the five thousand');
   const button = page.getByRole('button', { name: 'Modern places' });
-  // Phones keep the map's toggles behind its layers button.
-  const ensure = async () => { if (test.info().project.name === 'phone' && !(await button.isVisible())) await page.getByRole('button', { name: 'Map layers and credits' }).click(); };
+  // The map's toggles are behind its layers button.
+  const ensure = async () => { if (!(await button.isVisible())) await page.getByRole('button', { name: 'Map layers and credits' }).click(); };
   await ensure(); await button.click();
   await ensure(); await expect(button).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => page.locator('.map-modern').count(), { timeout: 10_000 }).toBeGreaterThan(3);
@@ -648,7 +624,7 @@ test('desktop: hovering a place shows links to Wikipedia, OpenBible.info and map
   await expect(popup.getByRole('link', { name: 'OpenBible.info' })).toHaveAttribute('href', /openbible\.info\/geo\/ancient\//);
   await expect(popup.getByRole('link', { name: 'Google Maps' })).toBeVisible();
   // The card carries the same links for the place shown.
-  await expect(page.locator('.map-card .map-links').getByRole('link', { name: 'Wikipedia' })).toBeVisible();
+  await expect(page.locator('.map-card').getByRole('link', { name: 'Wikipedia' })).toBeVisible();
 });
 
 test('clicking a place pins a popup with its photo and links to the stories set there, marked on the timeline', async ({ page }) => {
@@ -685,6 +661,11 @@ test('a region’s popup lists the stories set in it', async ({ page }) => {
   await goTo(page, 'Preaching in Galilee');
   await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', /Preaching in Galilee/, { timeout: 20_000 });
   await page.waitForFunction(() => !(window as unknown as { __jtMap: { isMoving(): boolean } }).__jtMap.isMoving(), null, { timeout: 15_000 });
+  // Moving over the area itself, away from its name, shows nothing: only the name opens the popup.
+  const name = (await placeDot(page, 'Galilee').locator('span').boundingBox())!;
+  await page.mouse.move(name.x + name.width / 2, name.y + name.height + 50);
+  await page.waitForTimeout(600);
+  await expect(page.locator('.map-popup')).toHaveCount(0);
   await placeDot(page, 'Galilee').locator('span').click();
   const popup = page.locator('.map-popup');
   await expect(popup.locator('.pp-title')).toHaveText('Galilee', { timeout: 5_000 });
@@ -742,15 +723,9 @@ test('dynamic colour tints night scenes; dark mode is available in settings', as
   await page.waitForTimeout(1800);
   await expect(page.locator('body')).toHaveAttribute('data-tint', 'night');
   await shot(page, '06-dynamic-night');
-  if (isPhone()) {
-    await page.getByRole('button', { name: 'Gospel settings' }).click();
-    await page.getByRole('group', { name: 'Colours' }).getByRole('button', { name: 'Dark' }).click();
-    await page.keyboard.press('Escape');
-  } else {
-    await page.getByRole('button', { name: 'Settings' }).click();
-    await page.getByRole('radio', { name: /^Dark/ }).check();
-    await page.getByRole('button', { name: 'Done' }).click();
-  }
+  await page.getByRole('button', { name: 'Gospel settings' }).click();
+  await page.getByRole('group', { name: 'Colours' }).getByRole('button', { name: 'Dark' }).click();
+  await page.keyboard.press('Escape');
   await page.waitForTimeout(1200);
   await expect(page.locator('body')).toHaveAttribute('data-light', 'night');
   await shot(page, '07-dark');
@@ -795,10 +770,11 @@ test('from his death until the angel at the tomb, the colours turn cold and his 
 
 test('the timeline keeps its full width, with the scale in the toolbar and a way back from zooming in', async ({ page }) => {
   await open(page);
-  // Desktops: the timeline's full width, the switch in the toolbar. (Phones have the gospels and tools beside it.)
+  // Desktops: the timeline's full width but for its settings button, the switch in the toolbar. (Phones have the
+  // gospels and tools beside it.)
   if (!isPhone()) {
     const width = () => page.locator('.timeline canvas').evaluate((c) => c.getBoundingClientRect().width);
-    const full = await page.locator('.timeline').evaluate((t) => t.clientWidth - 16);
+    const full = await page.locator('.timeline').evaluate((t) => t.clientWidth - 16 - 36);
     expect(await width()).toBeGreaterThan(full - 4);
     await expect(page.locator('.toolbar').getByRole('group', { name: 'Timeline scale' })).toBeVisible();
   }
@@ -827,4 +803,65 @@ test('a section no gospel narrates (the appearance to James, §182) can be picke
   expect(errors).toEqual([]);
   await expect(page.locator('.cols-head')).toBeVisible();
   await expect(page.locator('.passage').first()).toBeVisible();
+});
+
+test('desktop: each area has its own settings button, and × hides a gospel', async ({ page }) => {
+  test.skip(isPhone(), 'phone.spec covers the phone arrangements');
+  await openMap(page);
+  await expect(page.getByRole('button', { name: 'Settings', exact: true })).toHaveCount(0);
+  for (const name of ['Timeline settings', 'Gospel settings', 'Map layers and credits']) await expect(page.getByRole('button', { name })).toBeVisible({ timeout: 30_000 });
+  // The timeline's: the feasts and the time of day switch off.
+  await page.getByRole('button', { name: 'Timeline settings' }).click();
+  const marks = page.getByRole('button', { name: 'Feasts and time of day' });
+  await expect(marks).toHaveAttribute('aria-pressed', 'true');
+  await marks.click();
+  await expect(marks).toHaveAttribute('aria-pressed', 'false');
+  await page.keyboard.press('Escape');
+  // The gospels' stay side by side: no layout or shrinking on a desktop.
+  await page.getByRole('button', { name: 'Gospel settings' }).click();
+  await expect(page.getByRole('group', { name: 'Layout' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Shrink missing' })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  // The map's: Terrain and Trail switches, both on to begin with.
+  await page.getByRole('button', { name: 'Map layers and credits' }).click();
+  const terrain = page.getByRole('button', { name: 'Terrain' }), trail = page.getByRole('button', { name: 'Trail' });
+  await expect(terrain).toHaveAttribute('aria-pressed', 'true');
+  await terrain.click();
+  await expect(page.locator('.map-box')).toHaveAttribute('data-land', 'plain');
+  await expect(trail).toHaveAttribute('aria-pressed', 'true');
+  await trail.click();
+  const vis = () => page.evaluate(() => (window as unknown as { __jtMap: { getLayoutProperty(id: string, p: string): string | undefined } }).__jtMap.getLayoutProperty('trail-old', 'visibility'));
+  await expect(trail).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(vis).toBe('none');
+  await page.waitForTimeout(300);
+  await shot(page, '17-desktop-settings');
+  await page.keyboard.press('Escape');
+  // An × in a gospel's heading hides it.
+  await page.getByRole('button', { name: 'Hide John' }).click();
+  await expect(page.locator('.cols-head .col-h')).toHaveCount(3);
+});
+
+test('desktop: with the text beside the map, the card gives the place and its stories, the headings no place chip', async ({ page }) => {
+  test.skip(isPhone(), 'phones have their own card');
+  await openMap(page);
+  await goTo(page, 'The Samaritan woman');
+  const card = page.locator('.map-card');
+  await expect(card).toHaveAttribute('data-lean', '');
+  await expect(card.locator('.kicker')).toHaveCount(0);
+  await expect(card.locator('.mc-title, .map-title').first()).toHaveText('Sychar', { timeout: 15_000 });
+  await expect(card.locator('.pp-stories li').first()).toBeVisible();
+  await expect(card.locator('.pp-stories a[aria-current]')).toContainText('Samaritan');
+  await expect(page.locator('section.row .chip.place').first()).toBeHidden();
+  await shot(page, '18-lean-card');
+  // A place with a photo: its name, links and the photographer's credit over it.
+  await goTo(page, 'Feeding the five thousand');
+  await expect(card.locator('.mc-photo img')).toBeVisible({ timeout: 15_000 });
+  await expect(card.locator('.mc-title')).toHaveText('Bethsaida');
+  await expect(card.locator('.mc-links').getByRole('link', { name: 'Wikipedia' })).toBeVisible();
+  await expect(card.locator('.mc-credit')).toContainText('Photo');
+  await shot(page, '18-lean-card-photo');
+  // With only the map, the card gives the story too.
+  for (const n of ['Matthew', 'Mark', 'Luke', 'John']) await page.locator('.toolbar .gospels').getByRole('button', { name: n }).click();
+  await expect(card).not.toHaveAttribute('data-lean', '');
+  await expect(card.locator('.map-title')).toHaveText(/Feeding the five thousand/);
 });

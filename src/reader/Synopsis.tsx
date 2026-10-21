@@ -460,7 +460,7 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   return (
     <div className="reader" ref={scrollRef} tabIndex={-1} aria-label={pane === undefined ? 'The gospel accounts, aligned by event' : BOOK_NAME[shown[0]]} data-cols={shown.length}>
       <div className="cols-head" ref={headRef} style={cols}>
-        {shown.map((b) => <ColumnHead key={b} book={b} short={compact && shown.length > 1} closable={compact} />)}
+        {shown.map((b) => <ColumnHead key={b} book={b} short={compact && shown.length > 1} />)}
       </div>
       <div className="rows" ref={rowsRef}>
         {ROWS.map((row) => {
@@ -484,10 +484,10 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   );
 }
 
-function ColumnHead({ book, short, closable }: { book: Book; short: boolean; closable: boolean }) {
+function ColumnHead({ book, short }: { book: Book; short: boolean }) {
   const current = useUI((s) => s.current);
-  // Phones: an × at the right hides the gospel, as its chip does (at least one panel stays on screen).
-  const canHide = useUI((s) => closable && (s.visible.length > 1 || s.map));
+  // An × at the right hides the gospel, as its chip does (at least one panel stays on screen).
+  const canHide = useUI((s) => s.visible.length > 1 || s.map);
   let chapter: number | null = null;
   for (let i = current; i >= 0 && chapter === null; i--) { const r = ROWS[i].refs[book]; if (r) chapter = r[r.length - 1][2]; }
   return (

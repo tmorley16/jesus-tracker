@@ -1,11 +1,11 @@
 import { Suspense, lazy, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { computeLayout, rowAtU } from './layoutModel';
-import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVerse, rowTitle, versePos, type Book, type Reckoning, type Row, type Texts, type VersePos } from './model';
+import { BOOKS, BOOK_ABBR, BOOK_NAME, ROWS, deadAt, lightAt, loadTexts, rowForVerse, rowTitle, versePos, type Book, type Row, type Texts, type VersePos } from './model';
 import { GospelConfig, TimelineConfig } from './Config';
 import { Splitter } from './Splitter';
 import { Stack, Synopsis } from './Synopsis';
 import { ScaleSwitch, Timeline } from './Timeline';
-import { COMPACT_QUERY, layout, nav, playhead, scene, showRow, useUI, type Appearance, type NotesShown, type TextSize, type Traveller } from './state';
+import { COMPACT_QUERY, layout, nav, playhead, scene, showRow, useUI } from './state';
 
 const MapPane = lazy(() => import('./MapPane'));
 const gospelVar = (b: Book) => ({ '--g': `var(--gospel-${b.toLowerCase()})` }) as CSSProperties;
@@ -37,7 +37,6 @@ export default function Reader() {
   const spacing = useUI((s) => s.spacing);
   const reckoning = useUI((s) => s.reckoning);
   const compress = useUI((s) => s.compress);
-  const settingsOpen = useUI((s) => s.settingsOpen);
   const phoneGospels = useUI((s) => s.phoneGospels);
   const one = compact && phoneGospels === 'one';
   // Phones have the controls beside the timeline, the gospels by their lanes, in place of the toolbar.
@@ -87,21 +86,21 @@ export default function Reader() {
   return (
     <div className="jt" data-size={textSize} data-compact={compact ? '' : undefined}>
       {!side && <Toolbar compact={compact} one={one} gospels={gospels} />}
-      {(timeline || compact) && <Timeline shown={mapBooks} compact={compact} side={side ? { left: <LaneChips one={one} gospels={gospels} />, right: <SideTools /> } : undefined} />}
+      {(timeline || compact) && <Timeline shown={mapBooks} compact={compact} side={side ? { left: <LaneChips one={one} gospels={gospels} />, right: <SideTools /> } : undefined} corner={side ? undefined : <TimelineConfig desk />} />}
       <div className="panes" ref={panesRef} data-layout={split} style={{ '--map-share': String(share) } as CSSProperties}>
         {gospels.length > 1 && compact && (phoneGospels === 'stacked' || phoneGospels === 'grid')
           ? <Stack texts={texts} shown={gospels} arrangement={phoneGospels} />
           : gospels.length > 0 && <Synopsis texts={texts} shown={gospels} single={gospels.length === 1} compact={compact} />}
-        {compact && gospels.length > 0 && <GospelConfig />}
+        {gospels.length > 0 && <GospelConfig desk={!compact} />}
         {split === 'split' && <Splitter panesRef={panesRef} share={share} vertical={compact} />}
         {map && (
           <Suspense fallback={<div className="map-pane"><p className="map-loading">Loading the map…</p></div>}>
-            <MapPane books={mapBooks} compact={compact} />
+            <MapPane books={mapBooks} compact={compact} withText={gospels.length > 0} />
           </Suspense>
         )}
       </div>
-      {settingsOpen && !compact && <Settings />}
       <TintSync shown={mapBooks} />
+      <NowMark />
       {error && <p className="load-error" role="alert">The text didn’t load: {error}. Check your connection and reload the page.</p>}
     </div>
   );
@@ -122,6 +121,28 @@ function versePosOnScreen(row: Row): VersePos {
 
 /** Dynamic colour: the page tint follows the time of day the visible accounts give, as the reading line passes the
  *  verses that give it; from Jesus' death until the angel at the tomb it turns cold, and his light on the map goes out. */
+/** "Now" in the accent (ink, or the gold of Jesus' marker): the body's data-accent, and a style naming the current
+ *  section (in gold: a fine rule under its heading, and its § in gold), so no row re-renders as the reading line moves and rows rendered
+ *  later are marked too. */
+function NowMark() {
+  const accent = useUI((s) => s.accent);
+  useEffect(() => { document.body.dataset.accent = accent; }, [accent]);
+  useEffect(() => {
+    const style = document.head.appendChild(document.createElement('style'));
+    let last = -1;
+    const mark = ({ row }: { row: number }) => {
+      if (row === last) return;
+      last = row;
+      const now = `body[data-accent="gold"] section.row[data-row="${row}"] > .row-head`;
+      style.textContent = `${now} { box-shadow: inset 0 -1.5px 0 var(--now-line); } ${now} .kicker .n { color: var(--now-line); }`;
+    };
+    mark(playhead.getState());
+    const un = playhead.subscribe(mark);
+    return () => { un(); style.remove(); };
+  }, []);
+  return null;
+}
+
 function TintSync({ shown }: { shown: Book[] }) {
   const appearance = useUI((s) => s.appearance);
   useEffect(() => {
@@ -153,7 +174,6 @@ function pickBook(b: Book, one: boolean, gospels: Book[]) {
 
 const MapIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z" /><path d="M9 4v14M15 6v14" /></svg>;
 const SearchIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15l5 5" /></svg>;
-const SettingsIcon = () => <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" /></svg>;
 
 /** Phones, controls beside the timeline: each gospel's button by its lane. */
 function LaneChips({ one, gospels }: { one: boolean; gospels: Book[] }) {
@@ -220,9 +240,6 @@ function Toolbar({ compact, one, gospels }: { compact: boolean; one: boolean; go
           )}
           {(compact || timeline) && <ScaleSwitch />}
         </div>
-        <button type="button" className="icon settings-btn" aria-label="Settings" aria-haspopup="dialog" onClick={() => ui.setSettingsOpen(!useUI.getState().settingsOpen)}>
-          <SettingsIcon />
-        </button>
       </div>
     </header>
   );
@@ -301,95 +318,6 @@ function GoTo({ compact, onDone }: { compact: boolean; onDone: () => void }) {
         </ul>
       )}
       {open && q.trim().length >= 2 && hits.length === 0 && <p className="goto-none" role="status">No passage or event matches “{q.trim()}”.</p>}
-    </div>
-  );
-}
-
-/** Desktops' settings (phones have a small settings button in each area instead). */
-function Settings() {
-  const appearance = useUI((s) => s.appearance);
-  const textSize = useUI((s) => s.textSize);
-  const reckoning = useUI((s) => s.reckoning);
-  const compress = useUI((s) => s.compress);
-  const traveller = useUI((s) => s.traveller);
-  const wander = useUI((s) => s.wander);
-  const landLight = useUI((s) => s.landLight);
-  const notes = useUI((s) => s.notes);
-  const ui = useUI.getState();
-  const panel = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    panel.current?.querySelector<HTMLElement>('input:checked')?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') ui.setSettingsOpen(false); };
-    const onDown = (e: PointerEvent) => { if (!panel.current?.contains(e.target as Node) && !(e.target as HTMLElement).closest('.settings-btn')) ui.setSettingsOpen(false); };
-    window.addEventListener('keydown', onKey);
-    window.addEventListener('pointerdown', onDown);
-    return () => { window.removeEventListener('keydown', onKey); window.removeEventListener('pointerdown', onDown); };
-  }, [ui]);
-  const radio = <T extends string>(name: string, value: T, current: T, set: (v: T) => void, label: string, hint?: string) => (
-    <label className="opt">
-      <input type="radio" name={name} value={value} checked={current === value} onChange={() => set(value)} />
-      <span><b>{label}</b>{hint && <small>{hint}</small>}</span>
-    </label>
-  );
-  return (
-    <div className="settings" role="dialog" aria-label="Settings" ref={panel}>
-      <fieldset>
-        <legend>Colours</legend>
-        {radio<Appearance>('appearance', 'dynamic', appearance, ui.setAppearance, 'Dynamic', 'Papyrus, with a faint shift wherever the text gives a time of day')}
-        {radio<Appearance>('appearance', 'light', appearance, ui.setAppearance, 'Light', 'Always papyrus')}
-        {radio<Appearance>('appearance', 'dark', appearance, ui.setAppearance, 'Dark', 'Always night colours')}
-      </fieldset>
-      <fieldset>
-        <legend>Text size</legend>
-        <div className="row-opts">
-          {radio<TextSize>('size', 's', textSize, ui.setTextSize, 'Small')}
-          {radio<TextSize>('size', 'm', textSize, ui.setTextSize, 'Medium')}
-          {radio<TextSize>('size', 'l', textSize, ui.setTextSize, 'Large')}
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>BSB notes</legend>
-        <div className="row-opts">
-          {radio<NotesShown>('notes', 'all', notes, ui.setNotes, 'All')}
-          {radio<NotesShown>('notes', 'textual', notes, ui.setNotes, 'Manuscripts only')}
-          {radio<NotesShown>('notes', 'none', notes, ui.setNotes, 'None')}
-        </div>
-        <p className="fine-print">A small letter marks each note: hover over it to read the note; click or tap to keep it open. Notes on the manuscripts are in the gospel’s colour.</p>
-      </fieldset>
-      <fieldset>
-        <legend>Timeline in time</legend>
-        <div className="row-opts">
-          {radio<Reckoning>('reckoning', 'ad30', reckoning, ui.setReckoning, 'AD 30', 'Crucifixion in AD 30')}
-          {radio<Reckoning>('reckoning', 'ad33', reckoning, ui.setReckoning, 'AD 33', 'Crucifixion in AD 33')}
-        </div>
-        <label className="opt">
-          <input type="checkbox" checked={compress} onChange={(e) => ui.setCompress(e.target.checked)} />
-          <span><b>Compress the hidden years</b><small>Shorten the long silences: childhood, and the years after age twelve</small></span>
-        </label>
-        <p className="fine-print">For the timeline’s Time scale. Dates are estimates from two common reckonings, interpolated between anchor events such as the Passovers in John.</p>
-      </fieldset>
-      <fieldset>
-        <legend>Jesus on the map</legend>
-        <div className="row-opts">
-          {radio<Traveller>('traveller', 'light', traveller, ui.setTraveller, 'A light')}
-          {radio<Traveller>('traveller', 'cross', traveller, ui.setTraveller, 'A cross')}
-          {radio<Traveller>('traveller', 'j', traveller, ui.setTraveller, 'J')}
-          {radio<Traveller>('traveller', 'crown', traveller, ui.setTraveller, 'A crown')}
-        </div>
-        <label className="opt">
-          <input type="checkbox" checked={wander} onChange={(e) => ui.setWander(e.target.checked)} />
-          <span><b>Drift within an area</b><small>Where the text gives only a region, or no place, the marker moves gently within the area instead of resting at its centre</small></span>
-        </label>
-        <label className="opt">
-          <input type="checkbox" checked={landLight} onChange={(e) => ui.setLandLight(e.target.checked)} />
-          <span><b>Light on the land</b><small>The contour lines around Jesus light up in white; in an area they light the whole area instead of a shaded circle</small></span>
-        </label>
-      </fieldset>
-      <div className="about">
-        <p><b>Keys:</b> 1–4 show or hide a gospel · M map · / go to · ← → on the timeline step through events.</p>
-        <p>Text: Berean Standard Bible (public domain). Order and sections: A. T. Robertson, <i>A Harmony of the Gospels</i> (1922), public domain; titles rewritten to describe what each text narrates. Places: OpenBible.info (CC BY 4.0). Map: Natural Earth. Peaks and Wikipedia links: Wikidata (CC0). Terrain: SRTM and GMTED2010 (USGS), ETOPO1 (NOAA). Modern places: GeoNames (CC BY 4.0).</p>
-      </div>
-      <button type="button" className="close" onClick={() => ui.setSettingsOpen(false)}>Done</button>
     </div>
   );
 }
