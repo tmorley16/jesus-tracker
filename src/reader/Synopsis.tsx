@@ -372,7 +372,7 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   return (
     <div className="reader" ref={scrollRef} tabIndex={-1} aria-label={pane === undefined ? 'The gospel accounts, aligned by event' : BOOK_NAME[shown[0]]} data-cols={shown.length}>
       <div className="cols-head" ref={headRef} style={cols}>
-        {shown.map((b) => <ColumnHead key={b} book={b} short={compact && shown.length > 1} />)}
+        {shown.map((b) => <ColumnHead key={b} book={b} short={compact && shown.length > 1} closable={compact} />)}
       </div>
       <div className="rows" ref={rowsRef}>
         {ROWS.map((row) => {
@@ -396,8 +396,10 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
   );
 }
 
-function ColumnHead({ book, short }: { book: Book; short: boolean }) {
+function ColumnHead({ book, short, closable }: { book: Book; short: boolean; closable: boolean }) {
   const current = useUI((s) => s.current);
+  // Phones: an × at the right hides the gospel, as its chip does (at least one panel stays on screen).
+  const canHide = useUI((s) => closable && (s.visible.length > 1 || s.map));
   let chapter: number | null = null;
   for (let i = current; i >= 0 && chapter === null; i--) { const r = ROWS[i].refs[book]; if (r) chapter = r[r.length - 1][2]; }
   return (
@@ -405,6 +407,14 @@ function ColumnHead({ book, short }: { book: Book; short: boolean }) {
       <span className="dot" aria-hidden="true" />
       <span className="col-name" title={short ? BOOK_NAME[book] : undefined}>{short ? BOOK_ABBR[book] : BOOK_NAME[book]}</span>
       {chapter !== null && <span className="col-ch">{chapter}</span>}
+      {canHide && (
+        <button
+          type="button" className="col-off" aria-label={`Hide ${BOOK_NAME[book]}`} title={`Hide ${BOOK_NAME[book]}`}
+          onClick={() => { const ui = useUI.getState(); if (ui.phoneGospels === 'one' && ui.map) ui.showOnlyMap(); else ui.toggleBook(book); }}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" /></svg>
+        </button>
+      )}
     </div>
   );
 }

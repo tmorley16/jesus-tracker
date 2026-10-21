@@ -20,12 +20,12 @@ async function goTo(page: Page, query: string) {
   await page.waitForTimeout(2500);
 }
 
-/** Cycles the gospels' layout (Gospel settings) round to the one named. */
+/** Picks the gospels' layout in Gospel settings. */
 async function arrange(page: Page, name: string) {
   await page.getByRole('button', { name: 'Gospel settings' }).click();
-  const cycle = page.getByRole('button', { name: /^Layout/ });
-  for (let k = 0; k < 4 && !((await cycle.textContent()) ?? '').includes(name); k++) await cycle.click();
-  await expect(cycle).toContainText(name);
+  const choice = page.getByRole('group', { name: 'Layout' }).getByRole('button', { name });
+  await choice.click();
+  await expect(choice).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
 }
 
@@ -230,8 +230,9 @@ test('locked panes line up section for section and move together; or each keeps 
   expect(after[0]).toBeGreaterThan(before + 100);
 
   await page.getByRole('button', { name: 'Gospel settings' }).click();
-  await page.getByRole('button', { name: /^Lengths/ }).click();
-  await expect(page.getByRole('button', { name: /^Lengths/ })).toContainText('Own');
+  const own = page.getByRole('group', { name: 'Lengths' }).getByRole('button', { name: /^Own/ });
+  await own.click();
+  await expect(own).toHaveAttribute('aria-pressed', 'true');
   await page.keyboard.press('Escape');
   await expect(page.locator('.stack[data-locked]')).toHaveCount(0);
   expect(new Set(await at(probe)).size).toBeGreaterThan(1);
@@ -283,4 +284,16 @@ test('hidden gospels keep their sections on the timeline, but the needle skips t
     const row = (await currentRow(page)) - 1;
     await expect(page.locator(`.reader section[data-row="${row}"]`)).not.toHaveAttribute('hidden', '');
   }
+});
+
+test('an × at the right of a gospel’s heading hides it, as its chip does', async ({ page }) => {
+  await open(page);
+  await expect(page.locator('.stack > .reader')).toHaveCount(4);
+  await page.getByRole('button', { name: 'Hide John' }).click();
+  await expect(page.locator('.stack > .reader')).toHaveCount(3);
+  await expect(page.getByRole('button', { name: 'Jn', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  // The timeline's scale shows which is chosen.
+  await page.getByRole('button', { name: 'Timeline settings' }).click();
+  await expect(page.getByRole('group', { name: 'Timeline scale' }).getByRole('button', { name: 'Text' })).toHaveAttribute('aria-pressed', 'true');
+  await shot(page, 'timeline-settings-text');
 });

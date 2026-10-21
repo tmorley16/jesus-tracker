@@ -3,8 +3,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { RECKONING_NAME, type Reckoning } from './model';
-import { ScaleSwitch } from './Timeline';
-import { useUI, type Appearance, type NotesShown, type PhoneGospels, type TextSize } from './state';
+import { useUI, type Appearance, type NotesShown, type PaneSync, type PhoneGospels, type Spacing, type TextSize } from './state';
 
 export const SlidersIcon = () => (
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
@@ -33,15 +32,28 @@ export function ConfigButton({ label, icon, badge = false, down = false, classNa
   );
 }
 
-/** A row of choices, one pressed. */
-function Choice<T extends string>({ label, value, options, set }: { label: string; value: T; options: [T, string][]; set: (v: T) => void }) {
+/** A row: its name on the left, its choices on the right, the chosen one filled. Options are [value, text, title?]. */
+function Choice<T extends string>({ label, group = label, value, options, set }: {
+  label: string; group?: string; value: T; options: [T, ReactNode, string?][]; set: (v: T) => void;
+}) {
   return (
     <div className="cfg-row">
       <span className="cfg-label">{label}</span>
-      <div className="cfg-seg" role="group" aria-label={label}>
-        {options.map(([v, text]) => <button type="button" key={v} aria-pressed={value === v} onClick={() => set(v)}>{text}</button>)}
+      <div className="cfg-seg" role="group" aria-label={group}>
+        {options.map(([v, content, title]) => (
+          <button type="button" key={v} aria-pressed={value === v} onClick={() => set(v)} aria-label={title} title={title}>{content}</button>
+        ))}
       </div>
     </div>
+  );
+}
+
+/** A row that switches something on or off: its name on the left, a switch on the right. */
+export function Toggle({ label, on, set, title }: { label: string; on: boolean; set: (on: boolean) => void; title?: string }) {
+  return (
+    <button type="button" className="cfg-toggle" aria-pressed={on} onClick={() => set(!on)} title={title}>
+      <span>{label}</span><i aria-hidden="true" />
+    </button>
   );
 }
 
@@ -54,22 +66,29 @@ export function TimelineConfig() {
   const ui = useUI.getState();
   return (
     <ConfigButton label="Timeline settings" icon={<SlidersIcon />} down className="tl-cfg">
-      <div className="cfg-row"><span className="cfg-label">Scale</span><ScaleSwitch /></div>
+      <Choice<Spacing> label="Scale" group="Timeline scale" value={spacing === 'chrono' ? 'chrono' : 'text'} options={[['text', 'Text'], ['chrono', 'Time']]} set={ui.setSpacing} />
       {spacing === 'chrono' && (
         <>
           <Choice<Reckoning> label="Crucifixion" value={reckoning} options={[['ad30', 'AD 30'], ['ad33', 'AD 33']]} set={ui.setReckoning} />
-          <button type="button" className="map-toggle" aria-pressed={compress} onClick={() => ui.setCompress(!compress)}>Compress the hidden years</button>
-          <p className="cfg-note">Dates are estimates ({RECKONING_NAME[reckoning]}), interpolated between anchor events such as the Passovers in John.</p>
+          <Toggle label="Compress the hidden years" on={compress} set={ui.setCompress} title="Shorten the long silences: childhood, and the years after age twelve" />
         </>
       )}
-      <button type="button" className="map-toggle" aria-pressed={phases} onClick={() => ui.setPhases(!phases)}>Phases and feasts</button>
+      <Toggle label="Phases and feasts" on={phases} set={ui.setPhases} />
+      {spacing === 'chrono' && <p className="cfg-note">Years are estimates ({RECKONING_NAME[reckoning]}).</p>}
     </ConfigButton>
   );
 }
 
-const LAYOUTS: [PhoneGospels, string][] = [['grid', 'Quadrants'], ['columns', 'Side by side'], ['stacked', 'Stacked']];
+// The layouts drawn: four dots for quadrants, four columns side by side, four bands stacked.
+const LayoutIcon = ({ kind }: { kind: PhoneGospels }) => (
+  <svg viewBox="0 0 20 20" aria-hidden="true" className="cfg-glyph">
+    {kind === 'grid' && [[6, 6], [14, 6], [6, 14], [14, 14]].map(([x, y]) => <circle key={`${x}${y}`} cx={x} cy={y} r="2.6" />)}
+    {kind === 'columns' && [3, 7.5, 12, 16.5].map((x) => <rect key={x} x={x - 1.1} y="3" width="2.2" height="14" rx="1.1" />)}
+    {kind === 'stacked' && [3, 7.5, 12, 16.5].map((y) => <rect key={y} x="3" y={y - 1.1} width="14" height="2.2" rx="1.1" />)}
+  </svg>
+);
 
-/** The gospels': their layout (cycled), equal or own lengths in panes, text size, colours, notes and the text's sources. */
+/** The gospels': their layout, equal or own lengths in panes, text size, colours, notes and the text's sources. */
 export function GospelConfig() {
   const phoneGospels = useUI((s) => s.phoneGospels);
   const paneSync = useUI((s) => s.paneSync);
@@ -77,25 +96,19 @@ export function GospelConfig() {
   const appearance = useUI((s) => s.appearance);
   const notes = useUI((s) => s.notes);
   const ui = useUI.getState();
-  const at = LAYOUTS.findIndex(([v]) => v === phoneGospels); // one at a time (an older choice) goes on to Quadrants
-  const layoutName = at >= 0 ? LAYOUTS[at][1] : 'One at a time';
   return (
     <ConfigButton label="Gospel settings" icon={<SlidersIcon />} className="gospel-cfg">
-      <button type="button" className="cfg-cycle" onClick={() => ui.setPhoneGospels(LAYOUTS[(at + 1) % LAYOUTS.length][0])}>
-        Layout <b>{layoutName}</b>
-      </button>
+      <Choice<PhoneGospels>
+        label="Layout" value={phoneGospels} set={ui.setPhoneGospels}
+        options={[['grid', <LayoutIcon kind="grid" />, 'Quadrants'], ['columns', <LayoutIcon kind="columns" />, 'Side by side'], ['stacked', <LayoutIcon kind="stacked" />, 'Stacked']]}
+      />
       {(phoneGospels === 'stacked' || phoneGospels === 'grid') && (
-        <button type="button" className="cfg-cycle" onClick={() => ui.setPaneSync(paneSync === 'locked' ? 'follow' : 'locked')}>
-          Lengths <b>{paneSync === 'locked' ? 'Equal' : 'Own'}</b>
-        </button>
+        <Choice<PaneSync> label="Lengths" value={paneSync} options={[['locked', 'Equal', 'Equal: every section as long in each pane, scrolled together'], ['follow', 'Own', 'Own: each pane its own length, following the one you scroll']]} set={ui.setPaneSync} />
       )}
       <Choice<TextSize> label="Text size" value={textSize} options={[['s', 'S'], ['m', 'M'], ['l', 'L']]} set={ui.setTextSize} />
       <Choice<Appearance> label="Colours" value={appearance} options={[['dynamic', 'Dynamic'], ['light', 'Light'], ['dark', 'Dark']]} set={ui.setAppearance} />
       <Choice<NotesShown> label="BSB notes" value={notes} options={[['all', 'All'], ['textual', 'Manuscripts'], ['none', 'None']]} set={ui.setNotes} />
-      <p className="cfg-note">
-        Text: Berean Standard Bible (public domain). Order and sections: A. T. Robertson, <i>A Harmony of the Gospels</i> (1922),
-        public domain; titles rewritten to describe what each text narrates.
-      </p>
+      <p className="cfg-note">Text: BSB (public domain). Order: Robertson’s <i>Harmony</i> (1922).</p>
     </ConfigButton>
   );
 }

@@ -5,7 +5,7 @@ import { AttributionControl, LngLat, Map as MlMap, Marker, Popup, ScaleControl, 
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { FeatureCollection } from 'geojson';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ConfigButton } from './Config';
+import { ConfigButton, Toggle } from './Config';
 import { bearingDeg, bounds, circleRing, dryLand, haversineKm, inRing, lerp, type LonLat } from './geo';
 import { declutter, type Label } from './mapLabels';
 import { AREAS, BIRTH, BOOK_ABBR, MAP_START, ROWS, mountainFor, rowTitle, storiesAt, type Book } from './model';
@@ -193,6 +193,9 @@ function makePopup(map: MlMap, pick: (place: string) => boolean) {
 }
 
 const CREDITS = 'Natural Earth · Places: <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY 4.0) · Peaks: Wikidata · Terrain: USGS SRTM, GMTED2010; NOAA ETOPO1 · Modern: <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)';
+
+/** Phones' credits, short: each source and its licence. */
+const SHORT_CREDITS = '<a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre</a> · Natural Earth · <a href="https://www.openbible.info/geo/" target="_blank" rel="noopener">OpenBible.info</a> (CC BY 4.0) · Wikidata · SRTM, GMTED2010, ETOPO1 · <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> (CC BY 4.0)';
 
 export default function MapPane({ books, compact = false }: { books: Book[]; compact?: boolean }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -969,13 +972,10 @@ export default function MapPane({ books, compact = false }: { books: Book[]; com
             label="Map layers and credits" className="map-more" badge={mountainsOn || modern}
             icon={<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5z" /><path d="M3 12.5l9 5 9-5" /><path d="M3 17l9 5 9-5" /></svg>}
           >
-            <div className="map-more-toggles">
-              {toggles}
-              <button type="button" className="map-toggle" aria-pressed={effects} onClick={() => { const ui = useUI.getState(); ui.setLandLight(!effects); ui.setWander(!effects); }} title="His light on the land, and his marker's drift within an area">
-                Effects
-              </button>
-            </div>
-            <p className="map-credits" dangerouslySetInnerHTML={{ __html: `Map: <a href="https://maplibre.org/" target="_blank" rel="noopener">MapLibre</a> · ${CREDITS}` }} />
+            <Toggle label="Mountains" on={mountainsOn} set={setMountainsChoice} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)" />
+            <Toggle label="Modern places" on={modern} set={(on) => useUI.getState().setModern(on)} title="Show today’s towns and the modern names of the sites" />
+            <Toggle label="Effects" on={effects} set={(on) => { const ui = useUI.getState(); ui.setLandLight(on); ui.setWander(on); }} title="His light on the land, and his marker's drift within an area" />
+            <p className="map-credits" dangerouslySetInnerHTML={{ __html: SHORT_CREDITS }} />
           </ConfigButton>
         );
       })()}

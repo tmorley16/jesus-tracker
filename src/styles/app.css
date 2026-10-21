@@ -476,23 +476,30 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .cfg-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .cfg-btn i { position: absolute; top: 1px; right: 1px; width: 7px; height: 7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1.5px var(--paper-raised); }
 .cfg-panel {
-  position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 8px; justify-items: start; width: min(270px, calc(100vw - 32px)); padding: 9px 10px;
+  position: absolute; right: 0; bottom: calc(100% + 6px); display: grid; gap: 6px; justify-items: start; width: min(270px, calc(100vw - 32px)); padding: 9px 10px;
   background: var(--paper-raised); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16); font-size: 0.8rem;
 }
 .cfg.down .cfg-panel { top: calc(100% + 6px); bottom: auto; }
-.cfg-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
-.cfg-label { color: var(--ink-soft); font-size: 0.75rem; }
+/* Every row alike: its name on the left, its control on the right. */
+.cfg-row, .cfg-toggle { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px; width: 100%; min-height: 30px; }
+.cfg-label, .cfg-toggle span { color: var(--ink); font-size: 0.78rem; text-align: left; }
 .cfg-seg { display: flex; }
-.cfg-seg button, .cfg .timeline-scale button { height: 28px; padding: 0 9px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; font-size: 0.75rem; }
+.cfg-seg button { display: grid; place-items: center; min-width: 34px; height: 28px; padding: 0 9px; border: 1px solid var(--line); background: var(--paper); color: var(--ink-soft); cursor: pointer; font-size: 0.75rem; }
 .cfg-seg button + button { border-left: 0; }
 .cfg-seg button:first-child { border-radius: 8px 0 0 8px; }
 .cfg-seg button:last-child { border-radius: 0 8px 8px 0; }
 .cfg-seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper-raised); border-color: var(--ink); }
-.cfg-cycle { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; height: 30px; padding: 0 10px; border: 1px solid var(--ink-faint); border-radius: 999px; background: var(--paper); color: var(--ink-soft); cursor: pointer; font: 0.75rem var(--font-ui); }
-.cfg-cycle b { color: var(--ink); font-weight: 600; }
-.cfg-cycle b::after { content: " ›"; color: var(--ink-soft); }
-.cfg-note { font-size: 0.68rem; line-height: 1.4; color: var(--ink-soft); }
+.cfg-glyph { width: 18px; height: 18px; fill: currentColor; }
+.cfg-toggle { padding: 0; border: 0; background: none; cursor: pointer; font: inherit; }
+.cfg-toggle i { position: relative; width: 34px; height: 20px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper-sunk); transition: background 150ms; }
+.cfg-toggle i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--paper-raised); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25); transition: transform 150ms; }
+.cfg-toggle[aria-pressed="true"] i { background: var(--ink); border-color: var(--ink); }
+.cfg-toggle[aria-pressed="true"] i::after { transform: translateX(14px); }
+.cfg-note { width: 100%; padding-top: 6px; border-top: 1px solid var(--line); font-size: 0.62rem; line-height: 1.35; color: var(--ink-soft); }
 .map-more { position: absolute; z-index: 3; right: 8px; bottom: 8px; }
+/* The map pane clips what overflows it, so its panel keeps to the map's height, scrolling if it must. */
+.jt[data-compact] .map-pane { container-type: size; }
+.map-more .cfg-panel { max-height: calc(100cqh - 56px); overflow-y: auto; }
 .jt[data-compact] .panes { position: relative; }
 .gospel-cfg { position: absolute; z-index: 7; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
 .gospel-cfg[data-open] { z-index: 62; }
@@ -503,8 +510,7 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .jt[data-compact] .map-card .pp-photo { margin: -5px 0 6px -10px; width: calc(100% + 10px); }
 .jt[data-compact] .map-card .pp-photo img { max-height: 110px; border-radius: 7px 0 0 0; }
 .map-back { margin-top: 4px; padding: 0; border: 0; background: none; color: var(--ink-soft); font: 0.75rem var(--font-ui); text-decoration: underline; text-decoration-color: var(--ink-faint); text-underline-offset: 2px; cursor: pointer; }
-.map-more-toggles { display: flex; flex-wrap: wrap; gap: 6px; }
-.map-credits { font-size: 0.68rem; line-height: 1.4; color: var(--ink-soft); }
+.map-credits { width: 100%; padding-top: 6px; border-top: 1px solid var(--line); font-size: 0.6rem; line-height: 1.35; color: var(--ink-soft); }
 .map-credits a { color: var(--ink); }
 /* The place card folds away to the right, leaving a tab with the place's name. */
 .jt[data-compact] .map-card { padding-right: 34px; }
@@ -517,3 +523,6 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .map-card-tab span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Locked panes scroll together under the finger (Stack moves them all at once), not by the browser's own scrolling. */
 .stack[data-locked] > .reader { touch-action: none; }
+/* Phones: an × at the right of a gospel's heading hides it. */
+.col-off { display: grid; place-items: center; width: 22px; height: 22px; margin: -3px -6px -3px auto; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink-soft); cursor: pointer; }
+.col-off svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
