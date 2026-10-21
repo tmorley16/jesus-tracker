@@ -447,14 +447,16 @@ test('in scenes without Jesus his marker waits where he was last placed, and goe
   await expect.poll(offNazareth, { timeout: 8_000 }).toBeLessThan(20);
 });
 
-test('Jesus’ glow lies under every other marker and label, and places he has been turn from dark to light', async ({ page }) => {
+test('Jesus’ glow lies under every other marker and label, and place dots stay black whether he has been there or not', async ({ page }) => {
   await openMap(page);
   await goTo(page, 'A paralysed man lowered through the roof');
   // The glow is the first thing drawn over the map's canvas, so labels and markers sit on top of it.
   await expect.poll(() => page.evaluate(() => document.querySelector('.maplibregl-canvas')?.nextElementSibling?.classList.contains('map-traveller-glow'))).toBe(true);
   const dot = (name: string) => placeDot(page, name).locator('i').evaluate((el) => getComputedStyle(el).backgroundColor);
-  await expect.poll(() => dot('Capernaum')).toBe('rgb(255, 255, 255)');
-  expect(await dot('Jericho')).not.toBe('rgb(255, 255, 255)');
+  // Jesus' marker is the only white dot.
+  await expect(placeDot(page, 'Capernaum')).toHaveClass(/visited/);
+  expect(await dot('Capernaum')).toBe('rgb(17, 17, 17)');
+  expect(await dot('Jericho')).toBe('rgb(17, 17, 17)');
   await page.waitForTimeout(1200);
   await shot(page, '15-light');
   // MapLibre sets each marker's opacity inline, so hiding works on the inner element: once he is born, a little glow

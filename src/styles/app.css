@@ -17,8 +17,14 @@ p { margin: 0; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .jt { --scripture-size: 1.08rem; height: 100%; display: grid; grid-template-rows: auto auto minmax(0, 1fr); background: var(--paper); color: var(--ink); }
-.jt[data-size="s"] { --scripture-size: 0.98rem; }
-.jt[data-size="l"] { --scripture-size: 1.26rem; }
+/* Gospel settings › Text size: the scripture's size, and a scale the rest of the reading follows (headings, references,
+   notes, the place card, map labels and pop-ups) in the same proportion. */
+.jt { --size-scale: 1; }
+.jt[data-size="s"] { --scripture-size: 0.98rem; --size-scale: 0.91; }
+.jt[data-size="l"] { --scripture-size: 1.26rem; --size-scale: 1.17; }
+/* Zoomed with it. Sticky and positioned boxes zoom their contents, so their offsets (set in px) stay put. */
+.row-head > *, .col-h, .stack-head, .part-div, .cell-ref, .cell-note, .row-note, .cell.empty span, .row.gap span,
+.note-pop > *, .timeline-tip > *, .map-popup .maplibregl-popup-content > * { zoom: var(--size-scale); }
 
 /* ---- toolbar ---- */
 .toolbar {
@@ -212,16 +218,15 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 .map-place-name.muted { font-weight: 400; color: var(--ink-soft); }
 .cands { margin: 4px 0 0; padding-left: 16px; font-size: 0.8rem; color: var(--ink-soft); }
 .cands span { font-family: var(--font-mono); font-size: 0.75rem; cursor: help; }
-.map-place { position: relative; display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; font-size: 11.5px; font-weight: 600; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 7px var(--land); }
-/* A place is dark until Jesus has been there, then light. */
-.map-place i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 1px transparent; flex: none; transition: background-color 600ms ease, box-shadow 600ms ease; }
-.map-place.visited i { background: #fff; }
+.map-place { position: relative; display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; font-size: calc(11.5px * var(--size-scale)); font-weight: 600; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 7px var(--land); }
+/* A place's dot is solid black in every theme, visited or not, so Jesus' marker is the only white dot. */
+.map-place i { width: 7px; height: 7px; border-radius: 50%; background: #111; flex: none; }
 .map-place.current { font-weight: 800; }
 .map-place.kind-region i, .map-place.kind-water i { display: none; }
 .map-box[data-zoom="far"] .map-place.close:not(.current):not(.named) span { display: none; }
 /* Zoomed out, the sites within Jerusalem would only crowd its own dot. */
 .map-box[data-zoom="far"] .map-place.in-city:not(.current):not(.named) i { visibility: hidden; }
-.map-place.kind-region { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); }
+.map-place.kind-region { font-family: var(--font-mono); font-size: calc(10.5px * var(--size-scale)); font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); }
 .map-sea { pointer-events: none; letter-spacing: 0.04em; }
 .map-place.kind-water { font-family: var(--font-scripture); font-style: italic; font-weight: 500; color: var(--shore); text-shadow: none; }
 /* Crowded labels give way (decided in mapLabels.ts); their dots stay. */
@@ -229,12 +234,12 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 /* A label moved to the left of its dot to make room (mapLabels.ts). */
 .map-place.flip > span, .map-peak.flip > span { position: absolute; right: 100%; top: 50%; transform: translateY(-50%); margin-right: 5px; }
 .map-place.flip .modern-name { left: auto; right: calc(100% + 5px); }
-.map-place .modern-name { display: none; position: absolute; left: 12px; top: 100%; margin-top: -1px; font-family: var(--font-ui); font-size: 10px; font-weight: 500; font-style: italic; color: var(--ink-soft); }
+.map-place .modern-name { display: none; position: absolute; left: 12px; top: 100%; margin-top: -1px; font-family: var(--font-ui); font-size: calc(10px * var(--size-scale)); font-weight: 500; font-style: italic; color: var(--ink-soft); }
 .map-box[data-modern="on"] .map-place:not(.label-hidden) .modern-name { display: block; }
 .map-box[data-zoom="far"] .map-place.close:not(.current):not(.named) .modern-name { display: none; }
 
-/* Jesus on the map: a white circle with a fine gold ring, so he stands out from the lit contours and the visited
-   places' white dots (which have no outline). It travels (traveller.ts) and
+/* Jesus on the map: a white circle with a fine gold ring, the only white dot, so he stands out from the lit
+   contours and the places' black dots. It travels (traveller.ts) and
    drifts within an area; the drift is set frame by frame on .wander, so it can start and stop without a jump. Its faint
    glow is a separate marker drawn under every other marker and label, so it never muddies them. MapLibre sets each
    marker's own opacity inline, so showing and hiding fade the .wander inside. */
@@ -258,12 +263,12 @@ body:not([data-dead]) .map-traveller-glow.resting.born .wander { opacity: 0.45; 
 /* Resting: Jesus isn't in this scene, so the marker waits where he was last placed, dimmed and named. */
 .map-traveller .who {
   position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); display: none; white-space: nowrap;
-  font: 600 9.5px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land);
+  font: 600 calc(9.5px * var(--size-scale)) var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land);
 }
 .map-traveller.resting .who { display: block; }
 .map-traveller.resting .sym { transform: scale(0.8); opacity: 0.55; }
 /* Where the text has him heading: the name at the heading's tip, and the place itself underlined. */
-.map-heading { white-space: nowrap; pointer-events: none; font-family: var(--font-scripture); font-style: italic; font-weight: 600; font-size: 12.5px; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 7px var(--land); }
+.map-heading { white-space: nowrap; pointer-events: none; font-family: var(--font-scripture); font-style: italic; font-weight: 600; font-size: calc(12.5px * var(--size-scale)); color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 7px var(--land); }
 .map-place.ahead span { text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
 .map-heading-note { margin: 4px 0 0; font-size: 0.8rem; color: var(--ink-soft); line-height: 1.35; }
 .map-heading-note b { color: var(--ink); font-weight: 700; }
@@ -276,16 +281,16 @@ body:not([data-dead]) .map-traveller-glow.resting.born .wander { opacity: 0.45; 
   background: radial-gradient(circle closest-side, rgba(255, 255, 255, 0.5) 4px, rgba(255, 255, 255, 0.28) 8px, rgba(255, 255, 255, 0.1) 15px, rgba(255, 255, 255, 0.03) 21px, rgba(255, 255, 255, 0) 26px);
 }
 /* The gospels go under the point, clear of the place's own name on its right. */
-.map-split span { position: absolute; top: calc(100% + 5px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
+.map-split span { position: absolute; top: calc(100% + 5px); left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: var(--font-mono); font-size: calc(11px * var(--size-scale)); font-weight: 700; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 
 /* Peaks in mountain sections. */
-.map-peak { display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; font-size: 11px; font-weight: 600; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 7px var(--land); animation: fade-in 700ms ease both; }
+.map-peak { display: flex; align-items: center; gap: 5px; white-space: nowrap; cursor: pointer; font-size: calc(11px * var(--size-scale)); font-weight: 600; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land), 0 0 7px var(--land); animation: fade-in 700ms ease both; }
 .map-peak i { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid var(--ink); flex: none; filter: drop-shadow(0 0 1.5px var(--land)); }
-.map-peak small { font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--ink-soft); }
+.map-peak small { font-family: var(--font-mono); font-size: calc(10px * var(--size-scale)); font-weight: 500; color: var(--ink-soft); }
 @keyframes fade-in { from { opacity: 0; } }
 
 /* Modern places (optional overlay): small squares and plain grey labels, unlike the ancient places. */
-.map-modern { display: flex; align-items: center; gap: 4px; white-space: nowrap; pointer-events: none; font-family: var(--font-ui); font-size: 10.5px; font-weight: 500; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
+.map-modern { display: flex; align-items: center; gap: 4px; white-space: nowrap; pointer-events: none; font-family: var(--font-ui); font-size: calc(10.5px * var(--size-scale)); font-weight: 500; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 .map-modern i { width: 5px; height: 5px; background: var(--ink-faint); flex: none; }
 .map-mountain { margin: 4px 0 0; font-size: 0.8rem; color: var(--ink-soft); line-height: 1.35; }
 .map-mountain em { font-style: normal; }
@@ -308,12 +313,12 @@ body:not([data-dead]) .map-traveller-glow.resting.born .wander { opacity: 0.45; 
 .pp-stories .pp-n { font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-soft); }
 .pp-stories em { font-style: normal; font-size: 0.66rem; color: var(--ink-soft); }
 @media (max-width: 640px) { .pp-stories { max-height: none; } }
-.map-candidate { display: flex; align-items: center; gap: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font-mono); font-size: 11px; color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
+.map-candidate { display: flex; align-items: center; gap: 6px; white-space: nowrap; pointer-events: none; font-family: var(--font-mono); font-size: calc(11px * var(--size-scale)); color: var(--ink); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 .map-candidate i { width: 14px; height: 14px; border-radius: 50%; border: 1.5px dashed var(--ink); flex: none; }
 /* A scene Jesus isn't in: an open diamond, captioned, so it never reads as his light. */
 .map-scene { position: relative; width: 14px; height: 14px; }
 .map-scene i { position: absolute; inset: 0; transform: rotate(45deg); border: 2px solid var(--ink); background: color-mix(in oklab, var(--paper-raised) 75%, transparent); box-shadow: 0 0 0 3px color-mix(in oklab, var(--paper-raised) 50%, transparent); }
-.map-scene span { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; font: 600 9.5px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
+.map-scene span { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); white-space: nowrap; font: 600 calc(9.5px * var(--size-scale)) var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); text-shadow: 0 0 3px var(--land), 0 0 3px var(--land); }
 .maplibregl-ctrl-scale { cursor: pointer; background: color-mix(in oklab, var(--paper-raised) 85%, transparent); border-color: var(--ink); color: var(--ink); font-family: var(--font-mono); font-size: 11px; }
 
 .load-error { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 70; padding: 10px 14px; border: 1px solid var(--ink); border-radius: 8px; background: var(--paper-raised); }
@@ -533,8 +538,7 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .jt[data-compact] .map-card[data-lean][data-open] { overflow-y: auto; overscroll-behavior: contain; }
 .jt[data-compact] .map-card[data-lean][data-open] .pp-stories { flex: none; overflow: visible; }
 /* The card's text follows Gospel settings › Text size. */
-.jt[data-size="s"] .map-card, .jt[data-size="s"] .map-card-tab { zoom: 0.9; }
-.jt[data-size="l"] .map-card, .jt[data-size="l"] .map-card-tab { zoom: 1.12; }
+.jt .map-card, .jt .map-card-tab { zoom: var(--size-scale); }
 /* Brief: a line saying what more there is (and opening it), and room enough for both buttons. */
 .mc-more { padding: 0; margin-top: 4px; border: 0; background: none; color: var(--ink-soft); font: 0.72rem var(--font-ui); text-align: left; cursor: pointer; }
 .mc-more:hover, .mc-more:focus-visible { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }

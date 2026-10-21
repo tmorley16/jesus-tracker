@@ -206,6 +206,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const landColour = useUI((s) => s.landColour);
   const trail = useUI((s) => s.trail);
   const units = useUI((s) => s.units);
+  const textSize = useUI((s) => s.textSize);
   const scaleRef = useRef<ScaleControl | null>(null);
   // The card can fold away (to the right on phones, where it starts folded; to the left on desktops), leaving a tab
   // with the place's name. It is also where a clicked or tapped place shows: the place, its photo, links and stories.
@@ -217,6 +218,8 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const [picked, setPicked] = useState<string | null>(null);
   // Moving along the text takes the card back from a place clicked to the place in the text.
   useEffect(() => setPicked(null), [current]);
+  // Labels grow and shrink with Gospel settings › Text size, so measure them again.
+  useEffect(() => declutterSoon.current(true), [textSize]);
   const compactRef = useRef(compact);
   compactRef.current = compact;
   const booksKey = books.join(',');
