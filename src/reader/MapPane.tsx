@@ -25,6 +25,8 @@ const JERUSALEM_SITES = new Set(['jerusalem', 'gethsemane', 'golgotha', 'gabbath
 const CLOSE_SITES = new Set([...JERUSALEM_SITES, 'bethany', 'emmaus', 'gennesaret', 'magadan', 'bethsaida']);
 CLOSE_SITES.delete('jerusalem');
 // Close enough to read the place, wide enough to see its neighbours and the lie of the land.
+/** The seas' names, as the lake's is written (labels only, given way to anything the reader needs). */
+const SEAS: { name: string; ll: LonLat }[] = [{ name: 'Dead Sea', ll: [35.49, 31.47] }, { name: 'Mediterranean Sea', ll: [34.45, 32.45] }];
 const zoomFor = (key: string, p: PlaceData) => (JERUSALEM_SITES.has(key) ? 12.4 : key === 'bethany' ? 11 : p.kind === 'water' ? 9 : 9.2);
 const EMPTY = { type: 'FeatureCollection' as const, features: [] };
 // The standard view: the land of the gospels, from Tyre to the Dead Sea.
@@ -212,7 +214,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const revealing = useRef(''); // the leg being drawn as Jesus travels it
   const routeKeys = useRef<string[]>([]);
   const declutterSoon = useRef<(remeasure?: boolean) => void>(() => {});
-  const labels = useRef({ places: new Map<string, Label>(), focus: [] as Label[], peaks: [] as Label[], modern: new Map<string, Label>() });
+  const labels = useRef({ places: new Map<string, Label>(), focus: [] as Label[], peaks: [] as Label[], modern: new Map<string, Label>(), seas: [] as Label[] });
   const markers = useRef({ places: new Map<string, HTMLElement>(), focus: [] as Marker[], peaks: [] as Marker[], modern: new Map<string, Marker>() });
   const contours = useRef(new Map<string, Promise<FC>>());
   const modernData = useRef<Promise<[string, number, number, number][]> | null>(null);
@@ -252,6 +254,8 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const [cardOpen, setCardOpen] = useState(false);
   const cardMarks = useRef<Marks>({ key: null, rows: [] });
   const [picked, setPicked] = useState<string | null>(null);
+  // Moving along the text takes the card back from a place clicked to the place in the text.
+  useEffect(() => setPicked(null), [current]);
   const compactRef = useRef(compact);
   compactRef.current = compact;
   const booksKey = books.join(',');
@@ -410,7 +414,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
         labelFrame = requestAnimationFrame(() => {
           labelFrame = 0;
           const L = labels.current;
-          declutter(map, [...L.places.values(), ...L.focus, ...L.peaks, ...L.modern.values()], remeasure);
+          declutter(map, [...L.places.values(), ...L.focus, ...L.peaks, ...L.modern.values(), ...L.seas], remeasure);
           remeasure = false;
         });
       };
@@ -435,6 +439,13 @@ export default function MapPane({ books, compact = false, withText = false }: { 
         markers.current.places.set(key, el);
         labels.current.places.set(key, { el, ll: p.candidates[0].lonlat, anchor, dx: p.kind === 'site' ? -4 : 0, priority: 5, flips: p.kind === 'site' });
         pop.attach(el, (full) => ({ ll: p.candidates[0].lonlat, html: placePopup(key, p, full), place: key }));
+      }
+      for (const sea of SEAS) {
+        const el = document.createElement('div');
+        el.className = 'map-place kind-water map-sea';
+        el.innerHTML = `<span>${esc(sea.name)}</span>`;
+        new Marker({ element: el, anchor: 'center' }).setLngLat(sea.ll).addTo(map);
+        labels.current.seas.push({ el, ll: sea.ll, anchor: 'center', dx: 0, priority: 6, flips: false });
       }
       // A region's popup comes only from its name, never from the area itself, so moving over the map stays clear.
 
@@ -1011,6 +1022,11 @@ export default function MapPane({ books, compact = false, withText = false }: { 
         )}
         </>}
         {((compact && !led) || open) && cardKey && stories(cardKey)}
+        {more && !open && (() => {
+          const n = cardKey ? storiesAt(cardKey).length : 0;
+          const what = [n > 1 ? `${n} stories here` : n === 1 ? '1 story here' : null, photo ? 'photo' : null, n ? null : 'links'].filter(Boolean).join(' · ');
+          return <button type="button" className="mc-more" onClick={() => setCardOpen(true)}>{what.charAt(0).toUpperCase() + what.slice(1)}</button>;
+        })()}
         {linkPlace && (!led || (open && !photo)) && (
           <p className="map-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}

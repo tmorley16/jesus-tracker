@@ -85,7 +85,7 @@ p { margin: 0; }
 .tip-date { margin: -2px 0 6px; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-soft); }
 
 /* ---- panes ---- */
-.panes { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+.panes { grid-row: 3; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); } /* the last row, whether or not a toolbar or timeline is above */
 .panes[data-layout="split"] { grid-template-columns: minmax(0, 1fr) 10px calc(var(--map-share) * (100% - 10px)); }
 .splitter { position: relative; z-index: 8; display: grid; place-items: center; background: var(--paper-raised); border-inline: 1px solid var(--line); cursor: col-resize; touch-action: none; }
 .splitter:hover, .splitter:focus-visible { background: var(--paper-sunk); }
@@ -107,7 +107,7 @@ body[data-dragging] { cursor: col-resize; user-select: none; }
 .part-div { display: flex; align-items: center; gap: 12px; padding: 30px 18px 8px; font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); }
 .part-div::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 .row { border-bottom: 1px solid var(--line); }
-.row-head { position: sticky; top: var(--cols-h, 40px); z-index: 4; padding: 10px 18px 8px; background: var(--paper); border-bottom: 1px dashed var(--line); }
+.row-head { position: sticky; top: calc(var(--cols-h, 40px) - 1px); /* tucked a pixel under the gospel names, so no hair of text shows between */ z-index: 4; padding: 10px 18px 8px; background: var(--paper); border-bottom: 1px dashed var(--line); }
 .kicker { display: flex; flex-wrap: wrap; gap: 4px 10px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); letter-spacing: 0.03em; }
 .kicker .n { color: var(--ink); }
 .row-head h3 { font-size: 1.2rem; margin: 3px 0 6px; }
@@ -222,6 +222,7 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 /* Zoomed out, the sites within Jerusalem would only crowd its own dot. */
 .map-box[data-zoom="far"] .map-place.in-city:not(.current):not(.named) i { visibility: hidden; }
 .map-place.kind-region { font-family: var(--font-mono); font-size: 10.5px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ink-soft); }
+.map-sea { pointer-events: none; letter-spacing: 0.04em; }
 .map-place.kind-water { font-family: var(--font-scripture); font-style: italic; font-weight: 500; color: var(--shore); text-shadow: none; }
 /* Crowded labels give way (decided in mapLabels.ts); their dots stay. */
 .label-hidden > span, .label-hidden > small { visibility: hidden; }
@@ -557,3 +558,11 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 /* Phones: a short map leaves little room, so the open card scrolls as a whole rather than its stories alone. */
 .jt[data-compact] .map-card[data-lean][data-open] { overflow-y: auto; overscroll-behavior: contain; }
 .jt[data-compact] .map-card[data-lean][data-open] .pp-stories { flex: none; overflow: visible; }
+/* The card's text follows Gospel settings › Text size. */
+.jt[data-size="s"] .map-card, .jt[data-size="s"] .map-card-tab { zoom: 0.9; }
+.jt[data-size="l"] .map-card, .jt[data-size="l"] .map-card-tab { zoom: 1.12; }
+/* Brief: a line saying what more there is (and opening it), and room enough for both buttons. */
+.mc-more { padding: 0; margin-top: 4px; border: 0; background: none; color: var(--ink-soft); font: 0.72rem var(--font-ui); text-align: left; cursor: pointer; }
+.mc-more:hover, .mc-more:focus-visible { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.jt .map-card[data-lean]:not([data-open]) { min-height: 60px; }
+.jt[data-compact] .map-card[data-lean]:not([data-open]) { min-height: 76px; }
