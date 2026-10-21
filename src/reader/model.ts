@@ -241,6 +241,8 @@ function build(): Row[] {
 }
 
 export const ROWS: Row[] = build();
+/** Where the reader opens: the feeding of the five thousand (Mk 6:35), which all four gospels tell. */
+export const START_ROW = Math.max(0, ROWS.findIndex((r) => r.refs.MRK?.some(([c1, v1, c2, v2]) => (c1 < 6 || (c1 === 6 && v1 <= 35)) && (c2 > 6 || (c2 === 6 && v2 >= 35)))));
 /** The first row the map shows Jesus in (Mary visits Elizabeth); before it, no marker and no route. */
 export const MAP_START = Math.max(0, ROWS.findIndex((r) => r.sectionId === M.mapStart.id));
 /** The row in which Jesus is born: from here on his resting marker keeps a little of its glow. */

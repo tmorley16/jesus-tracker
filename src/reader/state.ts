@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createStore } from 'zustand/vanilla';
 import type { Years, Spacing } from './layoutModel';
-import { BOOKS, ROWS, type Book, type Reckoning } from './model';
+import { BOOKS, ROWS, START_ROW, type Book, type Reckoning } from './model';
 
 export type { Spacing };
 export type Appearance = 'dynamic' | 'light' | 'dark';
@@ -133,9 +133,9 @@ export const useUI = create<UI>()((set, get) => {
     phases: saved.phases === true,
     units: saved.units === 'imperial' ? 'imperial' : 'metric',
     paneSync: saved.paneSync === 'follow' ? 'follow' : 'locked',
-    shrinkMissing: saved.shrinkMissing !== false,
+    shrinkMissing: saved.shrinkMissing === true,
     settingsOpen: false,
-    current: 0,
+    current: START_ROW,
     toggleBook: (b) => {
       const { visible, map, single } = get();
       const next = visible.includes(b) ? visible.filter((x) => x !== b) : BOOKS.filter((x) => x === b || visible.includes(x));
@@ -179,7 +179,7 @@ export const useUI = create<UI>()((set, get) => {
 });
 
 /** Reading position, updated on every scroll frame. u is 0–1 along the timeline. */
-export const playhead = createStore<{ u: number; row: number; f: number }>(() => ({ u: 0, row: 0, f: 0 }));
+export const playhead = createStore<{ u: number; row: number; f: number }>(() => ({ u: 0, row: START_ROW, f: 0 }));
 
 /** At the reading line: whether Jesus has died and not yet risen (his light on the map goes out). */
 export const scene = createStore<{ dead: boolean }>(() => ({ dead: false }));

@@ -1,6 +1,6 @@
-import { memo, useCallback, useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, type CSSProperties, type RefObject } from 'react';
 import { computeLayout, rowAtU } from './layoutModel';
-import { BOOKS, BOOK_ABBR, BOOK_NAME, PARALLELS, ROWS, TEXT_NOTES, fmtRef, rowTitle, versesOf, type Book, type Row, type Texts } from './model';
+import { BOOKS, BOOK_ABBR, BOOK_NAME, PARALLELS, ROWS, START_ROW, TEXT_NOTES, fmtRef, rowTitle, versesOf, type Book, type Row, type Texts } from './model';
 import { NotePopover, VerseText, showVerse } from './Notes';
 import { PlaceChip } from './places';
 import { layout, nav, playhead, useUI, type NotesShown } from './state';
@@ -17,7 +17,7 @@ interface Geo { tops: number[]; heights: number[]; vis: number[]; origin: number
  *  reading position) and the others follow it. */
 const stack = {
   leader: 0, locked: false,
-  panes: new Map<number, { scrub: (u: number, dragging: boolean) => void; toRow: (i: number) => void; gliding: () => boolean }>(),
+  panes: new Map<number, { scrub: (u: number, dragging: boolean) => void; toRow: (i: number) => void }>(),
   /** Each pane's way back to the reading position, measuring afresh: locked, once the lengths are even again. */
   restore: new Map<number, () => void>(),
   /** Locked: even out the sections' lengths again (after text reflows), on the next frame, then put each pane back at the
@@ -26,6 +26,50 @@ const stack = {
   /** Locked: stop the panes' fling, before the timeline or search moves them. */
   stopFling: () => {},
 };
+
+/** Whether each reader is gliding (to a place the timeline or search asked for). */
+const gliders = new Set<() => boolean>();
+
+/** Phones, Settings › Gospels › Shrink missing: a track (a row of panes, or a column) none of whose gospels has the
+ *  section at the reading line shrinks to half once the reading comes to rest; one that has it grows back at once, even
+ *  mid-scroll. Rows and columns change together, written straight to the style (`write`), so nothing renders again. */
+function useShrink(ref: RefObject<HTMLElement | null>, shown: Book[], rows: number[][], cols: number[][], write: (el: HTMLElement, rows: string[], cols: string[]) => void) {
+  const shrink = useUI((s) => s.shrinkMissing);
+  const key = JSON.stringify([shown, rows, cols]);
+  useEffect(() => {
+    const el = ref.current;
+    const tracks = [...rows, ...cols];
+    if (!el || !tracks.length || !shrink) return;
+    const target = () => {
+      const i = useUI.getState().current;
+      const has = shown.map((b) => !!ROWS[i]?.refs[b]);
+      if (!has.some(Boolean)) return tracks.map(() => 1); // a section none of them has: all alike
+      return tracks.map((ks) => (ks.some((k) => has[k]) ? 1 : 0.5));
+    };
+    let now: number[] = [];
+    const set = (next: number[]) => {
+      if (next.length === now.length && next.every((v, k) => v === now[k])) return;
+      now = next;
+      const fr = (v: number) => `minmax(0, ${v}fr)`;
+      write(el, now.slice(0, rows.length).map(fr), now.slice(rows.length).map(fr));
+    };
+    set(target());
+    let timer = 0;
+    const rest = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => { if ([...gliders].some((g) => g())) rest(); else set(target()); }, 300);
+    };
+    const off = useUI.subscribe((st, prev) => {
+      if (st.current === prev.current) return;
+      const t = target();
+      set(now.map((v, k) => Math.max(v, t[k])));
+      rest();
+    });
+    el.addEventListener('scroll', rest, { capture: true, passive: true });
+    return () => { off(); el.removeEventListener('scroll', rest, { capture: true }); clearTimeout(timer); write(el, [], []); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, shrink]);
+}
 
 /** Locked panes: each section as long as its longest account, so the panes line up row for row. */
 function equalize(el: HTMLElement) {
@@ -79,18 +123,19 @@ export function Stack({ texts, shown, arrangement }: { texts: Texts | null; show
     let fling = 0;
     const stopFling = () => { cancelAnimationFrame(fling); fling = 0; };
     stack.stopFling = stopFling;
-    let drag: { id: number; y0: number; top0: number; moved: boolean; trail: [number, number][] } | null = null;
+    // Each move scrolls on from where the panes are, so a reflow mid-drag (a pane growing back) doesn't throw it off.
+    let drag: { id: number; y0: number; y: number; moved: boolean; trail: [number, number][] } | null = null;
     const down = (e: PointerEvent) => {
       if (e.pointerType !== 'touch' || drag) return;
       stopFling();
-      drag = { id: e.pointerId, y0: e.clientY, top0: first.scrollTop, moved: false, trail: [[e.timeStamp, e.clientY]] };
+      drag = { id: e.pointerId, y0: e.clientY, y: e.clientY, moved: false, trail: [[e.timeStamp, e.clientY]] };
     };
     const move = (e: PointerEvent) => {
       if (!drag || e.pointerId !== drag.id) return;
-      const dy = e.clientY - drag.y0;
-      if (!drag.moved && Math.abs(dy) < 6) return;
+      if (!drag.moved && Math.abs(e.clientY - drag.y0) < 6) return;
       drag.moved = true;
-      setTop(drag.top0 - dy);
+      setTop(first.scrollTop - (e.clientY - drag.y));
+      drag.y = e.clientY;
       drag.trail.push([e.timeStamp, e.clientY]);
       while (drag.trail.length > 2 && e.timeStamp - drag.trail[0][0] > 100) drag.trail.shift();
     };
@@ -151,34 +196,13 @@ export function Stack({ texts, shown, arrangement }: { texts: Texts | null; show
     nav.toRow = (i) => lead(i)?.toRow(i);
     return () => { nav.scrub = null; nav.toRow = null; };
   }, [shown]);
-  // A row of panes (or, in quadrants, a column) none of whose gospels has the section at the reading line shrinks, once
-  // the reading has stayed there a moment. Written to the grid's style, so the panes don't render again.
+  // Quadrants: two rows and two columns of panes (three: two above one); stacked: a row each.
   const grid = arrangement === 'grid' && shown.length >= 3;
   const tracks = grid ? 2 : shown.length;
-  const shrink = useUI((s) => s.shrinkMissing);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const rows = grid ? [[0, 1], [2, 3].filter((k) => k < shown.length)] : shown.map((_, k) => [k]);
-    const cols = grid ? (shown.length === 4 ? [[0, 2], [1, 3]] : [[0], [1]]) : [];
-    const apply = (i: number) => {
-      const has = shown.map((b) => !!ROWS[i]?.refs[b]);
-      const any = shrink && has.some(Boolean); // a section none of them has: all alike
-      const size = (ks: number[]) => `minmax(0, ${!any || ks.some((k) => has[k]) ? 1 : 0.5}fr)`;
-      el.style.gridTemplateRows = `auto ${rows.map(size).join(' ')}`;
-      el.style.gridTemplateColumns = cols.length ? cols.map(size).join(' ') : '';
-    };
-    apply(useUI.getState().current);
-    // Only once the panes are at rest: a change of width reflows the text, which mustn't happen mid-glide or mid-fling.
-    let timer = 0;
-    const wait = () => {
-      clearTimeout(timer);
-      timer = window.setTimeout(() => { if ([...stack.panes.values()].some((p) => p.gliding())) wait(); else apply(useUI.getState().current); }, 300);
-    };
-    const off = useUI.subscribe((s, prev) => { if (s.current !== prev.current) wait(); });
-    el.addEventListener('scroll', wait, { capture: true, passive: true });
-    return () => { off(); el.removeEventListener('scroll', wait, { capture: true }); clearTimeout(timer); el.style.gridTemplateRows = ''; el.style.gridTemplateColumns = ''; };
-  }, [shown, grid, shrink]);
+  useShrink(ref, shown,
+    grid ? [[0, 1], [2, 3].filter((k) => k < shown.length)] : shown.map((_, k) => [k]),
+    grid ? (shown.length === 4 ? [[0, 2], [1, 3]] : [[0], [1]]) : [],
+    (el, rows, cols) => { el.style.gridTemplateRows = rows.length ? `auto ${rows.join(' ')}` : ''; el.style.gridTemplateColumns = cols.join(' '); });
   return (
     <div className="stack" ref={ref} data-arrangement={arrangement} data-count={shown.length} data-tracks={tracks} data-locked={locked ? '' : undefined}>
       <StackHead />
@@ -312,6 +336,14 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     };
     a.raf = requestAnimationFrame(step);
   }, []);
+  useEffect(() => {
+    const g = () => anim.current.raf !== 0;
+    gliders.add(g);
+    return () => { gliders.delete(g); };
+  }, []);
+  // Side by side on a phone: a gospel's column narrows where it lacks the section.
+  useShrink(scrollRef, shown, [], compact && pane === undefined && shown.length > 1 ? shown.map((_, k) => [k]) : [],
+    (el, _rows, cols) => { if (cols.length) el.style.setProperty('--cols', cols.join(' ')); else el.style.removeProperty('--cols'); });
   const cancelAnim = useCallback(() => { if (anim.current.raf) { cancelAnimationFrame(anim.current.raf); anim.current.raf = 0; } }, []);
 
   // Commands for the timeline and search (in a stack, the stack passes them to the leading pane).
@@ -327,7 +359,7 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
       animateTo(() => { const g = geo.current; return g.tops[i] + f * g.heights[i] - g.anchor; }, dragging ? 55 : 150);
     }, toRow: (i: number) => {
       animateTo(() => geo.current.tops[i] - (headRef.current?.offsetHeight ?? 0) - 4, 170);
-    }, gliding: () => anim.current.raf !== 0 };
+    } };
     if (pane !== undefined) {
       stack.panes.set(pane, cmd);
       return () => { if (stack.panes.get(pane) === cmd) stack.panes.delete(pane); };
@@ -349,12 +381,17 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     });
   }, [pane, cancelAnim]);
 
-  // Re-measure when anything that changes heights changes, keeping the reading position.
+  // Re-measure when anything that changes heights changes, keeping the reading position. Until the text has come, the
+  // reader opens with the starting section's heading at the top.
+  const opening = useRef(true);
   useLayoutEffect(() => {
     const { row, f } = playhead.getState();
     measure();
     const g = geo.current, s = scrollRef.current;
-    if (s && g.vis.length && (row > 0 || f > 0)) {
+    if (s && g.vis.length && opening.current && g.heights[START_ROW] > 0) {
+      s.scrollTop = g.tops[START_ROW] - (headRef.current?.offsetHeight ?? 0) - 4;
+      if (texts) opening.current = false;
+    } else if (s && g.vis.length && (row > 0 || f > 0)) {
       const i = g.heights[row] > 0 ? row : g.vis.find((v) => v >= row) ?? g.vis[g.vis.length - 1];
       s.scrollTop = g.tops[i] + (i === row ? f : 0) * g.heights[i] - g.anchor;
     }
@@ -417,7 +454,7 @@ export function Synopsis({ texts, shown, single, compact, pane, onScreen = shown
     };
   }, [measure, update, cancelAnim]);
 
-  const cols = { gridTemplateColumns: `repeat(${shown.length}, minmax(0, 1fr))` };
+  const cols = { gridTemplateColumns: `var(--cols, repeat(${shown.length}, minmax(0, 1fr)))` };
   let lastPart = '';
   let lastGap = false;
   return (
@@ -504,7 +541,7 @@ const RowView = memo(function RowView({ row, shown, onScreen, texts, hidden, par
       </header>
       {compact && meta}
       {row.moved && row.subIndex === 0 && <p className="row-note">{row.moved}</p>}
-      <div className="cells" style={{ gridTemplateColumns: `repeat(${shown.length}, minmax(0, 1fr))` }}>
+      <div className="cells" style={{ gridTemplateColumns: `var(--cols, repeat(${shown.length}, minmax(0, 1fr)))` }}>
         {shown.map((b) => <Cell key={b} row={row} book={b} texts={texts} labelEmpty={shown.length > 1} notesShown={notes} />)}
       </div>
     </section>

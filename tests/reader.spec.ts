@@ -39,7 +39,8 @@ async function goTo(page: Page, query: string) {
 test('scrubbing the timeline moves the reader, and reading moves the playhead', async ({ page }) => {
   await open(page);
   await shot(page, '01-start');
-  expect(await currentRow(page)).toBeLessThan(5);
+  // It opens at the feeding of the five thousand, which all four gospels tell.
+  await expect(page.locator('.timeline-track')).toHaveAttribute('aria-valuetext', /Feeding the five thousand/);
 
   const box = (await page.locator('.timeline canvas').boundingBox())!;
   await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.55);
@@ -51,8 +52,7 @@ test('scrubbing the timeline moves the reader, and reading moves the playhead', 
 
   // Scrolling the text moves the playhead on.
   await page.locator('.reader').evaluate((el) => { el.scrollTop += 15000; });
-  await page.waitForTimeout(400);
-  expect(await currentRow(page)).toBeGreaterThan(mid);
+  await expect.poll(() => currentRow(page)).toBeGreaterThan(mid);
 });
 
 test('Go to finds a passage by reference', async ({ page }) => {

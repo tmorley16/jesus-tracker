@@ -357,6 +357,9 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .jt[data-compact] .goto { position: absolute; z-index: 30; left: max(8px, env(safe-area-inset-left, 0px)); right: max(8px, env(safe-area-inset-right, 0px)); top: 6px; max-width: none; }
 /* Every pixel of height counts on a phone: the column heads are slim, and only the section's number and title stay
    pinned, on one line where they fit (its chips scroll away with the text). */
+/* Phones: no scrollbar in the gospels' panes (the timeline shows where the reading is). */
+.jt[data-compact] .reader { scrollbar-width: none; }
+.jt[data-compact] .reader::-webkit-scrollbar { display: none; }
 .jt[data-compact] .col-h { gap: 6px; padding: 3px 12px 4px; border-top-width: 2px; font-size: 0.82rem; }
 .jt[data-compact] .row-head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; padding: 5px 12px 4px; }
 .jt[data-compact] .row-head h3 { flex: 1 1 12rem; min-width: 0; margin: 0; font-size: 1rem; }
@@ -370,15 +373,14 @@ body[data-tint="dead"] .maplibregl-canvas { filter: saturate(0.25); }
 .jt[data-compact] .reader:not([data-cols="1"]) .col-h .dot { display: none; }
 .jt[data-compact] .reader:not([data-cols="1"]) .cell { padding: 2px 6px 10px; }
 .jt[data-compact] .reader:not([data-cols="1"]) .cell-ref { font-size: 0.68rem; }
-.jt[data-compact] .cell-ref::before { display: none; } /* the timeline and the column's head say whose passage it is */
+.jt[data-compact] .reader:not([data-cols="1"]) .cell-ref::before { display: none; }
 .jt[data-compact] .reader:not([data-cols="1"]) .cell-note { font-size: 0.72rem; }
 .jt[data-compact] .reader:not([data-cols="1"]) .passage { hyphens: auto; line-height: 1.48; }
 .jt[data-compact] .reader[data-cols="2"] .passage { font-size: calc(var(--scripture-size) * 0.9); }
 .jt[data-compact] .reader[data-cols="3"] .passage, .jt[data-compact] .reader[data-cols="4"] .passage { font-size: calc(var(--scripture-size) * 0.8); }
 /* Gospels in panes of their own (stacked, or quadrants): one strip names the section for all of them, so inside the
    panes the section headings scroll with the text, small. */
-.stack { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-auto-rows: minmax(0, 1fr); transition: grid-template-rows 360ms ease; }
-@media (prefers-reduced-motion: reduce) { .stack { transition: none; } }
+.stack { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-auto-rows: minmax(0, 1fr); }
 .stack[data-arrangement="grid"][data-count="3"], .stack[data-arrangement="grid"][data-count="4"] { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .stack[data-arrangement="grid"][data-count="3"] > .reader:last-child { grid-column: 1 / -1; }
 .stack-head { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 8px; min-width: 0; padding: 3px 12px 4px; background: var(--paper-raised); border-bottom: 1px solid var(--line); font-size: 0.86rem; font-weight: 600; }
