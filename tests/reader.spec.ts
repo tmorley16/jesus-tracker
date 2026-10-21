@@ -843,8 +843,8 @@ test('desktop: with the text beside the map, the card gives the place and its st
   await expect(card.locator('.map-title')).toHaveText('Sychar', { timeout: 15_000 });
   await expect(card.locator('.pp-stories')).toHaveCount(0);
   await card.locator('.mc-expand').click();
-  await expect(card.locator('.pp-stories li').first()).toBeVisible();
-  await expect(card.locator('.pp-stories a[aria-current]')).toContainText('Samaritan');
+  await expect(card.locator('.mc-img img')).toBeVisible();
+  await expect(card.locator('.pp-stories')).toHaveCount(0); // Sychar's only story is the one the card is about
   await expect(page.locator('section.row .chip.place').first()).toBeHidden();
   await shot(page, '18-lean-card');
   // A peak clicked shows in the card too, with its photo and height, and a way back.
@@ -877,6 +877,6 @@ test('desktop: with the text beside the map, the card gives the place and its st
   await page.keyboard.press('Escape');
   // With only the map, the card gives the story too.
   for (const n of ['Matthew', 'Mark', 'Luke', 'John']) await page.locator('.toolbar .gospels').getByRole('button', { name: n }).click();
-  await expect(card).not.toHaveAttribute('data-lean', '');
+  await expect(card.locator('.mc-cap .kicker')).toContainText('§72');
   await expect(card.locator('.map-title')).toHaveText(/Feeding the five thousand/);
 });

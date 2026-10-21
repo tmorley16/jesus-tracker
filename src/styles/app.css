@@ -192,6 +192,7 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 .mc-cap .map-title { transition: color 320ms; }
 .map-card[data-open] .mc-head:has(.mc-img) .mc-cap { padding: 30px 12px 8px; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55); }
 .map-card[data-open] .mc-head:has(.mc-img) .mc-cap::before { opacity: 1; }
+.map-card[data-open] .mc-head:has(.mc-img) .kicker, .map-card[data-open] .mc-head:has(.mc-img) .kicker .n { color: rgba(255, 255, 255, 0.85); }
 .map-card[data-open] .mc-head:has(.mc-img) .map-title { color: #fff; margin-bottom: 0; font-size: 1.15rem; }
 .mc-links { display: flex; flex-wrap: wrap; gap: 0 10px; margin-top: 3px; font-size: 0.72rem; animation: fade-in 320ms 160ms ease both; }
 .mc-links a, .mc-links span { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.55); text-underline-offset: 2px; }
@@ -430,7 +431,6 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 /* ---- phones: reclaiming height ---- */
 /* With the map and the text both open, each says a thing once: the map's card gives the place (and its candidates),
    the text gives the story's title. */
-.jt[data-compact] .panes[data-layout="split"] .map-card:not([data-lean]) .map-title { display: none; }
 .jt[data-compact] .panes[data-layout="split"] .map-card { padding-block: 5px 6px; }
 .panes[data-layout="split"] .chip.place { display: none; }
 .jt:not([data-compact]) .panes[data-layout="split"] .row-meta:not(:has(> :not(.chip.place))) { display: none; }

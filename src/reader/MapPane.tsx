@@ -4,7 +4,7 @@ import { AttributionControl, LngLat, Map as MlMap, Marker, Popup, ScaleControl, 
 // bundle the worker (with the code it imports) and point MapLibre at it.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { FeatureCollection } from 'geojson';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ConfigButton, Toggle } from './Config';
 import { bearingDeg, bounds, circleRing, dryLand, haversineKm, inRing, lerp, type LonLat } from './geo';
 import { declutter, type Label } from './mapLabels';
@@ -915,12 +915,30 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     : focus.kind === 'differ' ? focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')
     : focus.kind === 'likely' ? 'Place not named' : null;
   const headTitle = pickedPeak ? pickedPeak.name : pickedPlace ? pickedPlace.place.name : leanTitle;
-  const photo = pickedPeak ? pickedPeak.photo ?? null : (pickedPlace?.place ?? leanPlace)?.photo ?? null;
-  const more = led && !!(photo || linkPlace || (cardKey && storiesAt(cardKey).length));
-  const open = led && cardOpen;
+  // Every card has the two stages; with only the map open, its head is the story and its photo the place's.
+  const cardPlace = pickedPeak ? null : pickedPlace?.place ?? (focusKey && places ? places[focusKey] : null);
+  const photo = pickedPeak ? pickedPeak.photo ?? null : cardPlace?.photo ?? null;
+  // The stories set at the place, unless the only one is the story the card is about.
+  const storyList = cardKey ? storiesAt(cardKey) : [];
+  const showStories = storyList.length > 0 && !(storyList.length === 1 && ROWS[storyList[0].i].sectionId === row.sectionId);
+  const more = !!(photo || linkPlace || showStories);
+  const open = more && cardOpen;
   // The card folds towards its own side: right on phones (its tab sits at the right), left on desktops (top left).
   const chevron = (towards: 'left' | 'right') => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={towards === 'right' ? 'M10 6l6 6-6 6' : 'M14 6l-6 6 6 6'} /></svg>;
   const photoBy = photo ? creditName(photo.author) : null;
+  // Phones, brief: the links fill the room beside the buttons where the card's own text leaves it empty.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [briefLinks, setBriefLinks] = useState(false);
+  useLayoutEffect(() => {
+    const el = cardRef.current, btn = el?.querySelector('.mc-expand');
+    let want = false;
+    if (el && btn && compact && !open && linkPlace && !el.hidden) {
+      const text = [...el.children].filter((c) => !c.matches('.map-card-fold, .mc-expand, .mc-brief-links'));
+      // Only where a line of links (about 22 px) fits above the expand button's foot, so the card doesn't grow for it.
+      want = Math.max(...text.map((c) => c.getBoundingClientRect().bottom)) + 22 <= btn.getBoundingClientRect().bottom;
+    }
+    if (want !== briefLinks) setBriefLinks(want);
+  });
   return (
     <div className="map-pane">
       <div className="map-box" data-land={landColour} ref={boxRef} role="region" aria-label="Map of the places in the accounts on screen" />
@@ -930,7 +948,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           <span>{focusKey && places ? places[focusKey].name : focus.kind === 'differ' ? focus.places.map((p) => p.place.name).join(' · ') : focus.kind === 'likely' ? 'Place not named' : 'Place'}</span>
         </button>
       )}
-      <div className="map-card" aria-live="polite" hidden={cardFolded} data-lean={led ? '' : undefined} data-open={open ? '' : undefined}>
+      <div className="map-card" ref={cardRef} aria-live="polite" hidden={cardFolded} data-lean="" data-open={open ? '' : undefined}>
         <button type="button" className="map-card-fold" aria-label="Fold the place card away" title="Fold the place card away" onClick={() => { setCardFolded(true); setPicked(null); }}>
           {chevron(compact ? 'right' : 'left')}
         </button>
@@ -939,39 +957,37 @@ export default function MapPane({ books, compact = false, withText = false }: { 
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d={open ? 'M6 15l6-6 6 6' : 'M6 9l6 6 6-6'} /></svg>
           </button>
         )}
-        {led ? <>
-          <div className="mc-head">
-            {photo && (
-              <div className="mc-img" aria-hidden={!open}>
-                <div><img src={new URL(photo.src, document.baseURI).href} alt={photo.caption} title={photo.caption.charAt(0).toUpperCase() + photo.caption.slice(1)} decoding="async" /></div>
-              </div>
-            )}
-            <div className="mc-cap">
-              {headTitle && <p className="map-title">{headTitle}</p>}
-              {open && photo && (
-                <p className="mc-links">
-                  {linkPlace?.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
-                  {(() => {
-                    const tip = [photoBy ? `Photo: ${photoBy}` : 'Photo', photo.licence, 'Wikimedia Commons'].filter(Boolean).join(' · ');
-                    const text = `Photo: ${photoBy ?? 'Wikimedia Commons'}`;
-                    return webUrl(photo.page) ? <a className="mc-credit" href={photo.page} target="_blank" rel="noopener" title={tip}>{text}</a> : <span className="mc-credit" title={tip}>{text}</span>;
-                  })()}
-                </p>
-              )}
+        <div className="mc-head">
+          {photo && (
+            <div className="mc-img" aria-hidden={!open}>
+              <div><img src={new URL(photo.src, document.baseURI).href} alt={photo.caption} title={photo.caption.charAt(0).toUpperCase() + photo.caption.slice(1)} decoding="async" /></div>
             </div>
+          )}
+          <div className="mc-cap">
+            {led ? headTitle && <p className="map-title">{headTitle}</p> : <>
+              <p className="kicker">§{row.n} · {books.filter((b) => row.refs[b]).map((b) => BOOK_ABBR[b]).join(' ')}</p>
+              <p className="map-title">{rowTitle(row)}</p>
+            </>}
+            {open && photo && (
+              <p className="mc-links">
+                {linkPlace?.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
+                {(() => {
+                  const tip = [photoBy ? `Photo: ${photoBy}` : 'Photo', photo.licence, 'Wikimedia Commons'].filter(Boolean).join(' · ');
+                  const text = `Photo: ${photoBy ?? 'Wikimedia Commons'}`;
+                  return webUrl(photo.page) ? <a className="mc-credit" href={photo.page} target="_blank" rel="noopener" title={tip}>{text}</a> : <span className="mc-credit" title={tip}>{text}</span>;
+                })()}
+              </p>
+            )}
           </div>
-          {pickedPeak && <>
-            <p className="map-place-name muted">{peakHeight(pickedPeak)}</p>
-            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
-          </>}
-          {pickedPlace && <>
-            {(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <p className="map-place-name muted">A region</p> : today ? <p className="map-place-name muted">Shown at {today}</p> : null; })()}
-            {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
-            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
-          </>}
-        </> : <>
-        <p className="kicker">§{row.n} · {books.filter((b) => row.refs[b]).map((b) => BOOK_ABBR[b]).join(' ')}</p>
-        <p className="map-title">{rowTitle(row)}</p>
+        </div>
+        {pickedPeak && <>
+          <p className="map-place-name muted">{peakHeight(pickedPeak)}</p>
+          <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
+        </>}
+        {pickedPlace && <>
+          {(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <p className="map-place-name muted">A region</p> : today ? <p className="map-place-name muted">Shown at {today}</p> : null; })()}
+          {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
+          <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
         </>}
         {!pickedPlace && !pickedPeak && <>
         {focus.kind === 'site' && (
@@ -1021,13 +1037,18 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           </p>
         )}
         </>}
-        {((compact && !led) || open) && cardKey && stories(cardKey)}
-        {more && !open && (() => {
+        {open && showStories && cardKey && stories(cardKey)}
+        {compact && !open && briefLinks && linkPlace && (
+          <p className="map-links mc-brief-links">
+            {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
+          </p>
+        )}
+        {!compact && more && !open && (() => {
           const n = cardKey ? storiesAt(cardKey).length : 0;
           const what = [n > 1 ? `${n} stories here` : n === 1 ? '1 story here' : null, photo ? 'photo' : null, n ? null : 'links'].filter(Boolean).join(' · ');
           return <button type="button" className="mc-more" onClick={() => setCardOpen(true)}>{what.charAt(0).toUpperCase() + what.slice(1)}</button>;
         })()}
-        {linkPlace && (!led || (open && !photo)) && (
+        {linkPlace && open && !photo && (
           <p className="map-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
           </p>
