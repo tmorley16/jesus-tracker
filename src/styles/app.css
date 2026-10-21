@@ -4,13 +4,11 @@
 html { box-sizing: border-box; height: 100%; -webkit-text-size-adjust: 100%; }
 *, *::before, *::after { box-sizing: inherit; }
 body { height: 100%; margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 15px; }
-/* The gold of Jesus' marker, and "now" (the timeline's needle, the current section's heading: Reader.tsx NowMark) in
-   ink or that gold (Settings › Now). */
+/* The gold of Jesus' marker, and "now": the timeline's needle is white, headed by Jesus' marker (--now-ring: its ring),
+   in a soft glow (--now-halo); the current section's heading has a gold rule (--now-line; Reader.tsx NowMark). */
 :root { --jesus-gold: #A87D22; }
-body { --now-line: var(--ink); --now-glow: var(--glow); --now-mark: var(--glow-ink); }
-/* In gold the needle is white, headed by Jesus' marker (--now-ring: its ring), in a soft glow (--now-halo). */
-body[data-accent="gold"] { --now-line: var(--jesus-gold); --now-ring: var(--jesus-gold); --now-halo: rgba(168, 125, 34, 0.55); }
-body[data-accent="gold"][data-light="night"] { --now-halo: rgba(255, 255, 255, 0.95); }
+body { --now-line: var(--jesus-gold); --now-ring: var(--jesus-gold); --now-halo: rgba(168, 125, 34, 0.55); }
+body[data-light="night"] { --now-halo: rgba(255, 255, 255, 0.95); }
 astro-island { display: contents; }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }

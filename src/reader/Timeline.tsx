@@ -33,14 +33,14 @@ const CHIP_H = 22;
 /** Touch: how far a finger moves before it counts as a drag, and how close to the needle a drag must start to move it. */
 const TOUCH_SLOP = 6, NEEDLE_REACH = 26;
 
-interface Colours { raised: string; sunk: string; paper: string; ink: string; soft: string; faint: string; line: string; glow: string; glowInk: string; now: { line: string; glow: string; mark: string; ring: string; halo: string }; gospel: Record<Book, string>; uiFont: string; monoFont: string }
+interface Colours { raised: string; sunk: string; paper: string; ink: string; soft: string; faint: string; line: string; glow: string; glowInk: string; now: { ring: string; halo: string }; gospel: Record<Book, string>; uiFont: string; monoFont: string }
 function readColours(el: Element): Colours {
   const cs = getComputedStyle(el);
   const v = (name: string) => cs.getPropertyValue(name).trim();
   return {
     raised: v('--paper-raised'), sunk: v('--paper-sunk'), paper: v('--paper'), ink: v('--ink'), soft: v('--ink-soft'), faint: v('--ink-faint'),
     line: v('--line'), glow: v('--glow'), glowInk: v('--glow-ink'),
-    now: { line: v('--now-line'), glow: v('--now-glow'), mark: v('--now-mark'), ring: v('--now-ring'), halo: v('--now-halo') },
+    now: { ring: v('--now-ring'), halo: v('--now-halo') },
     gospel: { MAT: v('--gospel-mat'), MRK: v('--gospel-mrk'), LUK: v('--gospel-luk'), JHN: v('--gospel-jhn') },
     uiFont: v('--font-ui') || 'system-ui', monoFont: v('--font-mono') || 'monospace',
   };
@@ -301,8 +301,8 @@ export function Timeline({ shown, compact, side, corner }: {
 
     const pu = io.current.dragU ?? playhead.getState().u;
     const px = X(pu);
-    if (px >= -6 && px <= w + 6 && col.now.ring) {
-      // In gold: a white needle headed by Jesus' marker (a white dot with a gold ring), both in a soft glow (--now-halo:
+    if (px >= -6 && px <= w + 6) {
+      // A white needle headed by Jesus' marker (a white dot with a gold ring), both in a soft glow (--now-halo:
       // white in the dark, a warm gold on the papyrus, where white wouldn't show).
       ctx.save();
       ctx.shadowColor = col.now.halo;
@@ -315,15 +315,6 @@ export function Timeline({ shown, compact, side, corner }: {
       ctx.strokeStyle = col.now.ring;
       ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.arc(px, 6, 5.25, 0, Math.PI * 2); ctx.stroke();
-    } else if (px >= -6 && px <= w + 6) {
-      ctx.fillStyle = col.now.line;
-      ctx.fillRect(Math.round(px) - 1, 6, 2, g.h - 6);
-      ctx.fillStyle = col.now.glow;
-      ctx.globalAlpha = 0.4;
-      ctx.beginPath(); ctx.arc(px, 6, 8, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = col.now.mark;
-      ctx.beginPath(); ctx.arc(px, 6, 4.5, 0, Math.PI * 2); ctx.fill();
     }
   }, [geom, compact]);
 
@@ -394,7 +385,7 @@ export function Timeline({ shown, compact, side, corner }: {
     };
     const start = () => { cancelAnimationFrame(id); until = performance.now() + lightDuration() + 60; tick(); };
     const mo = new MutationObserver(start);
-    mo.observe(document.body, { attributes: true, attributeFilter: ['data-light', 'data-tint', 'data-accent'] });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['data-light', 'data-tint'] });
     start();
     return () => { mo.disconnect(); cancelAnimationFrame(id); };
   }, [draw, appearance]);

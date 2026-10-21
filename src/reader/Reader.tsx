@@ -121,19 +121,16 @@ function versePosOnScreen(row: Row): VersePos {
 
 /** Dynamic colour: the page tint follows the time of day the visible accounts give, as the reading line passes the
  *  verses that give it; from Jesus' death until the angel at the tomb it turns cold, and his light on the map goes out. */
-/** "Now" in the accent (ink, or the gold of Jesus' marker): the body's data-accent, and a style naming the current
- *  section (in gold: a fine rule under its heading, and its § in gold), so no row re-renders as the reading line moves and rows rendered
- *  later are marked too. */
+/** "Now" in the gold of Jesus' marker: a style naming the current section (a fine rule under its heading, and its § in
+ *  gold), so no row re-renders as the reading line moves and rows rendered later are marked too. */
 function NowMark() {
-  const accent = useUI((s) => s.accent);
-  useEffect(() => { document.body.dataset.accent = accent; }, [accent]);
   useEffect(() => {
     const style = document.head.appendChild(document.createElement('style'));
     let last = -1;
     const mark = ({ row }: { row: number }) => {
       if (row === last) return;
       last = row;
-      const now = `body[data-accent="gold"] section.row[data-row="${row}"] > .row-head`;
+      const now = `section.row[data-row="${row}"] > .row-head`;
       style.textContent = `${now} { box-shadow: inset 0 -1.5px 0 var(--now-line); } ${now} .kicker .n { color: var(--now-line); }`;
     };
     mark(playhead.getState());

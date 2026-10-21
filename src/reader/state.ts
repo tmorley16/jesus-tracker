@@ -8,7 +8,6 @@ export type Appearance = 'dynamic' | 'light' | 'dark';
 /** The map's land: one plain colour, or coloured by height (with a bluer sea). */
 export type LandColour = 'plain' | 'height';
 /** What marks "now" (the timeline's needle, the current section's heading): ink, or the gold of Jesus' marker. */
-export type Accent = 'ink' | 'gold';
 export type TextSize = 's' | 'm' | 'l';
 /** Which of the BSB's footnotes the reader marks. */
 export type NotesShown = 'all' | 'textual' | 'none';
@@ -46,7 +45,6 @@ interface Saved {
   /** The map's line of the way Jesus has come (and the dashed heading where he makes for a place). */
   trail: boolean;
   landColour: LandColour;
-  accent: Accent;
   notes: NotesShown;
   phoneGospels: PhoneGospels;
   /** Phones: the timeline's phase bands and feast marks (desktops always show the phases). */
@@ -91,7 +89,6 @@ interface UI extends Saved {
   setModern(m: boolean): void;
   setTrail(on: boolean): void;
   setLandColour(l: LandColour): void;
-  setAccent(a: Accent): void;
   setNotes(n: NotesShown): void;
   setPhoneGospels(p: PhoneGospels): void;
   setPhases(on: boolean): void;
@@ -114,8 +111,8 @@ const savedVisible = validBooks(saved.visible);
 
 export const useUI = create<UI>()((set, get) => {
   const persist = () => {
-    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, accent, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing } = get();
-    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, accent, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing });
+    const { visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing } = get();
+    save({ visible, single, map, timeline, mapShare, appearance, textSize, spacing, reckoning, compress, wander, landLight, modern, trail, landColour, notes, phoneGospels, phases, timeMarks, units, paneSync, shrinkMissing });
   };
   const update = (patch: Partial<UI>) => { set(patch); persist(); };
   return {
@@ -136,7 +133,6 @@ export const useUI = create<UI>()((set, get) => {
     modern: saved.modern === true,
     trail: saved.trail !== false,
     landColour: saved.landColour === 'plain' ? 'plain' : 'height',
-    accent: saved.accent === 'ink' ? 'ink' : 'gold',
     notes: saved.notes === 'textual' || saved.notes === 'none' ? saved.notes : 'all',
     phoneGospels: PHONE_GOSPELS.includes(saved.phoneGospels as PhoneGospels) ? (saved.phoneGospels as PhoneGospels) : 'grid',
     phases: saved.phases === true,
@@ -177,7 +173,6 @@ export const useUI = create<UI>()((set, get) => {
     setModern: (modern) => update({ modern }),
     setTrail: (trail) => update({ trail }),
     setLandColour: (landColour) => update({ landColour }),
-    setAccent: (accent) => update({ accent }),
     setNotes: (notes) => update({ notes }),
     setPhoneGospels: (phoneGospels) => update({ phoneGospels }),
     setPhases: (phases) => update({ phases }),

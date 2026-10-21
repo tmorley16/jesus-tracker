@@ -36,7 +36,7 @@ A reader for the life and ministry of Jesus: the full text of the four gospels s
 
 - Tokens: `src/styles/tokens.css` (light states via `data-light`; type pairing Field Notes is the default). App styles: `src/styles/app.css`, including the faint dynamic tints (`body[data-tint=…]`).
 - Gospel colours (cinnabar, murex, malachite, Egyptian blue; day and dark sets) are validated for colour-blind readers and 3:1 contrast; re-run `npm run design:palette` and the dataviz validator before changing them.
-- One gold, `--jesus-gold` (`app.css`), for Jesus' marker and for "now" (`accent`: Gold, the default, or Ink; no longer offered in settings since 21 Oct 2026): the timeline needle (in Gold a white line headed by Jesus' marker, the ringed white dot, both in a soft glow, as the user asked on 21 Oct 2026: `--now-halo`, warm gold on the papyrus where white wouldn't show, white in Dark; `--now-ring`; Ink keeps the ink line and amber head from `--now-glow` / `--now-mark`) and the current section's heading (a fine rule under it and its § in gold, from one style rule `NowMark` in `Reader.tsx` rewrites as the playhead moves).
+- One gold, `--jesus-gold` (`app.css`), for Jesus' marker and for "now", locked in by the user on 21 Oct 2026 (the Gold / Ink choice is gone): the timeline needle (a white line headed by Jesus' marker, the ringed white dot, both in a soft glow, as the user asked on 21 Oct 2026: `--now-halo`, warm gold on the papyrus where white wouldn't show, white in Dark; `--now-ring`) and the current section's heading (a fine rule under it and its § in gold, from one style rule `NowMark` in `Reader.tsx` rewrites as the playhead moves).
 - Style board (design reference): `design/style-board.html`.
 
 ## Architecture
