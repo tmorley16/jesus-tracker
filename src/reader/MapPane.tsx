@@ -103,14 +103,14 @@ function modernName(p: PlaceData): string | null {
   return label;
 }
 
-interface Peak { id: string; name: string; wiki: { title: string; url: string } | null; lonlat: LonLat; elev: number; r: number; cluster: string; interval: number }
+interface Peak { id: string; name: string; wiki: { title: string; url: string } | null; lonlat: LonLat; elev: number; r: number; cluster: string; interval: number; photo?: PlaceData['photo'] }
 /** The corners of each peak's contour window, so the camera can take them in. */
 const peakCorners = (peaks: Peak[]): LonLat[] => peaks.flatMap(({ lonlat: [x, y], r }) => {
   const dy = r / 111.3, dx = dy / Math.cos((y * Math.PI) / 180);
   return [[x - dx, y - dy], [x + dx, y + dy]] as LonLat[];
 });
 
-interface PopupContent { ll: LonLat; html: string; /** The place shown, whose stories the timeline marks. */ place?: string }
+interface PopupContent { ll: LonLat; html: string; /** The place shown, whose stories the timeline marks. */ place?: string; /** A peak shown (its Wikidata ID). */ peak?: string }
 /** A popup's content: `full` for a click or tap (a place's photo and stories), otherwise the short hover version. */
 type Content = (full: boolean) => PopupContent | null;
 /**
@@ -184,7 +184,8 @@ function makePopup(map: MlMap, pick: (place: string) => boolean, cardMarks: () =
     clearTimeout(showT);
     if (owner === by && popup.isOpen() && pinned) { hide(); return; }
     const c = content(true);
-    if (c?.place && pick(c.place)) { hide(); return; } // the place card shows it instead
+    const key = c?.place ?? (c?.peak ? `peak:${c.peak}` : null);
+    if (key && pick(key)) { hide(); return; } // the place card shows it instead
     if (c) open(c, by, true);
   };
   const attach = (el: HTMLElement, content: Content) => {
@@ -761,7 +762,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
       el.innerHTML = isPlace ? '<i></i>' : `<i></i><span>${esc(p.name)}<small> ≈ ${p.elev} m</small></span>`;
       markers.current.peaks.push(new Marker({ element: el, anchor: 'left', offset: [-6, 0] }).setLngLat(p.lonlat).addTo(map));
       if (!isPlace) labels.current.peaks.push({ el, ll: p.lonlat, anchor: 'left', dx: -6, priority: givenNamed ? 0.5 : 2, flips: true });
-      popup.current?.attach(el, () => ({ ll: p.lonlat, html: peakPopup(p) }));
+      popup.current?.attach(el, () => ({ ll: p.lonlat, html: peakPopup(p), peak: p.id }));
     }
     declutterSoon.current(true);
     const ids = [...new Set(textPeaks.map((p) => p.cluster))];
@@ -861,8 +862,9 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const focusKey = focus.kind === 'site' || focus.kind === 'region' || focus.kind === 'scene' ? focus.key : null;
   // A place clicked or tapped, other than the one in the text, shown in the card.
   const pickedPlace = picked && picked !== focusKey && places?.[picked] ? { key: picked, place: places[picked] } : null;
-  const cardKey = pickedPlace?.key ?? focusKey;
-  const linkPlace = places && cardKey ? placeLinks(cardKey, places[cardKey]) : null;
+  const pickedPeak = picked?.startsWith('peak:') ? peaks.find((pk) => `peak:${pk.id}` === picked) ?? null : null;
+  const cardKey = pickedPeak ? null : pickedPlace?.key ?? focusKey;
+  const linkPlace = pickedPeak ? peakLinks(pickedPeak) : places && cardKey ? placeLinks(cardKey, places[cardKey]) : null;
   // While the card shows the stories set at its place, the timeline marks them (as the popup does).
   const marksKey = !cardFolded && (compact || pickedPlace || (cardOpen && withText)) ? cardKey : null;
   useEffect(() => {
@@ -893,19 +895,19 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   // Desktops with the text open beside the map: each says a thing once. The text gives the story's title (and drops its
   // place chip, app.css); the card gives the place as its title, over its photo with the links and the photographer's
   // credit where it has one, then the stories set there.
-  const lean = !compact && withText;
-  // Desktops: a card led by a place (beside the text, or a place clicked), its photo pulled down behind its name on
+  const lean = withText;
+  // A card led by a place (beside the text, or a place or peak clicked), its photo pulled down behind its name on
   // request.
-  const led = !compact && (lean || !!pickedPlace);
-  const leanPlace = lean && focusKey && places ? places[focusKey] : null;
+  const led = lean || !!pickedPlace || !!pickedPeak;
+  const leanPlace = lean && !pickedPeak && focusKey && places ? places[focusKey] : null;
   const leanTitle = leanPlace ? leanPlace.name
     : focus.kind === 'differ' ? focus.places.map((p) => `${p.place.name} (${p.books.map((b) => BOOK_ABBR[b]).join(', ')})`).join(' · ')
     : focus.kind === 'likely' ? 'Place not named' : null;
-  const headTitle = pickedPlace ? pickedPlace.place.name : leanTitle;
-  const photo = (pickedPlace?.place ?? leanPlace)?.photo ?? null;
+  const headTitle = pickedPeak ? pickedPeak.name : pickedPlace ? pickedPlace.place.name : leanTitle;
+  const photo = pickedPeak ? pickedPeak.photo ?? null : (pickedPlace?.place ?? leanPlace)?.photo ?? null;
   const more = led && !!(photo || linkPlace || (cardKey && storiesAt(cardKey).length));
   const open = led && cardOpen;
-  // The card folds towards its own side: right on phones (it spans the map), left on desktops (it sits top left).
+  // The card folds towards its own side: right on phones (its tab sits at the right), left on desktops (top left).
   const chevron = (towards: 'left' | 'right') => <svg viewBox="0 0 24 24" aria-hidden="true"><path d={towards === 'right' ? 'M10 6l6 6-6 6' : 'M14 6l-6 6 6 6'} /></svg>;
   const photoBy = photo ? creditName(photo.author) : null;
   return (
@@ -947,23 +949,20 @@ export default function MapPane({ books, compact = false, withText = false }: { 
               )}
             </div>
           </div>
+          {pickedPeak && <>
+            <p className="map-place-name muted">{peakHeight(pickedPeak)}</p>
+            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
+          </>}
           {pickedPlace && <>
             {(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <p className="map-place-name muted">A region</p> : today ? <p className="map-place-name muted">Shown at {today}</p> : null; })()}
             {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
             <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
           </>}
-        </> : pickedPlace ? (
-          <>
-            {pickedPlace.place.photo && <div dangerouslySetInnerHTML={{ __html: photoHtml(pickedPlace.place) }} />}
-            <p className="map-place-name">{pickedPlace.place.name}{(() => { const today = modernName(pickedPlace.place); return pickedPlace.place.kind === 'region' ? <em> · a region</em> : today ? <em> · shown at {today}</em> : null; })()}</p>
-            {pickedPlace.place.wiki?.note && <p className="map-place-name muted">Wikipedia link: {pickedPlace.place.wiki.note}</p>}
-            <button type="button" className="map-back" onClick={() => setPicked(null)}>← Back to the place in the text</button>
-          </>
-        ) : <>
+        </> : <>
         <p className="kicker">§{row.n} · {books.filter((b) => row.refs[b]).map((b) => BOOK_ABBR[b]).join(' ')}</p>
         <p className="map-title">{rowTitle(row)}</p>
         </>}
-        {!pickedPlace && <>
+        {!pickedPlace && !pickedPeak && <>
         {focus.kind === 'site' && (
           <>
             {lean ? row.placeImplied && <p className="map-place-name muted">Implied by the context</p>
@@ -1011,7 +1010,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
           </p>
         )}
         </>}
-        {(compact || open) && cardKey && stories(cardKey)}
+        {((compact && !led) || open) && cardKey && stories(cardKey)}
         {linkPlace && (!led || (open && !photo)) && (
           <p className="map-links">
             {linkPlace.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener">{l.label}</a>)}
@@ -1067,9 +1066,13 @@ function storiesHtml(key: string): string {
   });
   return `<ol class="pp-stories" aria-label="Stories set here">${items.join('')}</ol>`;
 }
-function peakPopup(p: Peak): string {
+function peakLinks(p: Peak): Link[] {
   const links: Link[] = [];
   if (p.wiki) links.push({ label: 'Wikipedia', href: p.wiki.url });
   links.push({ label: 'Google Maps', href: googleUrl(p.lonlat) });
-  return `<p class="pp-title">${esc(p.name)}</p><p class="pp-sub">≈ ${p.elev} m above sea level (terrain data); contours every ${p.interval} m</p>${linksHtml(links)}`;
+  return links;
+}
+const peakHeight = (p: Peak) => `≈ ${p.elev} m above sea level (terrain data); contours every ${p.interval} m`;
+function peakPopup(p: Peak): string {
+  return `<p class="pp-title">${esc(p.name)}</p><p class="pp-sub">${peakHeight(p)}</p>${linksHtml(peakLinks(p))}`;
 }

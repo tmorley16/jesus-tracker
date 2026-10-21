@@ -5,9 +5,9 @@ html { box-sizing: border-box; height: 100%; -webkit-text-size-adjust: 100%; }
 *, *::before, *::after { box-sizing: inherit; }
 body { height: 100%; margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-ui); font-size: 15px; }
 /* The gold of Jesus' marker, and "now": the timeline's needle is white, headed by Jesus' marker (--now-ring: its ring),
-   in a soft glow (--now-halo); the current section's heading has a gold rule (--now-line; Reader.tsx NowMark). */
+   in a soft glow (--now-halo). */
 :root { --jesus-gold: #A87D22; }
-body { --now-line: var(--jesus-gold); --now-ring: var(--jesus-gold); --now-halo: rgba(168, 125, 34, 0.55); }
+body { --now-ring: var(--jesus-gold); --now-halo: rgba(168, 125, 34, 0.55); }
 body[data-light="night"] { --now-halo: rgba(255, 255, 255, 0.95); }
 astro-island { display: contents; }
 button, input, select { font: inherit; color: inherit; }
@@ -177,7 +177,7 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 .map-card[data-lean][data-open] { width: min(380px, calc(100% - 24px)); max-width: none; max-height: min(78%, calc(100% - 24px)); }
 .map-card[data-lean] > * { flex: none; max-width: 100%; }
 .map-card[data-lean] .map-title { margin-top: 0; }
-.map-card[data-lean] .pp-stories { flex: 0 1 auto; min-height: 2.6em; max-height: none; width: 100%; padding-top: 6px; border-top: 1px solid var(--line); }
+.map-card[data-lean] .pp-stories { flex: 0 1 auto; min-height: 2.6em; max-height: none; width: calc(100% + 26px); max-width: none !important; margin-right: -26px; padding: 6px 6px 0 0; border-top: 1px solid var(--line); }
 .map-card[data-lean] .map-place-name + .pp-stories, .map-card[data-lean] .cands + .pp-stories, .map-card[data-lean] .map-mountain + .pp-stories, .map-card[data-lean] .map-heading-note + .pp-stories { margin-top: 8px; }
 /* The head: the place's name, and its photo, pulled down from the top of the card behind the name (its row growing from
    nothing) with the links and the photographer's credit over its foot. */
@@ -197,15 +197,15 @@ button.note-ref:hover { text-decoration-color: var(--ink); }
 .mc-links a, .mc-links span { color: inherit; text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.55); text-underline-offset: 2px; }
 .mc-links .mc-credit { margin-left: auto; font-size: 0.64rem; opacity: 0.9; }
 /* Desktops: fold and expand as two small round buttons in the card's top-right corner. */
-.jt:not([data-compact]) .map-card { padding-right: 30px; }
-.jt:not([data-compact]) .map-card-fold, .mc-expand {
+.jt .map-card { padding-right: 30px; }
+.jt .map-card-fold, .mc-expand {
   position: absolute; z-index: 3; right: 6px; width: 22px; height: 22px; display: grid; place-items: center; padding: 0; cursor: pointer;
   border: 0; border-radius: 50%; background: color-mix(in oklab, var(--paper-raised) 88%, transparent); color: var(--ink-soft);
 }
-.jt:not([data-compact]) .map-card-fold { top: 6px; bottom: auto; }
+.jt .map-card-fold { top: 6px; bottom: auto; }
 .mc-expand { top: 31px; }
-.jt:not([data-compact]) .map-card-fold:hover, .mc-expand:hover, .jt:not([data-compact]) .map-card-fold:focus-visible, .mc-expand:focus-visible { color: var(--ink); background: var(--paper-raised); }
-.jt:not([data-compact]) .map-card-fold svg, .mc-expand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.jt .map-card-fold:hover, .mc-expand:hover, .jt .map-card-fold:focus-visible, .mc-expand:focus-visible { color: var(--ink); background: var(--paper-raised); }
+.jt .map-card-fold svg, .mc-expand svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .map-title { font-family: var(--font-display); font-weight: var(--display-weight); font-size: 1.05rem; margin: 2px 0 4px; line-height: 1.2; }
 .map-place-name { font-weight: 600; font-size: 0.875rem; }
 .map-place-name em { font-style: normal; font-weight: 400; color: var(--ink-soft); }
@@ -426,7 +426,7 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 /* ---- phones: reclaiming height ---- */
 /* With the map and the text both open, each says a thing once: the map's card gives the place (and its candidates),
    the text gives the story's title. */
-.jt[data-compact] .panes[data-layout="split"] .map-title { display: none; }
+.jt[data-compact] .panes[data-layout="split"] .map-card:not([data-lean]) .map-title { display: none; }
 .jt[data-compact] .panes[data-layout="split"] .map-card { padding-block: 5px 6px; }
 .panes[data-layout="split"] .chip.place { display: none; }
 .jt:not([data-compact]) .panes[data-layout="split"] .row-meta:not(:has(> :not(.chip.place))) { display: none; }
@@ -525,9 +525,7 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 .map-credits { width: 100%; padding-top: 6px; border-top: 1px solid var(--line); font-size: 0.6rem; line-height: 1.35; color: var(--ink-soft); }
 .map-credits a { color: var(--ink); }
 /* The place card folds away to the right, leaving a tab with the place's name. */
-.map-card { padding-right: 34px; }
-.map-card-fold { position: absolute; top: 0; right: 0; bottom: 0; width: 28px; display: grid; place-items: center; padding: 0; border: 0; border-left: 1px solid var(--line); border-radius: 0 8px 8px 0; background: none; color: var(--ink-soft); cursor: pointer; }
-.map-card-fold svg, .map-card-tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.map-card-tab svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .map-card-tab {
   position: absolute; z-index: 2; top: 8px; right: 0; display: inline-flex; align-items: center; gap: 2px; max-width: 60%; height: 30px; padding: 0 10px 0 4px; cursor: pointer;
   border: 1px solid var(--line); border-right: 0; border-radius: 999px 0 0 999px; background: var(--paper-raised); color: var(--ink); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); font: 600 0.8rem var(--font-ui);
@@ -540,3 +538,15 @@ body[data-dragging]:has(.jt[data-compact]) { cursor: row-resize; }
 /* Phones: an × at the right of a gospel's heading hides it. */
 .col-off { display: grid; place-items: center; width: 22px; height: 22px; margin: -3px -6px -3px auto; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink-soft); cursor: pointer; }
 .col-off svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+/* Phones: the led card fills the width, its head flush with the card's top, and the photo kept short for the map. */
+.jt[data-compact] .map-card { padding-right: 30px; }
+.jt[data-compact] .map-card[data-lean] { padding-top: 5px; }
+.jt[data-compact] .map-card[data-lean][data-open] { width: auto; }
+.jt[data-compact] .mc-head { margin: -5px -30px 4px -10px; }
+.jt[data-compact] .mc-cap { padding: 5px 30px 0 10px; }
+.jt[data-compact] .mc-img img { aspect-ratio: auto; height: clamp(108px, 36cqh, 160px); }
+.jt[data-compact] .map-card[data-lean]:not([hidden]) { max-height: calc(100% - 54px); } /* clear of the layers button below */
+.jt[data-compact] .map-card .mc-expand { top: 30px; }
+/* Phones: a short map leaves little room, so the open card scrolls as a whole rather than its stories alone. */
+.jt[data-compact] .map-card[data-lean][data-open] { overflow-y: auto; overscroll-behavior: contain; }
+.jt[data-compact] .map-card[data-lean][data-open] .pp-stories { flex: none; overflow: visible; }

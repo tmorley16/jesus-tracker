@@ -1,5 +1,5 @@
-// Wikidata (CC0) lookups for the build scripts: English label, coordinates and English
-// Wikipedia article. Responses are cached in data/raw/wikidata/entities.json, so a
+// Wikidata (CC0) lookups for the build scripts: English label, coordinates, English
+// Wikipedia article and image (P18, a Commons file name). Responses are cached in data/raw/wikidata/entities.json, so a
 // rebuild works offline once everything has been fetched.
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -9,7 +9,7 @@ const CACHE = 'data/raw/wikidata/entities.json';
 export async function entities(ids) {
   let cache = {};
   try { cache = JSON.parse(await readFile(CACHE, 'utf8')); } catch { /* first run */ }
-  const missing = [...new Set(ids)].filter((id) => id && !cache[id]);
+  const missing = [...new Set(ids)].filter((id) => id && !(cache[id] && 'image' in cache[id])); // entries cached before images were kept are fetched again
   for (let i = 0; i < missing.length; i += 50) {
     const batch = missing.slice(i, i + 50);
     const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${batch.join('|')}&props=labels|claims|sitelinks&languages=en&sitefilter=enwiki&format=json`;
@@ -20,7 +20,7 @@ export async function entities(ids) {
       const e = j.entities[id] ?? Object.values(j.entities).find((x) => x.redirects?.from === id);
       if (!e || e.missing !== undefined) throw new Error(`Wikidata has no item ${id}`);
       const c = e.claims?.P625?.[0]?.mainsnak?.datavalue?.value;
-      cache[id] = { label: e.labels?.en?.value ?? null, enwiki: e.sitelinks?.enwiki?.title ?? null, lonlat: c ? [c.longitude, c.latitude] : null };
+      cache[id] = { label: e.labels?.en?.value ?? null, enwiki: e.sitelinks?.enwiki?.title ?? null, lonlat: c ? [c.longitude, c.latitude] : null, image: e.claims?.P18?.[0]?.mainsnak?.datavalue?.value ?? null };
     }
   }
   if (missing.length) {

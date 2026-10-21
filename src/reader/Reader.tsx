@@ -100,7 +100,6 @@ export default function Reader() {
         )}
       </div>
       <TintSync shown={mapBooks} />
-      <NowMark />
       {error && <p className="load-error" role="alert">The text didn’t load: {error}. Check your connection and reload the page.</p>}
     </div>
   );
@@ -121,25 +120,6 @@ function versePosOnScreen(row: Row): VersePos {
 
 /** Dynamic colour: the page tint follows the time of day the visible accounts give, as the reading line passes the
  *  verses that give it; from Jesus' death until the angel at the tomb it turns cold, and his light on the map goes out. */
-/** "Now" in the gold of Jesus' marker: a style naming the current section (a fine rule under its heading, and its § in
- *  gold), so no row re-renders as the reading line moves and rows rendered later are marked too. */
-function NowMark() {
-  useEffect(() => {
-    const style = document.head.appendChild(document.createElement('style'));
-    let last = -1;
-    const mark = ({ row }: { row: number }) => {
-      if (row === last) return;
-      last = row;
-      const now = `section.row[data-row="${row}"] > .row-head`;
-      style.textContent = `${now} { box-shadow: inset 0 -1.5px 0 var(--now-line); } ${now} .kicker .n { color: var(--now-line); }`;
-    };
-    mark(playhead.getState());
-    const un = playhead.subscribe(mark);
-    return () => { un(); style.remove(); };
-  }, []);
-  return null;
-}
-
 function TintSync({ shown }: { shown: Book[] }) {
   const appearance = useUI((s) => s.appearance);
   useEffect(() => {

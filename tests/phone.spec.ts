@@ -240,7 +240,7 @@ test('locked panes line up section for section and move together; or each keeps 
   expect(new Set(await at(probe)).size).toBeGreaterThan(1);
 });
 
-test('the place card starts folded, opens with the stories set there and its links, and a tap off a settings panel only closes it', async ({ page }) => {
+test('the place card starts folded, opens brief, expands to the photo, links and stories, and a tap off a settings panel only closes it', async ({ page }) => {
   await open(page);
   await goTo(page, 'Mk 6:35');
   await expect(page.locator('.map-card')).toBeHidden();
@@ -248,17 +248,20 @@ test('the place card starts folded, opens with the stories set there and its lin
   await page.getByRole('button', { name: 'Show the place card' }).click();
   const card = page.locator('.map-card');
   await expect(card).toBeVisible();
-  // The place, then the stories set there (this one marked), then the links.
+  // Brief: the place; expanded, its photo with the links over it, then the stories set there (this one marked).
+  await expect(card.locator('.mc-cap .map-title')).toHaveText('Bethsaida');
+  await expect(card.locator('.pp-stories')).toHaveCount(0);
+  await card.getByRole('button', { name: 'Show the photo, links and stories' }).click();
   await expect(card.locator('.pp-stories a[aria-current]')).toContainText('Feeding the five thousand');
-  await expect(card.locator('.map-links')).toContainText('OpenBible.info');
-  const order = await card.evaluate((c) => [...c.children].map((e) => e.className));
-  expect(order.indexOf('pp-stories')).toBeLessThan(order.indexOf('map-links'));
+  await expect(card.locator('.mc-links')).toContainText('OpenBible.info');
+  await page.waitForTimeout(500);
+  await shot(page, 'place-card-open');
   // A tapped place shows in the same card, with a way back to the place in the text.
   await page.locator('.map-place', { hasText: 'Capernaum' }).first().dispatchEvent('click');
-  await expect(card.locator('.map-place-name').first()).toContainText('Capernaum');
+  await expect(card.locator('.mc-cap .map-title')).toHaveText('Capernaum');
   await expect(card.locator('.pp-stories li').first()).toBeAttached();
   await page.getByRole('button', { name: /Back to the place in the text/ }).click();
-  await expect(card.locator('.map-place-name').first()).toContainText('Bethsaida');
+  await expect(card.locator('.mc-cap .map-title')).toHaveText('Bethsaida');
   await page.getByRole('button', { name: 'Fold the place card away' }).click();
   await expect(card).toBeHidden();
 

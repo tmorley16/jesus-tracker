@@ -847,6 +847,15 @@ test('desktop: with the text beside the map, the card gives the place and its st
   await expect(card.locator('.pp-stories a[aria-current]')).toContainText('Samaritan');
   await expect(page.locator('section.row .chip.place').first()).toBeHidden();
   await shot(page, '18-lean-card');
+  // A peak clicked shows in the card too, with its photo and height, and a way back.
+  await page.locator('.map-peak', { hasText: 'Mount Ebal' }).click();
+  await expect(card.locator('.mc-cap .map-title')).toHaveText('Mount Ebal');
+  await expect.poll(() => card.locator('.mc-img img').evaluate((img: HTMLImageElement) => img.naturalWidth), { timeout: 10_000 }).toBeGreaterThan(0);
+  await expect(card).toContainText('above sea level');
+  await page.waitForTimeout(400);
+  await shot(page, '18-peak-card');
+  await card.getByRole('button', { name: /Back to the place in the text/ }).click();
+  await expect(card.locator('.mc-cap .map-title')).toHaveText('Sychar');
   // A place with a photo, still open: its name, links and the photographer's credit over it.
   await goTo(page, 'Feeding the five thousand');
   await expect(card.locator('.mc-img img')).toBeVisible({ timeout: 15_000 });

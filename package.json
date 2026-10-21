@@ -10,7 +10,7 @@
     "preview": "astro preview",
     "check": "astro check",
     "astro": "astro",
-    "data": "node scripts/build-text.mjs && node scripts/build-harmony.mjs && node scripts/build-geo.mjs && node scripts/build-modern.mjs && node scripts/build-places.mjs && node scripts/build-mentions.mjs && node scripts/build-terrain.mjs && node scripts/build-relief.mjs && node scripts/validate.mjs",
+    "data": "node scripts/build-text.mjs && node scripts/build-harmony.mjs && node scripts/build-geo.mjs && node scripts/build-modern.mjs && node scripts/build-places.mjs && node scripts/build-mentions.mjs && node scripts/build-terrain.mjs && node scripts/build-peak-photos.mjs && node scripts/build-relief.mjs && node scripts/validate.mjs",
     "validate": "node scripts/validate.mjs",
     "test": "playwright test",
     "export:artifact": "astro build && node scripts/export-artifact.mjs",
