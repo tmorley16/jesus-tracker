@@ -17,12 +17,20 @@
 // follows it.
 import { Marker, MercatorCoordinate, type Map as MlMap } from 'maplibre-gl';
 import { lerp, type LonLat } from './geo';
+import type { MarkerKind } from './state';
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const merc = (ll: LonLat) => MercatorCoordinate.fromLngLat(ll);
 const mdist = (a: LonLat, b: LonLat) => { const p = merc(a), q = merc(b); return Math.hypot(p.x - q.x, p.y - q.y); };
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const TAU = 2 * Math.PI;
+/** The marker's symbol (Map layers › Marker): none for the ringed circle, else a black cross, J or crown. */
+export const MARKER_ICONS: Record<MarkerKind, string> = {
+  ring: '',
+  cross: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5v19M6 8.5h12"/></svg>',
+  j: '<span>J</span>',
+  crown: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17.5h16M4.5 17.5 3 8l5 4 4-7 4 7 5-4-1.5 9.5"/></svg>',
+};
 
 export interface Move {
   to: LonLat;
@@ -104,6 +112,11 @@ export class TravellerMarker {
 
   /** The marker's point (the centre of any drift; null before its first placing). */
   get position(): LonLat | null { return this.pos; }
+
+  setKind(kind: MarkerKind) {
+    this.el.dataset.kind = kind;
+    this.el.querySelector('.sym')!.innerHTML = MARKER_ICONS[kind];
+  }
 
   show(on: boolean) {
     this.toggle('off', !on);

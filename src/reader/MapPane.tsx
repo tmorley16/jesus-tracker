@@ -5,17 +5,17 @@ import { AttributionControl, LngLat, Map as MlMap, Marker, Popup, ScaleControl, 
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { FeatureCollection } from 'geojson';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ConfigButton, Toggle } from './Config';
+import { Choice, ConfigButton, Toggle } from './Config';
 import { bearingDeg, bounds, circleRing, dryLand, haversineKm, inRing, lerp, type LonLat } from './geo';
 import { declutter, type Label } from './mapLabels';
 import { AREAS, BIRTH, BOOK_ABBR, MAP_START, ROWS, mountainFor, rowTitle, storiesAt, type Book } from './model';
 import { loadPlaces, type PlaceData } from './places';
 import { focusAreas, focusFor, headingFor, journey, restingFor, routeStops, routeTo, splits, travelTarget, type Focus } from './journey';
 import { between, driftKm, halfway, legsFor, planRoute, shareTo, stopId, type Ground, type Step } from './route';
-import { nav, placeMarks, scene, useUI } from './state';
+import { nav, placeMarks, scene, useUI, type MarkerKind } from './state';
 import { useStore } from 'zustand';
 import { LandLight } from './landLight';
-import { TravellerMarker } from './traveller';
+import { MARKER_ICONS, TravellerMarker } from './traveller';
 import relief from '../data/relief.json';
 
 setWorkerUrl(new URL(workerUrl, import.meta.url).href);
@@ -205,6 +205,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
   const modern = useUI((s) => s.modern);
   const landColour = useUI((s) => s.landColour);
   const trail = useUI((s) => s.trail);
+  const markerKind = useUI((s) => s.marker);
   const units = useUI((s) => s.units);
   const textSize = useUI((s) => s.textSize);
   const scaleRef = useRef<ScaleControl | null>(null);
@@ -413,6 +414,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
       // A region's popup comes only from its name, never from the area itself, so moving over the map stays clear.
 
       traveller.current = new TravellerMarker(map);
+      traveller.current.setKind(useUI.getState().marker);
       // The light on the land follows the marker, drift and all (the route doesn't: it's the line as planned).
       traveller.current.onDraw = (ll) => landLight.current?.follow(ll);
       map.on('load', () => {
@@ -784,6 +786,7 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     map.setPaintProperty('area-edge', 'line-opacity', landLightOn ? 0 : 1);
   }, [landLightOn, dead, ready]);
 
+  useEffect(() => { traveller.current?.setKind(markerKind); }, [markerKind, ready]);
   // Trail: the route's lines, arrows and heading shown or hidden.
   useEffect(() => {
     const map = mapRef.current;
@@ -1029,6 +1032,10 @@ export default function MapPane({ books, compact = false, withText = false }: { 
       >
         <Toggle label="Mountains" on={mountainsOn} set={setMountainsChoice} title="Show the named mountains (on by itself where the text places Jesus on or near a mountain)" />
         <Toggle label="Modern places" on={modern} set={(on) => useUI.getState().setModern(on)} title="Show today’s towns and the modern names of the sites" />
+        <Choice<MarkerKind>
+          label="Marker" group="Jesus' marker" value={markerKind} set={(m) => useUI.getState().setMarker(m)}
+          options={MARKER_CHOICES.map(([k, title]) => [k, k === 'ring' ? <i className="mk-ring" /> : <span className="mk-sym" dangerouslySetInnerHTML={{ __html: MARKER_ICONS[k] }} />, title])}
+        />
         <Toggle label="Trail" on={trail} set={(on) => useUI.getState().setTrail(on)} title="The line of the way Jesus has come" />
         <Toggle label="Terrain" on={landColour === 'height'} set={(on) => useUI.getState().setLandColour(on ? 'height' : 'plain')} title="The land coloured by height: sage in the low ground, sand and ochre in the hills, pale stone on the heights" />
         <Toggle label="Effects" on={effects} set={(on) => { const ui = useUI.getState(); ui.setLandLight(on); ui.setWander(on); }} title="His light on the land, and his marker's drift within an area" />
@@ -1037,6 +1044,8 @@ export default function MapPane({ books, compact = false, withText = false }: { 
     </div>
   );
 }
+
+const MARKER_CHOICES: [MarkerKind, string][] = [['ring', 'A white circle with a gold ring'], ['cross', 'A black cross'], ['j', 'A black J'], ['crown', 'A black crown']];
 
 /** What a place's popup and card say under its name: a region, or the modern site it's shown at. */
 function placeSub(p: PlaceData): string | null {

@@ -254,6 +254,15 @@ body:not([data-dead]) .map-traveller-glow.resting.born .wander { opacity: 0.45; 
   position: relative; width: 11px; height: 11px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px var(--jesus-gold);
   transition: transform 400ms ease, opacity 400ms ease;
 }
+/* Map layers › Marker: a black cross, J or crown in the same white glow, in place of the ringed circle. */
+.map-traveller:not([data-kind="ring"]) .sym { display: grid; place-items: center; width: 22px; height: 22px; background: none; box-shadow: none; color: #1a1917; }
+.map-traveller .sym svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.map-traveller .sym span { font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1; transform: translateY(1px); }
+/* The Marker choice draws each marker small. */
+.mk-ring { display: block; width: 9px; height: 9px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px var(--jesus-gold); }
+.mk-sym { display: grid; place-items: center; width: 16px; height: 16px; }
+.mk-sym svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.mk-sym span { font-family: var(--font-display); font-weight: 700; font-size: 14px; line-height: 1; }
 .map-traveller-glow { pointer-events: none; }
 .map-traveller-glow i {
   display: block; width: 72px; height: 72px; border-radius: 50%;

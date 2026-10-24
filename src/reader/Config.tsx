@@ -33,7 +33,7 @@ export function ConfigButton({ label, icon, down = false, className = '', childr
 }
 
 /** A row: its name on the left, its choices on the right, the chosen one filled. Options are [value, text, title?]. */
-function Choice<T extends string>({ label, group = label, value, options, set }: {
+export function Choice<T extends string>({ label, group = label, value, options, set }: {
   label: string; group?: string; value: T; options: [T, ReactNode, string?][]; set: (v: T) => void;
 }) {
   return (
